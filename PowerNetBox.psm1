@@ -15,9 +15,32 @@ function Set-Config {
     }
     $Script:NetboxURL = $NetboxURL.TrimEnd("/")
     Set-Variable -Scope Script -Name NetboxURL
+
+    # Add /api if not already provided
+    if ($NetboxURL -notlike "*api*" ) {
+        $Script:NetboxURL = $NetboxURL + "/api"
+    }
 }
 
 function Get-NextPage {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         $Result
     )
@@ -35,6 +58,24 @@ function Get-NextPage {
 }
 
 function Get-NetBoxInterfaceType {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         $Linkspeed,
         $InterfaceType
@@ -68,6 +109,24 @@ function Get-NetBoxInterfaceType {
 }
 
 function Get-Site {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -89,6 +148,24 @@ function Get-Site {
 }
 
 function New-Site {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -159,12 +236,28 @@ function New-Site {
     # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
     ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-
     Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-
 }
 
 function Update-Site {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -215,6 +308,24 @@ function Update-Site {
 }
 
 function Remove-Site {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -226,12 +337,29 @@ function Remove-Site {
     $Site = Get-Site -Name $Name
 
     Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Site.id)) @RestParams -Method Delete
-
 }
 
 
 
 function Get-Location {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -253,6 +381,24 @@ function Get-Location {
 }
 
 function New-Location {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -306,12 +452,27 @@ function New-Location {
     ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
     Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-
 }
 
-
-
 function Get-Rack {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -334,6 +495,24 @@ function Get-Rack {
 
 
 function New-Rack {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -410,10 +589,27 @@ function New-Rack {
     ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
     Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-
 }
 
 function Get-CustomField {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -435,6 +631,24 @@ function Get-CustomField {
 }
 
 function New-CustomField {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -485,8 +699,25 @@ function New-CustomField {
 
 }
 
-
 function Get-ContentType {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     [CmdletBinding(DefaultParameterSetName = "SingleItem")]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = "SingleItem")]
@@ -518,8 +749,25 @@ function Get-ContentType {
         return $Result.Results
     }
 }
-
 function Get-DeviceType {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     [CmdletBinding(DefaultParameterSetName = "ByModel")]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = "ByModel")]
@@ -532,7 +780,11 @@ function Get-DeviceType {
 
         [Parameter(Mandatory = $true, ParameterSetName = "ById")]
         [Int32]
-        $Id
+        $Id,
+
+        [Parameter(Mandatory = $true, ParameterSetName = "Query")]
+        [String]
+        $Query
     )
 
     $URL = "/dcim/device-types/"
@@ -544,8 +796,13 @@ function Get-DeviceType {
     if ($Manufacturer) {
         $Query = "?manufacturer=$($Manufacturer)"
     }
+
     if ($Id) {
         $Query = "?id=$($id)"
+    }
+
+    if ($Id) {
+        $Query = "?q=$($Query)"
     }
 
     $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -560,6 +817,24 @@ function Get-DeviceType {
 }
 
 function New-DeviceType {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String]
@@ -620,20 +895,28 @@ function New-DeviceType {
     # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
     ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-    $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-
-    foreach ($Interface in $Interfaces) {
-        $InterfaceBody = [PSCustomObject]@{
-            device_type = $DeviceType.ID
-            name        = $Interface.ID
-            type        = $(Get-NetBoxInterfaceType -Linkspeed $Interface.Linkspeed -InterfaceType $InterfaceType)
-            mac_address = $Interface.MacAddress
-            mgmt_only   = $Interface.Management
-        }
-    }
+    Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
 }
 
 function Get-Device {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     [CmdletBinding(DefaultParameterSetName = "Byname")]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
@@ -686,10 +969,27 @@ function Get-Device {
     else {
         return $Result.Results
     }
-
 }
 
 function New-Device {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
     param (
 
         [String]
@@ -804,6 +1104,91 @@ function New-Device {
         ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
     Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+}
 
+function Get-InterfaceTemplate {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
 
+    param (
+
+    )
+
+}
+
+function New-InterfaceTemplate {
+    <#
+    .SYNOPSIS
+       Short description
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> <example usage>
+       Explanation of what the example does
+    .PARAMETER Name
+       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
+    param (
+        [Parameter(Mandatory = $true)]
+        $DeviceType,
+
+        [Parameter(Mandatory = $true)]
+        [String]
+        $Name,
+
+        [Parameter(Mandatory = $false)]
+        [String]
+        $Label,
+
+        #"virtual", "lag", "100base-tx", "1000base-t", "2.5gbase-t", "5gbase-t", "10gbase-t", "10gbase-cx4", "1000base-x-gbic", "1000base-x-sfp", "10gbase-x-sfpp", "10gbase-x-xfp", "10gbase-x-xenpak", "10gbase-x-x2", "25gbase-x-sfp28", "50gbase-x-sfp56", "40gbase-x-qsfpp", "50gbase-x-sfp28", "100gbase-x-cfp", "100gbase-x-cfp2", "200gbase-x-cfp2", "100gbase-x-cfp4", "100gbase-x-cpak", "100gbase-x-qsfp28", "200gbase-x-qsfp56", "400gbase-x-qsfpdd", "400gbase-x-osfp", "ieee802.11a", "ieee802.11g", "ieee802.11n", "ieee802.11ac", "ieee802.11ad", "ieee802.11ax", "gsm", "cdma", "lte", "sonet-oc3", "sonet-oc12", "sonet-oc48", "sonet-oc192", "sonet-oc768", "sonet-oc1920", "sonet-oc3840", "1gfc-sfp", "2gfc-sfp", "4gfc-sfp", "8gfc-sfpp", "16gfc-sfpp", "32gfc-sfp28", "64gfc-qsfpp", "128gfc-sfp28", "infiniband-sdr", "infiniband-ddr", "infiniband-qdr", "infiniband-fdr10", "infiniband-fdr", "infiniband-edr", "infiniband-hdr", "infiniband-ndr", "infiniband-xdr", "t1", "e1", "t3", "e3", "xdsl", "cisco-stackwise", "cisco-stackwise-plus", "cisco-flexstack", "cisco-flexstack-plus", "juniper-vcp", "extreme-summitstack", "extreme-summitstack-128", "extreme-summitstack-256", "extreme-summitstack-512", "other"
+        [Parameter(Mandatory = $true)]
+        [String]
+        $Type,
+
+        [Parameter(Mandatory = $false)]
+        [Bool]
+        $ManagmentOnly
+    )
+
+    if ($DeviceType -is [String]) {
+        $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+    }
+    else {
+        DeviceType
+    }
+
+    $URL = "/dcim/interface-templates/"
+
+    $Body = [PSCustomObject]@{
+        device_type = $DeviceType
+        name        = $Name
+        type        = $(Get-NetBoxInterfaceType -Linkspeed $Interface.Linkspeed -InterfaceType $InterfaceType)
+        mgmt_only   = $ManagmentOnly
+    }
+    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+    Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
 }
