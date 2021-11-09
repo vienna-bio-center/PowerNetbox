@@ -195,7 +195,7 @@ function Show-ConfirmDialog {
    }
 
 }
-function Get-NetBoxInterfaceType {
+function Get-InterfaceType {
    <#
     .SYNOPSIS
        Short description
@@ -215,32 +215,58 @@ function Get-NetBoxInterfaceType {
     #>
 
    param (
+      [Parameter(Mandatory = $true)]
       $Linkspeed,
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("Fixed", "Modular", "RJ45", "SFP")]
       $InterfaceType
    )
 
+
+   # "GE" to Linkspeed if missing
+   if ($Linkspeed -notlike "*GE") {
+      $Linkspeed = $Linkspeed + "GE"
+   }
+
+   # Map aliases
+   if ($InterfaceType -eq "SFP") {
+      $InterfaceType = "Modular"
+   }
+
+   if ($InterfaceType -eq "RJ45") {
+      $InterfaceType = "Fixed"
+   }
+
    # Determinte 1GE interface
-   if ($Linkspeed -eq "1GE" -and $InterfaceType -eq "fixed") {
+   if ($Linkspeed -eq "1GE" -and $InterfaceType -eq "Fixed") {
       $Type = "1000base-t"
    }
-   elseif ($Linkspeed -eq "1GE" -and $InterfaceType -eq "modular") {
+   elseif ($Linkspeed -eq "1GE" -and $InterfaceType -eq "Modular") {
       $Type = "1000base-x-sfp"
    }
 
    # Determinte 10GE interface
-   if ($Linkspeed -eq "10GE" -and $InterfaceType -eq "fixed") {
+   if ($Linkspeed -eq "10GE" -and $InterfaceType -eq "Fixed") {
       $Type = "10gbase-t"
    }
-   elseif ($Linkspeed -eq "1GE" -and $InterfaceType -eq "modular") {
+   elseif ($Linkspeed -eq "10GE" -and $InterfaceType -eq "Modular") {
       $Type = "10gbase-x-sfpp"
    }
 
    # Determinte 25GE interface
-   if ($Linkspeed -eq "25GE" -and $InterfaceType -eq "fixed") {
+   if ($Linkspeed -eq "25GE") {
       $Type = "25gbase-x-sfp28"
    }
-   elseif ($Linkspeed -eq "1GE" -and $InterfaceType -eq "modular") {
-      $Type = "25gbase-x-sfp28"
+
+   # Determinte 40GE interface
+   if ($Linkspeed -eq "40GE") {
+      $Type = "40gbase-x-qsfpp"
+   }
+
+   # Determinte 100GE interface
+   if ($Linkspeed -eq "100GE") {
+      $Type = "100gbase-x-qsfp28"
    }
 
    return $Type
@@ -1191,7 +1217,14 @@ function New-Manufacturer {
    )
 
    Test-Config
-   $URL = "/dcim/manufacturers"
+   $URL = "/dcim/manufacturers/"
+
+   if ($null -eq $Slug) {
+      $Slug
+   }
+   else {
+      $Slug = $Name.tolower() -replace " ", "-"
+   }
 
    $Body = @{
       name          = $Name
@@ -1294,7 +1327,6 @@ function New-DeviceType {
 
    param (
       [Parameter(Mandatory = $true)]
-      [String]
       $Manufacturer,
 
       [Parameter(Mandatory = $true)]
@@ -1322,12 +1354,12 @@ function New-DeviceType {
       $Interfaces,
 
       [String]
-      [Parameter(Mandatory = $true)]
-      [ValidateSet("fixed", "modular")]
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("Fixed", "Modular")]
       $InterfaceType,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       [ValidateSet("c14", "c20")]
       $PowerSupplyConnector,
 
@@ -1341,6 +1373,21 @@ function New-DeviceType {
 
    Test-Config
    $URL = "/dcim/device-types/"
+
+   if ($null -eq $Slug) {
+      $Slug
+   }
+   else {
+      $Slug = $Model.tolower() -replace " ", "-"
+   }
+
+   if ($Manufacturer -is [String]) {
+      $Manufacturer = (Get-Manufacturer -Name $Manufacturer).Id
+   }
+   else {
+      $Manufacturer
+   }
+
 
    $Body = @{
       manufacturer  = $Manufacturer
@@ -1541,7 +1588,6 @@ function New-Device {
       [Parameter(Mandatory = $true)]
       $Name,
 
-      [String]
       [Parameter(Mandatory = $true)]
       $DeviceType,
 
@@ -1555,42 +1601,42 @@ function New-Device {
       $Site,
 
       [Array]
-      [Parameter(Mandatory = $true, ParameterSetName = "ByParameter")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ByParameter")]
       $Interfaces,
 
       [String]
-      [Parameter(Mandatory = $true)]
-      [ValidateSet("fixed", "modular")]
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("Fixed", "Modular")]
       $InterfaceType,
 
       [Array]
-      [Parameter(Mandatory = $true, ParameterSetName = "ByParameter")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ByParameter")]
       $PowerSupplies,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       [ValidateSet("c14", "c20")]
       $PowerSupplyConnector,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       [ValidateSet("DataCenter 4.47", "High Density", "Low Density")]
       $Location,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       $Rack,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       $Position,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       $Height,
 
       [String]
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       $Hostname,
 
       [String]
@@ -1601,8 +1647,13 @@ function New-Device {
       $Face = "front",
 
       [String]
+      [Parameter(Mandatory = $false)]
       [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
       $Status = "active",
+
+      [String]
+      [Parameter(Mandatory = $false)]
+      $AssetTag,
 
       [Hashtable]
       [Parameter(Mandatory = $false)]
@@ -1622,18 +1673,29 @@ function New-Device {
       $Slug = $Name.tolower() -replace " ", "-"
    }
 
+   if ($DeviceType -is [String]) {
+      $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+   }
+   else {
+      $DeviceType
+   }
+
    $Body = @{
-      name          = $Name
-      device_type   = (Get-DeviceType -Model $DeviceType).ID
-      device_role   = (Get-DeviceRole -Name $DeviceRole).ID
-      site          = (Get-Site -Name $Site).ID
-      location      = (Get-Location -Name $Location).ID
-      rack          = (Get-Rack -Name $Rack).ID
-      position      = $Position
-      face          = $Face
-      status        = $Status
-      asset_tag     = $AssetTag
-      parent_device = @{
+      name        = $Name
+      device_type = $DeviceType
+      device_role = (Get-DeviceRole -Name $DeviceRole).ID
+      site        = (Get-Site -Name $Site).ID
+      location    = (Get-Location -Name $Location).ID
+      rack        = (Get-Rack -Name $Rack).ID
+      position    = $Position
+      face        = $Face
+      status      = $Status
+      asset_tag   = $AssetTag
+   }
+
+   if ($ParentDevice) {
+      $ParentDevice =
+      $Body.parent_device = @{
          name = (Get-Device -Name $ParentDevice).Name
       }
    }
@@ -2366,6 +2428,7 @@ function New-PowerPortTemplate {
       maximum_draw   = $MaxiumDraw
       allocated_draw = $AllocatedDraw
    }
+
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
