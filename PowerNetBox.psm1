@@ -1,25 +1,22 @@
 function Set-Config {
    <#
    .SYNOPSIS
-      Short description
+      Required to use PowerNetBox, sets up URL and APITToken for connection
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
-   .INPUTS
-      Inputs (if any)
-   .OUTPUTS
-      Output (if any)
-   .NOTES
-      General notes
+      PS C:\> Set-NetBoxConfig -NetboxURL "https://netbox.example.com" -NetboxAPIToken "1277db26a31232132327265bd13221309a567fb67bf"
+      Sets up NetBox from https://netbox.example.com with APIToken 1277db26a31232132327265bd13221309a567fb67bf
+   .PARAMETER NetboxAPIToken
+      APIToken to access NetBox found under "Profiles & Settings" -> "API Tokens" tab
+   .PARAMETER NetboxURL
+      URL from Netbox, must be https
    #>
 
    param (
       [String]
       $NetboxAPIToken,
+
       [String]
       [ValidatePattern ("^(https:\/\/).+")]
       $NetboxURL
@@ -46,20 +43,12 @@ function Set-Config {
 function Test-Config {
    <#
    .SYNOPSIS
-      Short description
+      For internal use, checks if NetBox URL and APIToken are set
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
+      PS C:\> Test-Config
       Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
-   .INPUTS
-      Inputs (if any)
-   .OUTPUTS
-      Output (if any)
-   .NOTES
-      General notes
    #>
 
    if (-not $(Get-Variable -Name NetboxURL) -or -not $(Get-Variable -Name NetboxAPIToken) ) {
@@ -72,23 +61,18 @@ function Test-Config {
 function Get-NextPage {
    <#
     .SYNOPSIS
-       Short description
+       For internal use, gets the next page of results from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
-    .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       Output (if any)
-    .NOTES
-       General notes
+       PS C:\> Get-NextPage -Result $Result
+       Retrieves all items from API call and return them in $CompleteResult
+    .PARAMETER Result
+       Result from previous API call
     #>
 
    param (
+      [Parameter(Mandatory = $true)]
       $Result
    )
    $CompleteResult = New-Object collections.generic.list[object]
@@ -107,7 +91,7 @@ function Get-NextPage {
 function Get-RelatedObjects {
    <#
    .SYNOPSIS
-      Short description
+      For internal use, Gets all related objects from NetBox object
    .DESCRIPTION
       Long description
    .EXAMPLE
@@ -123,7 +107,10 @@ function Get-RelatedObjects {
       General notes
    #>
    param (
+      [Parameter(Mandatory = $true)]
       $Object,
+
+      [Parameter(Mandatory = $true)]
       $ReferenceObjects
    )
 
@@ -157,7 +144,7 @@ function Get-RelatedObjects {
 function Show-ConfirmDialog {
    <#
    .SYNOPSIS
-      Short description
+      For interal use, Shows a confirmation dialog before executing the command
    .DESCRIPTION
       Long description
    .EXAMPLE
@@ -198,14 +185,16 @@ function Show-ConfirmDialog {
 function Get-InterfaceType {
    <#
     .SYNOPSIS
-       Short description
+       Determine the interface type of a device based on linkspeed and connection type
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
-    .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       PS C:\> Get-NetBoxInterfaceType -Linkspeed 10GE -InterfaceType sfp
+       Returns the Netbox interface Type for a 10GBit\s SFP interface
+    .PARAMETER Linkspeed
+       Speed auf the interface in gigabit/s e.g. 10GE
+    .PARAMETER InterfaceType
+       Type of the connector e.g. sfp or RJ45 or just fixed / modular
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -275,14 +264,16 @@ function Get-InterfaceType {
 function Get-Site {
    <#
     .SYNOPSIS
-       Short description
+       Retrieves a site from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxSite -Name VBC
+       Returns the Netbox site VBC
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Search for a site by name
+    .PARAMETER Id
+       Search for a site by ID
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -320,14 +311,34 @@ function Get-Site {
 function New-Site {
    <#
     .SYNOPSIS
-       Short description
+       Creates a new site in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxSite -Name vbc
+       Creates a new site vbc
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the site
+    .PARAMETER Slug
+      Slug of the site, if not specified, it will be generated from the name
+    .PARAMETER Status
+      Status of the site, active by default
+    .PARAMETER Region
+      Region of the site
+    .PARAMETER Group
+      Group of the site
+    .PARAMETER CustomFields
+      Custom fields of the site
+    .PARAMETER Tenant
+      Tenant of the site
+    .PARAMETER Comment
+      Comment of the site
+    .PARAMETER Tags
+      Tags of the site
+    .PARAMETER TagColor
+      Tag color of the site
+    .PARAMETER Confirm
+      Confirm the creation of the site
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -382,6 +393,7 @@ function New-Site {
       [String]
       $Description,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -421,7 +433,7 @@ function New-Site {
 function Update-Site {
    <#
     .SYNOPSIS
-       Short description
+       Updates a site in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
@@ -489,14 +501,18 @@ function Update-Site {
 function Remove-Site {
    <#
     .SYNOPSIS
-       Short description
+       Deletes a site in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Remove-NetBoxSite -Name vbc -Recurse
+       Deletes a site vbc and all related objects
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the site
+    .PARAMETER Recurse
+       Deletes all related objects as well
+    .PARAMETER Confirm
+      Confirm the creation of the site
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -510,9 +526,11 @@ function Remove-Site {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -540,8 +558,8 @@ function Remove-Site {
    }
    catch {
       if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
       }
       else {
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -553,14 +571,16 @@ function Remove-Site {
 function Get-Location {
    <#
     .SYNOPSIS
-       Short description
+       Retrieves a location in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxLocation -Name "Low Density"
+       Retrieves the location Low Density
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the location
+    .PARAMETER ID
+       ID of the location
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -606,14 +626,28 @@ function Get-Location {
 function New-Location {
    <#
     .SYNOPSIS
-       Short description
+       Creates a location in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxLocation -Parent IMP -Site VBC -Name "Low Densitity"
+       Creates a new location Low Densitity as a child of IMP in site VBC
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+         Name of the location
+    .PARAMETER Slug
+         Slug of the location, if not specified, it will be generated from the name
+    .PARAMETER Site
+         Site of the location
+    .PARAMETER Parent
+         Parent of the location
+    .PARAMETER CustomFields
+         Custom fields of the location
+    .PARAMETER Comment
+         Comment for location
+    .PARAMETER Description
+         Description of the location
+    .PARAMETER confirm
+         Confirm the creation of the location
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -645,6 +679,7 @@ function New-Location {
       [String]
       $Description,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -689,14 +724,18 @@ function New-Location {
 function Remove-Location {
    <#
    .SYNOPSIS
-      Short description
+      Deletes a location in NetBox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Remove-NetBoxLocation -Name "High Density"
+      Deletes the location High Density
+    .PARAMETER Name
+       Name of the location
+    .PARAMETER Recurse
+       Deletes all related objects as well
+    .PARAMETER Confirm
+      Confirm the creation of the location
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -710,9 +749,11 @@ function Remove-Location {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -740,8 +781,8 @@ function Remove-Location {
    }
    catch {
       if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
       }
       else {
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -754,14 +795,20 @@ function Remove-Location {
 function Get-Rack {
    <#
     .SYNOPSIS
-       Short description
+       Retrives a rack from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxRack -Location "High Density"
+       Retrives all racks from High Density location
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the rack
+    .PARAMETER ID
+       ID of the rack
+    .PARAMETER Site
+       Site of the rack
+    .PARAMETER Location
+       Location of the rack
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -835,14 +882,32 @@ function Get-Rack {
 function New-Rack {
    <#
     .SYNOPSIS
-       Short description
+       Creates a new rack in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxRack -Name "T-12" -Location "High density" -Site VBC
+       Creates rack "T-12" in location "High Density" in site VBC
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the rack
+    .PARAMETER Slug
+         Slug of the rack, if not specified, it will be generated from the name
+    .PARAMETER Site
+         Site of the rack
+    .PARAMETER Location
+         Location of the rack
+    .PARAMETER Status
+         Status of the rack, Defaults to Active
+    .PARAMETER Width
+         Width of the rack in inch, default is 19
+    .PARAMETER Height
+         Height of the rack in U(Units), default is 42
+    .PARAMETER Description
+         Description of the rack
+    .PARAMETER CustomFields
+         Custom fields of the rack
+    .PARAMETER Confirm
+         Confirm the creation of the rack
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -893,6 +958,7 @@ function New-Rack {
       [String]
       $Description,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -939,15 +1005,37 @@ function New-Rack {
 }
 
 function Remove-Rack {
-
+   <#
+   .SYNOPSIS
+      Deletes a rack from NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> Remove-NetBoxRack -Name "Y-14"
+      Deletes rack "Y-14" in NetBox
+   .PARAMETER Name
+      Name of the rack
+    .PARAMETER Recurse
+       Deletes all related objects as well
+    .PARAMETER Confirm
+      Confirm the deletion of the rack
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
    param (
       [Parameter(Mandatory = $true)]
       [String]
       $Name,
 
+      [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -974,8 +1062,8 @@ function Remove-Rack {
    }
    catch {
       if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
       }
       else {
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -988,14 +1076,16 @@ function Remove-Rack {
 function Get-CustomField {
    <#
     .SYNOPSIS
-       Short description
+       Retrievess a custom field from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxCustomField -Name "ServiceCatalogID"
+       Retrieves custom field "ServiceCatalogID" from NetBox
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the custom field
+    .PARAMETER ID
+       ID of the custom field
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1017,7 +1107,14 @@ function Get-CustomField {
 
    Test-Config
    $URL = "/extras/custom-fields/"
-   $Query = "?q=$($Name)"
+
+   if ($Name) {
+      $Query = "?name__ic=$($Name)"
+   }
+
+   if ($Id) {
+      $Query = "?id=$($id)"
+   }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
 
@@ -1033,14 +1130,28 @@ function Get-CustomField {
 function New-CustomField {
    <#
     .SYNOPSIS
-       Short description
+       Creates a custom field in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxCustomField -Name "ServiceCatalogID" -Type Integer -ContentTypes Device -Label "Service Catalog ID"
+       Creates custom field "ServiceCatalogID" from Type Integer for Contenttype device with the label "Service Catalog ID" in NetBox
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the custom field
+    .PARAMETER Label
+       Label of the custom field
+    .PARAMETER Type
+         Type of the custom field, e.g. "Integer","Text"
+    .PARAMETER ContentTypes
+       Content types of the custom field, e.g. "Device"
+    .PARAMETER Choices
+       Choices of the custom field, e.g. "1,2,3,4,5"
+    .PARAMETER Description
+       Description of the custom field
+    .PARAMETER Required
+       Set the custom field as required
+    .PARAMETER Confirm
+      Confirm the creation of the location
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1059,10 +1170,10 @@ function New-CustomField {
       [String[]]
       $ContentTypes,
 
-      [Parameter(Mandatory = $false)]
+      [Parameter(Mandatory = $true)]
       [ValidateSet("text", "integer", "boolean", "date", "url", "select", "multiselect")]
       [String]
-      $Type = "4-post-frame",
+      $Type,
 
       [Parameter(Mandatory = $true)]
       [String]
@@ -1080,6 +1191,7 @@ function New-CustomField {
       [String]
       $Description,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -1087,13 +1199,21 @@ function New-CustomField {
    Test-Config
    $URL = "/extras/custom-fields/"
 
+   $NetBoxContentTypes = New-Object collections.generic.list[object]
+
+   foreach ($ContentType in $ContentTypes) {
+      $NetBoxContentType = Get-ContentType -Name $ContentType
+      $NetBoxContentTypes += "$($NetBoxContentType.app_label).$($NetBoxContentType.model)"
+   }
+
    $Body = @{
-      name        = $Name
-      label       = $Label
-      type        = $Type
-      required    = $Required
-      choices     = $Choices
-      description = $Description
+      name          = $Name
+      label         = $Label
+      type          = $Type
+      required      = $Required
+      choices       = $Choices
+      description   = $Description
+      content_types = $NetBoxContentTypes
    }
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
@@ -1108,17 +1228,89 @@ function New-CustomField {
 
 }
 
-function Get-ContentType {
+function Remove-CustomField {
    <#
     .SYNOPSIS
-       Short description
+       Deletes a custom field from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Remove-NetBoxCustomField -id 3
+       Deletes custom field with ID 3 from NetBox
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the custom field
+    .PARAMETER ID
+       ID of the custom field
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $Id
+   )
+
+   Test-Config
+   $URL = "/extras/custom-fields/"
+
+   if ($Name) {
+      $CustomField = Get-CustomField -Name $Name
+   }
+   else {
+      $CustomField = Get-CustomField -Id $Id
+   }
+
+   $RelatedObjects = Get-RelatedObjects -Object $CustomField -ReferenceObjects CustomField
+
+   if ($Confirm) {
+      Show-ConfirmDialog -Object $CustomField
+   }
+
+   # Remove all related objects
+   if ($Recurse) {
+      foreach ($Object in $RelatedObjects) {
+         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+      }
+   }
+
+   try {
+      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomField.id) + "/") @RestParams -Method Delete
+   }
+   catch {
+      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
+      }
+      else {
+         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+      }
+
+   }
+}
+
+function Get-ContentType {
+   <#
+    .SYNOPSIS
+       Retrieves content types from NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> Get-NetBoxContentType -Name Device
+       Retrieves content type "Device" from NetBox
+    .PARAMETER Name
+       Name of the content type
+    .PARAMETER All
+       Retrieves all content types from NetBox
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1143,7 +1335,7 @@ function Get-ContentType {
 
    Test-Config
    $URL = "/extras/content-types/"
-   $Query = "?model=$($Name.Replace(' ',''))"
+   $Query = "?model=$($Name.Replace(' ','').ToLower())"
    if ($All) {
       $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Get
    }
@@ -1161,6 +1353,27 @@ function Get-ContentType {
 }
 
 function Get-Manufacturer {
+   <#
+   .SYNOPSIS
+      Gets a manufacturer from NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> Get-NetBoxManufacturer -Name "Cisco"
+      Retrieves manufacturer "Cisco" from NetBox
+   .PARAMETER Name
+      Name of the manufacturer
+   .PARAMETER ID
+      ID of the manufacturer
+   .PARAMETER
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
    [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
@@ -1169,11 +1382,7 @@ function Get-Manufacturer {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "Query")]
-      [String]
-      $Query
+      $Id
    )
 
    Test-Config
@@ -1185,10 +1394,6 @@ function Get-Manufacturer {
 
    if ($Id) {
       $Query = "?id=$($id)"
-   }
-
-   if ($Id) {
-      $Query = "?q=$($Query)"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1203,6 +1408,28 @@ function Get-Manufacturer {
 }
 
 function New-Manufacturer {
+   <#
+   .SYNOPSIS
+      Creates a new manufacturer in NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> New-NetBoxManufacturer -Name Dell
+      Creates manufacturer "Dell" in NetBox
+   .PARAMETER Name
+      Name of the manufacturer
+   .PARAMETER Slug
+      Slug of the manufacturer, if not specified, it will be generated from the name
+   .PARAMETER Confirm
+      Confirm the creation of the location
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
    param (
       [Parameter(Mandatory = $true)]
       [String]
@@ -1212,6 +1439,7 @@ function New-Manufacturer {
       [String]
       $Slug,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -1245,14 +1473,18 @@ function New-Manufacturer {
 function Get-DeviceType {
    <#
     .SYNOPSIS
-       Short description
+       Retrieves device types from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
-    .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       PS C:\> Get-NetboxDeviceType -Model "Cisco Catalyst 2960"
+       Retrives DeviceType for Cisco Catalyst 2960 from NetBox
+    .PARAMETER Model
+       Model of the device type
+    .PARAMETER Manufacturer
+       Manufacturer of the device type
+    .PARAMETER ID
+       ID of the device type
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1309,14 +1541,26 @@ function Get-DeviceType {
 function New-DeviceType {
    <#
     .SYNOPSIS
-       Short description
+       Cretaes a new device type in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
-    .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       PS C:\> New-NetboxDeviceType -Model "Cisco Catalyst 2960" -Manufacturer "Cisco" -Height "4"
+       Creates device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox
+    .PARAMETER Manufacturer
+       Name of the manufacturer
+    .PARAMETER Model
+       Model of the device type
+    .PARAMETER Slug
+       Slug of the device type, if not specified, it will be generated from the model
+     .PARAMETER Height
+         Height of the device in U(Units)
+     .PARAMETER FullDepth
+         Is device fulldepth? defaults to true
+     .PARAMETER Partnumber
+         Partnumber of the device
+     .PARAMETER Interface
+         Interfaces of the device, as hashtable
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1367,6 +1611,7 @@ function New-DeviceType {
       [Hashtable[]]
       $PowerSupplies,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -1412,21 +1657,45 @@ function New-DeviceType {
 }
 
 function Remove-DeviceType {
+   <#
+   .SYNOPSIS
+      Deletes a device type from NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> Remove-NetboxDeviceType -Model "Cisco Catalyst 2960"
+      Explanation of what the example does
+   .PARAMETER Model
+      Model of the device type
+   .PARAMETER Recurse
+      Deletes all related objects as well
+   .PARAMETER Confirm
+      Confirm the deletion of the device type
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
    param (
       [Parameter(Mandatory = $true)]
       [String]
-      $Name,
+      $Model,
 
+      [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
    Test-Config
    $URL = "/dcim/device-types/"
 
-   $DeviceType = Get-DeviceType -Model $Name
+   $DeviceType = Get-DeviceType -Model $Model
 
    $RelatedObjects = Get-RelatedObjects -Object $DeviceType -ReferenceObjects DeviceType
 
@@ -1446,8 +1715,8 @@ function Remove-DeviceType {
    }
    catch {
       if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
       }
       else {
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -1459,14 +1728,30 @@ function Remove-DeviceType {
 function Get-Device {
    <#
     .SYNOPSIS
-       Short description
+       Retrieves a device from NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxdevice -DeviceType "Cisco Catalyst 2960"
+       Retrieves all devices of type "Cisco Catalyst 2960" from NetBox
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the device
+    .PARAMETER Model
+       All devices of this model
+    .PARAMETER Manufacturer
+       All devices from manufacturer
+    .PARAMETER ID
+       ID of the device
+    .PARAMETER MacAddress
+       MAC address of the device
+    .PARAMETER Site
+       All devices from Site
+    .PARAMETER Location
+       All devices from Location
+    .PARAMETER Rack
+       All devices from Rack
+    .PARAMETER DeviceType
+       Device type of the device
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1566,14 +1851,42 @@ function Get-Device {
 function New-Device {
    <#
     .SYNOPSIS
-       Short description
+       Creates a new device in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxDevice -Name NewHost -Location "low density" -Rack Y-14 -Position 27 -Height 4 -DeviceRole Server -DeviceType "PowerEdge R6515" -Site VBC
+       Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the device
+    .PARAMETER DevuceType
+       Device type of the device
+    .PARAMETER Site
+       Site of the device
+    .PARAMETER Location
+       Location of the device
+    .PARAMETER Rack
+       Rack of the device
+    .PARAMETER Position
+       Position of the device in the rack, lowest occupied
+    .PARAMETER Height
+       Units of the device in the rack, in (U)
+    .PARAMETER DeviceRole
+       Role of the device
+    .PARAMETER Parentdevice
+       Parent device of the device, in case of a chassis
+    .PARAMETER Hostname
+       Hostname of the device
+    .PARAMETER Face
+       Face of the device, front or back, default is front
+    .PARAMETER Status
+       Status of the device, defaults to "active"
+    .PARAMETER AssetTag
+       Asset tag or serial number of the device
+    .PARAMETER CustomFields
+       Custom fields of the device
+   .PARAMETER Confirm
+      Confirm the creation of the device
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1584,81 +1897,84 @@ function New-Device {
 
    param (
 
-      [String]
       [Parameter(Mandatory = $true)]
+      [String]
       $Name,
 
       [Parameter(Mandatory = $true)]
       $DeviceType,
 
-      [String]
       [Parameter(Mandatory = $true)]
+      [String]
       [ValidateSet("Server", "Switch", "Leafswitch")]
       $DeviceRole,
 
-      [String]
       [Parameter(Mandatory = $true)]
+      [String]
       $Site,
 
-      [Array]
       [Parameter(Mandatory = $false, ParameterSetName = "ByParameter")]
+      [Array]
       $Interfaces,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       [ValidateSet("Fixed", "Modular")]
       $InterfaceType,
 
-      [Array]
       [Parameter(Mandatory = $false, ParameterSetName = "ByParameter")]
+      [Array]
       $PowerSupplies,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       [ValidateSet("c14", "c20")]
       $PowerSupplyConnector,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       [ValidateSet("DataCenter 4.47", "High Density", "Low Density")]
       $Location,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       $Rack,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       $Position,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       $Height,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       $Hostname,
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       $ParentDevice,
+
+      [Parameter(Mandatory = $false)]
       [String]
       [ValidateSet("front", "back")]
       $Face = "front",
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
       $Status = "active",
 
-      [String]
       [Parameter(Mandatory = $false)]
+      [String]
       $AssetTag,
 
-      [Hashtable]
       [Parameter(Mandatory = $false)]
+      [Hashtable]
       $CustomFields,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -1714,14 +2030,18 @@ function New-Device {
 function Remove-Device {
    <#
    .SYNOPSIS
-      Short description
+      Deletes a device from NetBox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Remove-NetBoxDevice -Name NewHost
+      Deletes the device NewHost from NetBox
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the device
+   .PARAMETER Recurse
+      Deletes all related objects as well
+   .PARAMETER Confirm
+      Confirm the deletion of the device
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -1735,9 +2055,11 @@ function Remove-Device {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -1765,8 +2087,8 @@ function Remove-Device {
    }
    catch {
       if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
       }
       else {
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -1778,14 +2100,16 @@ function Remove-Device {
 function Get-DeviceRole {
    <#
    .SYNOPSIS
-      Short description
+      Retrives devices roles from Netbox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Get-NetBoxDeviceRole -Name Server
+      Retrives the "Server" device role
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the device role
+   .PARAMETER ID
+      ID of the device role
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -1828,6 +2152,36 @@ function Get-DeviceRole {
 }
 
 function New-DeviceRole {
+   <#
+   .SYNOPSIS
+      Creates a new device role in NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> New-NetboxDeviceRole -Name "ACI Leafswitch" -VMRole $false
+      Creates the "ACI Leafswitch" device role in NetBox
+   .PARAMETER Name
+      Name of the device role
+   .PARAMETER Slug
+       Slug of the device role, if not specified, it will be generated from the name
+   .PARAMETER Color
+      Color of the device role
+   .PARAMETER VMRole
+      Is this a VM role?
+   .PARAMETER Description
+      Description of the device role
+   .PARAMETER CustomFields
+      Custom fields of the device role
+   .PARAMETER Confirm
+      Confirm the deletion of the device
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
    param (
       [Parameter(Mandatory = $true)]
       [String]
@@ -1853,6 +2207,7 @@ function New-DeviceRole {
       [String]
       $Description,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -1889,14 +2244,16 @@ function New-DeviceRole {
 function Get-InterfaceTemplate {
    <#
     .SYNOPSIS
-       Short description
+       Retrives interface templates from Netbox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxInterfaceType -Name "FastEthernet"
+       Retrives the "FastEthernet" interface template
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the interface template
+   .PARAMETER ID
+       ID of the interface template
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1942,14 +2299,24 @@ function Get-InterfaceTemplate {
 function New-InterfaceTemplate {
    <#
     .SYNOPSIS
-       Short description
+       Creates a new interface template in NetBox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxInterfaceTemplate -Name "FastEthernet" -Description "FastEthernet" -Type "100base-tx" -DeviceType "Poweredge R6515"
+       Creates an interface template "FastEthernet" for devicetype "Poweredge R6515" with type "100base-tx"
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the interface template
+    .PARAMETER DeviceType
+      Name of the device type
+    .PARAMETER Label
+      Label of the interface template
+    .PARAMETER Type
+      Type of the interface template, e.g "1000base-t", "10gbase-x-sfpp" or others
+    .PARAMETER ManagementOnly
+      Is this interface template only for management?
+   .PARAMETER Confirm
+      Confirm the deletion of the device
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1960,11 +2327,11 @@ function New-InterfaceTemplate {
 
    param (
       [Parameter(Mandatory = $true)]
-      $DeviceType,
-
-      [Parameter(Mandatory = $true)]
       [String]
       $Name,
+
+      [Parameter(Mandatory = $true)]
+      $DeviceType,
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -1979,6 +2346,7 @@ function New-InterfaceTemplate {
       [Bool]
       $ManagmentOnly,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -2028,14 +2396,20 @@ function Get-PowerSupplyType {
 function Get-Interface {
    <#
     .SYNOPSIS
-       Short description
+       Get a specific interface from netbox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxInterface -Device "NewHost"
+       Get all interfaces from device "NewHost"
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the interface
+    .PARAMETER ID
+       ID of the interface
+    .PARAMETER Device
+       Name of the parent device
+    .PARAMETER ManagementOnly
+       Is this interface only for management?
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2054,6 +2428,10 @@ function Get-Interface {
       [Int32]
       $Id,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "ByDevice")]
+      [Int32]
+      $Device,
+
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [Bool]
       $ManagementOnly
@@ -2067,7 +2445,11 @@ function Get-Interface {
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
+      $Query = "?id=$($Id)"
+   }
+
+   if ($Deviec) {
+      $Query = "?device__ic=$($Device)"
    }
 
    if ($ManagementOnly) {
@@ -2089,14 +2471,26 @@ function Get-Interface {
 function New-Interface {
    <#
    .SYNOPSIS
-      Short description
+      Creates an interface in netbox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> New-NetBoxInterface -Device "NewHost" -Name "NewInterface" -Type "10gbase-t"
+      Creates an interface named "NewInterface" on device "NewHost" with type "10gbase-t"
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the interface
+   .PARAMETER Label
+      Label of the interface
+   .PARAMETER Device
+      Name of the parent device
+   .PARAMETER Type
+      Type of the interface
+   .PARAMETER MacAddress
+      MAC address of the interface
+   .PARAMETER ManagementOnly
+      Is this interface only for management?
+   .PARAMETER Confirm
+      Confirm the creation of the interface
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2130,6 +2524,7 @@ function New-Interface {
       [Bool]
       $ManagmentOnly,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -2166,14 +2561,26 @@ function New-Interface {
 function Update-Interface {
    <#
    .SYNOPSIS
-      Short description
+      Updates an existing interface in netbox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Update-NetBoxInterface -Id "1" -Name "NewInterface" -Type "10gbase-t" -MacAddress "00:00:00:00:00:00"
+      Updates an interface with id "1" to have name "NewInterface" with type "10gbase-t" and MAC address "00:00:00:00:00:00"
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the interface
+   .PARAMETER Device
+      Name of the parent device
+   .PARAMETER ID
+      ID of the interface
+   .PARAMETER Type
+      Type of the interface
+   .PARAMETER MacAddress
+      MAC address of the interface
+   .PARAMETER ManagementOnly
+      Is this interface only for management?
+   .PARAMETER Confirm
+      Confirm the chnages to the interface
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2212,6 +2619,7 @@ function Update-Interface {
       [Bool]
       $ManagmentOnly,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -2244,20 +2652,25 @@ function Update-Interface {
    }
 
    Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
-   FunctionName
 }
 
 function Remove-Interface {
    <#
    .SYNOPSIS
-      Short description
+      Deletes an interface from netbox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Remove-NetBoxInterface -Id "1"
+      Deletes an interface with id "1"
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the interface
+   .PARAMETER ID
+      ID of the interface
+   .PARAMETER Recurse
+      Deletes all related objects as well
+   .PARAMETER Confirm
+      Confirm the deletion of the interface
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2271,9 +2684,11 @@ function Remove-Interface {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )
@@ -2301,8 +2716,8 @@ function Remove-Interface {
    }
    catch {
       if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         Write-Error "Delete those objects first or run again using -recurse switch"
       }
       else {
          Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -2313,14 +2728,16 @@ function Remove-Interface {
 function Get-PowerPortTemplate {
    <#
     .SYNOPSIS
-       Short description
+       Retrives a power port template from netbox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Get-NetBoxPowerPortTemplate -Name "PSU1"
+       Retrives Power Port Template with name "PSU1"
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the power port template
+    .PARAMETER ID
+       ID of the power port template
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2366,14 +2783,26 @@ function Get-PowerPortTemplate {
 function New-PowerPortTemplate {
    <#
     .SYNOPSIS
-       Short description
+       Creates new port template in netbox
     .DESCRIPTION
        Long description
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> New-NetBoxPowerPortTemplate -Name "PSU1"
+       Creates a new power port template with name "PSU1"
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the power port template
+    .PARAMETER DeviceType
+      Device type of the power port template
+    .PARAMETER Type
+      Type of the power port template
+    .PARAMETER Label
+      Label of the power port template
+    .PARAMETER MaxiumDraw
+      Maximum draw of the power port template
+    .PARAMETER AllocatedPower
+      Allocated power of the power port template
+    .PARAMETER Confirm
+      Confirm the creation of the power port template
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2407,6 +2836,7 @@ function New-PowerPortTemplate {
       [Int32]
       $AllocatedDraw,
 
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true
    )

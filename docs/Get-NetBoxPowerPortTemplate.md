@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxPowerPortTemplate
 
 ## SYNOPSIS
-Short description
+Retrives a power port template from netbox
 
 ## SYNTAX
 
@@ -34,15 +34,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxPowerPortTemplate -Name "PSU1"
+Retrives Power Port Template with name "PSU1"
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the power port template
 
 ```yaml
 Type: String
@@ -57,7 +56,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the power port template
 
 ```yaml
 Type: Int32

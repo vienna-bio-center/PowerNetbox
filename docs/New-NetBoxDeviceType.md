@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-NetBoxDeviceType
 
 ## SYNOPSIS
-Short description
+Cretaes a new device type in NetBox
 
 ## SYNTAX
 
@@ -26,14 +26,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+New-NetboxDeviceType -Model "Cisco Catalyst 2960" -Manufacturer "Cisco" -Height "4"
+Creates device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox
 ```
 
 ## PARAMETERS
 
 ### -Manufacturer
-{{ Fill Manufacturer Description }}
+Name of the manufacturer
 
 ```yaml
 Type: Object
@@ -48,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -Model
-{{ Fill Model Description }}
+Model of the device type
 
 ```yaml
 Type: String
@@ -63,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Slug
-{{ Fill Slug Description }}
+Slug of the device type, if not specified, it will be generated from the model
 
 ```yaml
 Type: String
@@ -78,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -Height
-{{ Fill Height Description }}
+Height of the device in U(Units)
 
 ```yaml
 Type: String
@@ -93,7 +93,8 @@ Accept wildcard characters: False
 ```
 
 ### -FullDepth
-{{ Fill FullDepth Description }}
+Is device fulldepth?
+defaults to true
 
 ```yaml
 Type: Boolean
@@ -108,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -PartNumber
-{{ Fill PartNumber Description }}
+Partnumber of the device
 
 ```yaml
 Type: String

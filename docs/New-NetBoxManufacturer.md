@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-NetBoxManufacturer
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a new manufacturer in NetBox
 
 ## SYNTAX
 
@@ -17,24 +17,38 @@ New-NetBoxManufacturer [-Name] <String> [[-Slug] <String>] [[-Confirm] <Boolean>
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Long description
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
 ```
-
-{{ Add example description here }}
+New-NetBoxManufacturer -Name Dell
+Creates manufacturer "Dell" in NetBox
+```
 
 ## PARAMETERS
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
+### -Name
+Name of the manufacturer
 
 ```yaml
-Type: Boolean
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Slug of the manufacturer, if not specified, it will be generated from the name
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -45,32 +59,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
+### -Confirm
+Confirm the creation of the location
 
 ```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Slug
-{{ Fill Slug Description }}
-
-```yaml
-Type: String
+Type: Boolean
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
-Default value: None
+Position: 3
+Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -80,11 +79,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
+### Inputs (if any)
 ## OUTPUTS
 
-### System.Object
+### Output (if any)
 ## NOTES
+General notes
 
 ## RELATED LINKS

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxDeviceType
 
 ## SYNOPSIS
-Short description
+Retrieves device types from NetBox
 
 ## SYNTAX
 
@@ -39,14 +39,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetboxDeviceType -Model "Cisco Catalyst 2960"
+Retrives DeviceType for Cisco Catalyst 2960 from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Model
-{{ Fill Model Description }}
+Model of the device type
 
 ```yaml
 Type: String
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Manufacturer
-{{ Fill Manufacturer Description }}
+Manufacturer of the device type
 
 ```yaml
 Type: String
@@ -76,7 +76,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the device type
 
 ```yaml
 Type: Int32

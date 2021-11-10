@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxInterfaceTemplate
 
 ## SYNOPSIS
-Short description
+Retrives interface templates from Netbox
 
 ## SYNTAX
 
@@ -34,15 +34,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxInterfaceType -Name "FastEthernet"
+Retrives the "FastEthernet" interface template
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the interface template
 
 ```yaml
 Type: String
@@ -57,7 +56,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the interface template
 
 ```yaml
 Type: Int32

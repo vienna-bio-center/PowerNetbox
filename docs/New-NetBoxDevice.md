@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-NetBoxDevice
 
 ## SYNOPSIS
-Short description
+Creates a new device in NetBox
 
 ## SYNTAX
 
@@ -27,15 +27,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+New-NetBoxDevice -Name NewHost -Location "low density" -Rack Y-14 -Position 27 -Height 4 -DeviceRole Server -DeviceType "PowerEdge R6515" -Site VBC
+Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the device
 
 ```yaml
 Type: String
@@ -65,7 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -DeviceRole
-{{ Fill DeviceRole Description }}
+Role of the device
 
 ```yaml
 Type: String
@@ -80,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -Site
-{{ Fill Site Description }}
+Site of the device
 
 ```yaml
 Type: String
@@ -155,7 +154,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-{{ Fill Location Description }}
+Location of the device
 
 ```yaml
 Type: String
@@ -170,7 +169,7 @@ Accept wildcard characters: False
 ```
 
 ### -Rack
-{{ Fill Rack Description }}
+Rack of the device
 
 ```yaml
 Type: String
@@ -185,7 +184,7 @@ Accept wildcard characters: False
 ```
 
 ### -Position
-{{ Fill Position Description }}
+Position of the device in the rack, lowest occupied
 
 ```yaml
 Type: String
@@ -200,7 +199,7 @@ Accept wildcard characters: False
 ```
 
 ### -Height
-{{ Fill Height Description }}
+Units of the device in the rack, in (U)
 
 ```yaml
 Type: String
@@ -215,7 +214,7 @@ Accept wildcard characters: False
 ```
 
 ### -Hostname
-{{ Fill Hostname Description }}
+Hostname of the device
 
 ```yaml
 Type: String
@@ -230,7 +229,7 @@ Accept wildcard characters: False
 ```
 
 ### -ParentDevice
-{{ Fill ParentDevice Description }}
+Parent device of the device, in case of a chassis
 
 ```yaml
 Type: String
@@ -245,7 +244,7 @@ Accept wildcard characters: False
 ```
 
 ### -Face
-{{ Fill Face Description }}
+Face of the device, front or back, default is front
 
 ```yaml
 Type: String
@@ -260,7 +259,7 @@ Accept wildcard characters: False
 ```
 
 ### -Status
-{{ Fill Status Description }}
+Status of the device, defaults to "active"
 
 ```yaml
 Type: String
@@ -275,7 +274,7 @@ Accept wildcard characters: False
 ```
 
 ### -AssetTag
-{{ Fill AssetTag Description }}
+Asset tag or serial number of the device
 
 ```yaml
 Type: String
@@ -290,7 +289,7 @@ Accept wildcard characters: False
 ```
 
 ### -CustomFields
-{{ Fill CustomFields Description }}
+Custom fields of the device
 
 ```yaml
 Type: Hashtable
@@ -305,7 +304,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the creation of the device
 
 ```yaml
 Type: Boolean

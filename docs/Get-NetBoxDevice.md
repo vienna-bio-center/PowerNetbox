@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxDevice
 
 ## SYNOPSIS
-Short description
+Retrieves a device from NetBox
 
 ## SYNTAX
 
@@ -69,15 +69,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxdevice -DeviceType "Cisco Catalyst 2960"
+Retrieves all devices of type "Cisco Catalyst 2960" from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the device
 
 ```yaml
 Type: String
@@ -92,7 +91,7 @@ Accept wildcard characters: False
 ```
 
 ### -Model
-{{ Fill Model Description }}
+All devices of this model
 
 ```yaml
 Type: String
@@ -107,7 +106,7 @@ Accept wildcard characters: False
 ```
 
 ### -Manufacturer
-{{ Fill Manufacturer Description }}
+All devices from manufacturer
 
 ```yaml
 Type: String
@@ -122,7 +121,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the device
 
 ```yaml
 Type: Int32
@@ -137,7 +136,7 @@ Accept wildcard characters: False
 ```
 
 ### -MacAddress
-{{ Fill MacAddress Description }}
+MAC address of the device
 
 ```yaml
 Type: String
@@ -152,7 +151,7 @@ Accept wildcard characters: False
 ```
 
 ### -Site
-{{ Fill Site Description }}
+All devices from Site
 
 ```yaml
 Type: String
@@ -167,7 +166,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-{{ Fill Location Description }}
+All devices from Location
 
 ```yaml
 Type: String
@@ -182,7 +181,7 @@ Accept wildcard characters: False
 ```
 
 ### -Rack
-{{ Fill Rack Description }}
+All devices from Rack
 
 ```yaml
 Type: String
@@ -197,7 +196,7 @@ Accept wildcard characters: False
 ```
 
 ### -DeviceType
-{{ Fill DeviceType Description }}
+Device type of the device
 
 ```yaml
 Type: String

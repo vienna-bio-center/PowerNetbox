@@ -24,15 +24,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+New-NetBoxLocation -Parent IMP -Site VBC -Name "Low Densitity"
+Creates a new location Low Densitity as a child of IMP in site VBC
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the location
 
 ```yaml
 Type: String
@@ -47,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Slug
-{{ Fill Slug Description }}
+Slug of the location, if not specified, it will be generated from the name
 
 ```yaml
 Type: String
@@ -62,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Site
-{{ Fill Site Description }}
+Site of the location
 
 ```yaml
 Type: Object
@@ -77,7 +76,7 @@ Accept wildcard characters: False
 ```
 
 ### -Parent
-{{ Fill Parent Description }}
+Parent of the location
 
 ```yaml
 Type: Object
@@ -92,7 +91,7 @@ Accept wildcard characters: False
 ```
 
 ### -CustomFields
-{{ Fill CustomFields Description }}
+Custom fields of the location
 
 ```yaml
 Type: String
@@ -107,7 +106,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
-{{ Fill Description Description }}
+Description of the location
 
 ```yaml
 Type: String
@@ -122,7 +121,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the creation of the location
 
 ```yaml
 Type: Boolean

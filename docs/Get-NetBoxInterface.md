@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxInterface
 
 ## SYNOPSIS
-Short description
+Get a specific interface from netbox
 
 ## SYNTAX
 
@@ -27,6 +27,11 @@ Get-NetBoxInterface -Name <String> -ManagementOnly <Boolean> [<CommonParameters>
 Get-NetBoxInterface -Id <Int32> [<CommonParameters>]
 ```
 
+### ByDevice
+```
+Get-NetBoxInterface -Device <Int32> [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Long description
 
@@ -34,15 +39,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxInterface -Device "NewHost"
+Get all interfaces from device "NewHost"
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the interface
 
 ```yaml
 Type: String
@@ -57,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the interface
 
 ```yaml
 Type: Int32
@@ -71,8 +75,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Device
+Name of the parent device
+
+```yaml
+Type: Int32
+Parameter Sets: ByDevice
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ManagementOnly
-{{ Fill ManagementOnly Description }}
+Is this interface only for management?
 
 ```yaml
 Type: Boolean

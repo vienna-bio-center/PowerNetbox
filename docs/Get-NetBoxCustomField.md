@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxCustomField
 
 ## SYNOPSIS
-Short description
+Retrievess a custom field from NetBox
 
 ## SYNTAX
 
@@ -34,15 +34,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxCustomField -Name "ServiceCatalogID"
+Retrieves custom field "ServiceCatalogID" from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the custom field
 
 ```yaml
 Type: String
@@ -57,7 +56,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the custom field
 
 ```yaml
 Type: Int32

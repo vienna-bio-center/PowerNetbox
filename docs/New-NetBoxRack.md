@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-NetBoxRack
 
 ## SYNOPSIS
-Short description
+Creates a new rack in NetBox
 
 ## SYNTAX
 
@@ -25,15 +25,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+New-NetBoxRack -Name "T-12" -Location "High density" -Site VBC
+Creates rack "T-12" in location "High Density" in site VBC
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the rack
 
 ```yaml
 Type: String
@@ -48,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -Slug
-{{ Fill Slug Description }}
+Slug of the rack, if not specified, it will be generated from the name
 
 ```yaml
 Type: String
@@ -63,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Site
-{{ Fill Site Description }}
+Site of the rack
 
 ```yaml
 Type: Object
@@ -78,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-{{ Fill Location Description }}
+Location of the rack
 
 ```yaml
 Type: Object
@@ -93,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -Status
-{{ Fill Status Description }}
+Status of the rack, Defaults to Active
 
 ```yaml
 Type: String
@@ -123,7 +122,7 @@ Accept wildcard characters: False
 ```
 
 ### -Width
-{{ Fill Width Description }}
+Width of the rack in inch, default is 19
 
 ```yaml
 Type: Int32
@@ -138,7 +137,7 @@ Accept wildcard characters: False
 ```
 
 ### -Height
-{{ Fill Height Description }}
+Height of the rack in U(Units), default is 42
 
 ```yaml
 Type: Int32
@@ -153,7 +152,7 @@ Accept wildcard characters: False
 ```
 
 ### -CustomFields
-{{ Fill CustomFields Description }}
+Custom fields of the rack
 
 ```yaml
 Type: String
@@ -168,7 +167,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
-{{ Fill Description Description }}
+Description of the rack
 
 ```yaml
 Type: String
@@ -183,7 +182,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the creation of the rack
 
 ```yaml
 Type: Boolean

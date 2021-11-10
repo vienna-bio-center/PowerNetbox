@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxContentType
 
 ## SYNOPSIS
-Short description
+Retrieves content types from NetBox
 
 ## SYNTAX
 
@@ -29,15 +29,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxContentType -Name Device
+Retrieves content type "Device" from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the content type
 
 ```yaml
 Type: String
@@ -64,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -All
-{{ Fill All Description }}
+Retrieves all content types from NetBox
 
 ```yaml
 Type: SwitchParameter

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-NetBoxDevice
 
 ## SYNOPSIS
-Short description
+Deletes a device from NetBox
 
 ## SYNTAX
 
@@ -23,15 +23,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Remove-NetBoxDevice -Name NewHost
+Deletes the device NewHost from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the device
 
 ```yaml
 Type: String
@@ -46,7 +45,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recurse
-{{ Fill Recurse Description }}
+Deletes all related objects as well
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +60,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the deletion of the device
 
 ```yaml
 Type: Boolean

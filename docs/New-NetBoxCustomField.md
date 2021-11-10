@@ -8,12 +8,12 @@ schema: 2.0.0
 # New-NetBoxCustomField
 
 ## SYNOPSIS
-Short description
+Creates a custom field in NetBox
 
 ## SYNTAX
 
 ```
-New-NetBoxCustomField [-Name] <String> [-ContentTypes] <String[]> [[-Type] <String>] [-Label] <String>
+New-NetBoxCustomField [-Name] <String> [-ContentTypes] <String[]> [-Type] <String> [-Label] <String>
  [[-Required] <Boolean>] [[-Choices] <String[]>] [[-Description] <String>] [[-Confirm] <Boolean>]
  [<CommonParameters>]
 ```
@@ -25,15 +25,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+New-NetBoxCustomField -Name "ServiceCatalogID" -Type Integer -ContentTypes Device -Label "Service Catalog ID"
+Creates custom field "ServiceCatalogID" from Type Integer for Contenttype device with the label "Service Catalog ID" in NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the custom field
 
 ```yaml
 Type: String
@@ -48,7 +47,8 @@ Accept wildcard characters: False
 ```
 
 ### -ContentTypes
-{{ Fill ContentTypes Description }}
+Content types of the custom field, e.g.
+"Device"
 
 ```yaml
 Type: String[]
@@ -63,22 +63,23 @@ Accept wildcard characters: False
 ```
 
 ### -Type
-{{ Fill Type Description }}
+Type of the custom field, e.g.
+"Integer","Text"
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 3
-Default value: 4-post-frame
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Label
-{{ Fill Label Description }}
+Label of the custom field
 
 ```yaml
 Type: String
@@ -93,7 +94,7 @@ Accept wildcard characters: False
 ```
 
 ### -Required
-{{ Fill Required Description }}
+Set the custom field as required
 
 ```yaml
 Type: Boolean
@@ -108,7 +109,8 @@ Accept wildcard characters: False
 ```
 
 ### -Choices
-{{ Fill Choices Description }}
+Choices of the custom field, e.g.
+"1,2,3,4,5"
 
 ```yaml
 Type: String[]
@@ -123,7 +125,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
-{{ Fill Description Description }}
+Description of the custom field
 
 ```yaml
 Type: String
@@ -138,7 +140,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the creation of the location
 
 ```yaml
 Type: Boolean

@@ -8,45 +8,29 @@ schema: 2.0.0
 # Remove-NetBoxDeviceType
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Deletes a device type from NetBox
 
 ## SYNTAX
 
 ```
-Remove-NetBoxDeviceType [-Name] <String> [-Recurse] [[-Confirm] <Boolean>] [<CommonParameters>]
+Remove-NetBoxDeviceType [-Model] <String> [-Recurse] [[-Confirm] <Boolean>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Long description
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
 ```
-
-{{ Add example description here }}
+Remove-NetboxDeviceType -Model "Cisco Catalyst 2960"
+Explanation of what the example does
+```
 
 ## PARAMETERS
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Name
-{{ Fill Name Description }}
+### -Model
+Model of the device type
 
 ```yaml
 Type: String
@@ -54,14 +38,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Recurse
-{{ Fill Recurse Description }}
+Deletes all related objects as well
 
 ```yaml
 Type: SwitchParameter
@@ -70,7 +54,22 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+Confirm the deletion of the device type
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -80,11 +79,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
+### Inputs (if any)
 ## OUTPUTS
 
-### System.Object
+### Output (if any)
 ## NOTES
+General notes
 
 ## RELATED LINKS

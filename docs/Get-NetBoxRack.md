@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxRack
 
 ## SYNOPSIS
-Short description
+Retrives a rack from NetBox
 
 ## SYNTAX
 
@@ -44,15 +44,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxRack -Location "High Density"
+Retrives all racks from High Density location
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the rack
 
 ```yaml
 Type: String
@@ -67,7 +66,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the rack
 
 ```yaml
 Type: Int32
@@ -82,7 +81,7 @@ Accept wildcard characters: False
 ```
 
 ### -Site
-{{ Fill Site Description }}
+Site of the rack
 
 ```yaml
 Type: String
@@ -97,7 +96,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-{{ Fill Location Description }}
+Location of the rack
 
 ```yaml
 Type: String

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-NetBoxSite
 
 ## SYNOPSIS
-Removes a site in NetBox
+Deletes a site in NetBox
 
 ## SYNTAX
 
@@ -24,7 +24,7 @@ Long description
 ### EXAMPLE 1
 ```
 Remove-NetBoxSite -Name vbc -Recurse
-Removes a site vbc and all related objects
+Deletes a site vbc and all related objects
 ```
 
 ## PARAMETERS
@@ -45,7 +45,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recurse
-Removes all related objects as well
+Deletes all related objects as well
 
 ```yaml
 Type: SwitchParameter

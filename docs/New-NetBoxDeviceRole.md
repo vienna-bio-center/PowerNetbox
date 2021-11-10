@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-NetBoxDeviceRole
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a new device role in NetBox
 
 ## SYNTAX
 
@@ -18,21 +18,35 @@ New-NetBoxDeviceRole [-Name] <String> [[-Slug] <String>] [[-Color] <String>] [[-
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Long description
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
 ```
-
-{{ Add example description here }}
+New-NetboxDeviceRole -Name "ACI Leafswitch" -VMRole $false
+Creates the "ACI Leafswitch" device role in NetBox
+```
 
 ## PARAMETERS
 
-### -Color
-{{ Fill Color Description }}
+### -Name
+Name of the device role
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Slug of the device role, if not specified, it will be generated from the name
 
 ```yaml
 Type: String
@@ -46,23 +60,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 6
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CustomFields
-{{ Fill CustomFields Description }}
+### -Color
+Color of the device role
 
 ```yaml
 Type: String
@@ -70,14 +69,29 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Description
-{{ Fill Description Description }}
+### -VMRole
+Is this a VM role?
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CustomFields
+Custom fields of the device role
 
 ```yaml
 Type: String
@@ -91,23 +105,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Slug
-{{ Fill Slug Description }}
+### -Description
+Description of the device role
 
 ```yaml
 Type: String
@@ -115,14 +114,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -VMRole
-{{ Fill VMRole Description }}
+### -Confirm
+Confirm the deletion of the device
 
 ```yaml
 Type: Boolean
@@ -130,8 +129,8 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
-Default value: None
+Position: 7
+Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -141,11 +140,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
+### Inputs (if any)
 ## OUTPUTS
 
-### System.Object
+### Output (if any)
 ## NOTES
+General notes
 
 ## RELATED LINKS

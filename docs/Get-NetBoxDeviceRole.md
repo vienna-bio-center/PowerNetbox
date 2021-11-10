@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-NetBoxDeviceRole
 
 ## SYNOPSIS
-Short description
+Retrives devices roles from Netbox
 
 ## SYNTAX
 
@@ -34,15 +34,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Get-NetBoxDeviceRole -Name Server
+Retrives the "Server" device role
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the device role
 
 ```yaml
 Type: String
@@ -57,7 +56,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the device role
 
 ```yaml
 Type: Int32

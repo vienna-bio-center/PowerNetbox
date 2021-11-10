@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-NetBoxRack
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Deletes a rack from NetBox
 
 ## SYNTAX
 
@@ -17,36 +17,20 @@ Remove-NetBoxRack [-Name] <String> [-Recurse] [[-Confirm] <Boolean>] [<CommonPar
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Long description
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
 ```
-
-{{ Add example description here }}
+Remove-NetBoxRack -Name "Y-14"
+Deletes rack "Y-14" in NetBox
+```
 
 ## PARAMETERS
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+Name of the rack
 
 ```yaml
 Type: String
@@ -54,14 +38,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Recurse
-{{ Fill Recurse Description }}
+Deletes all related objects as well
 
 ```yaml
 Type: SwitchParameter
@@ -70,7 +54,22 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+Confirm the deletion of the rack
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -80,11 +79,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
+### Inputs (if any)
 ## OUTPUTS
 
-### System.Object
+### Output (if any)
 ## NOTES
+General notes
 
 ## RELATED LINKS

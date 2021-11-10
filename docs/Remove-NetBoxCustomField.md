@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-NetBoxCustomField
 
 ## SYNOPSIS
-Short description
+Deletes a custom field from NetBox
 
 ## SYNTAX
 
@@ -34,15 +34,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Remove-NetBoxCustomField -id 3
+Deletes custom field with ID 3 from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-The description of a parameter.
-Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+Name of the custom field
 
 ```yaml
 Type: String
@@ -57,7 +56,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-{{ Fill Id Description }}
+ID of the custom field
 
 ```yaml
 Type: Int32

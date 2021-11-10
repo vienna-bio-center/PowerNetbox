@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -Slug
-Slug of the site, uses the name if missing
+Slug of the site, if not specified, it will be generated from the name
 
 ```yaml
 Type: String
