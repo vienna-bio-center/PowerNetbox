@@ -14,7 +14,7 @@ Creates a new interface template in NetBox
 
 ```
 New-NetBoxInterfaceTemplate [-Name] <String> [-DeviceType] <Object> [[-Label] <String>] [-Type] <String>
- [[-ManagmentOnly] <Boolean>] [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-ManagmentOnly] <Boolean>] [[-Confirm] <Boolean>] [-FindInterfaceType] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -116,6 +116,21 @@ Aliases:
 Required: False
 Position: 6
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FindInterfaceType
+{{ Fill FindInterfaceType Description }}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

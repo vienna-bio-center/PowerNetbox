@@ -274,6 +274,8 @@ function Get-Site {
        Search for a site by name
     .PARAMETER Id
        Search for a site by ID
+    .PARAMETER All
+       Returns all sites
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -282,7 +284,7 @@ function Get-Site {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -290,12 +292,28 @@ function Get-Site {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
    $URL = "/dcim/sites/"
-   $Query = "?q=$($Name)"
+
+
+   if ($Name) {
+      $Query = "?name__ic=$($Name)"
+   }
+
+   if ($ID) {
+      $Query = "?id=$($ID)"
+   }
+
+   if ($All) {
+      $Query = ""
+   }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
 
@@ -581,6 +599,8 @@ function Get-Location {
        Name of the location
     .PARAMETER ID
        ID of the location
+    .PARAMETER All
+       Returns all locations
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -597,7 +617,11 @@ function Get-Location {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -610,6 +634,10 @@ function Get-Location {
    }
    else {
       $Query = "?q=$($Name)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -809,6 +837,8 @@ function Get-Rack {
        Site of the rack
     .PARAMETER Location
        Location of the rack
+    .PARAMETER All
+       Returns all racks
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -833,7 +863,11 @@ function Get-Rack {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByLocation")]
       [String]
-      $Location
+      $Location,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -865,6 +899,10 @@ function Get-Rack {
 
    if ($Location) {
       $Query = "?location__ic=$($Location)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1086,6 +1124,8 @@ function Get-CustomField {
        Name of the custom field
     .PARAMETER ID
        ID of the custom field
+    .PARAMETER All
+       Returns all custom fields
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1102,7 +1142,11 @@ function Get-CustomField {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -1114,6 +1158,10 @@ function Get-CustomField {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1485,6 +1533,8 @@ function Get-DeviceType {
        Manufacturer of the device type
     .PARAMETER ID
        ID of the device type
+    .PARAMETER All
+       Returns all device types
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1493,7 +1543,7 @@ function Get-DeviceType {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "ByModel")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByModel")]
       [String]
@@ -1509,7 +1559,11 @@ function Get-DeviceType {
 
       [Parameter(Mandatory = $true, ParameterSetName = "Query")]
       [String]
-      $Query
+      $Query,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -1525,6 +1579,10 @@ function Get-DeviceType {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1752,6 +1810,8 @@ function Get-Device {
        All devices from Rack
     .PARAMETER DeviceType
        Device type of the device
+    .PARAMETER All
+         Returns all devices
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1760,7 +1820,7 @@ function Get-Device {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -1796,7 +1856,12 @@ function Get-Device {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByDeviceType")]
       [String]
-      $DeviceType
+      $DeviceType,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
+
    )
    Test-Config
    $URL = "/dcim/devices/"
@@ -1835,6 +1900,10 @@ function Get-Device {
 
    if ($DeviceType) {
       $Query = "?device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -2110,6 +2179,8 @@ function Get-DeviceRole {
       Name of the device role
    .PARAMETER ID
       ID of the device role
+    .PARAMETER All
+       Returns all device roles
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2118,7 +2189,7 @@ function Get-DeviceRole {
       General notes
    #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -2126,7 +2197,11 @@ function Get-DeviceRole {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -2138,6 +2213,10 @@ function Get-DeviceRole {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -2254,6 +2333,8 @@ function Get-InterfaceTemplate {
        Name of the interface template
    .PARAMETER ID
        ID of the interface template
+    .PARAMETER All
+       Returns all devices
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2262,7 +2343,7 @@ function Get-InterfaceTemplate {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -2270,7 +2351,11 @@ function Get-InterfaceTemplate {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -2282,6 +2367,10 @@ function Get-InterfaceTemplate {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -2348,7 +2437,11 @@ function New-InterfaceTemplate {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $FindInterfaceType
    )
 
    if ($DeviceType -is [String]) {
@@ -2361,10 +2454,14 @@ function New-InterfaceTemplate {
    Test-Config
    $URL = "/dcim/interface-templates/"
 
+   if ($FindInterfaceType) {
+      $Type = $(Get-NetBoxInterfaceType -Linkspeed $Interface.Linkspeed -InterfaceType $InterfaceType)
+   }
+
    $Body = @{
       device_type = $DeviceType
       name        = $Name
-      type        = $(Get-NetBoxInterfaceType -Linkspeed $Interface.Linkspeed -InterfaceType $InterfaceType)
+      type        = $Type
       mgmt_only   = $ManagmentOnly
    }
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
@@ -2410,6 +2507,8 @@ function Get-Interface {
        Name of the parent device
     .PARAMETER ManagementOnly
        Is this interface only for management?
+    .PARAMETER All
+       Returns all interfaces
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2434,7 +2533,11 @@ function Get-Interface {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [Bool]
-      $ManagementOnly
+      $ManagementOnly,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -2738,6 +2841,8 @@ function Get-PowerPortTemplate {
        Name of the power port template
     .PARAMETER ID
        ID of the power port template
+    .PARAMETER All
+       Returns all power port templates
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2754,7 +2859,11 @@ function Get-PowerPortTemplate {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config
@@ -2766,6 +2875,10 @@ function Get-PowerPortTemplate {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get

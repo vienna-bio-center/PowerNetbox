@@ -27,6 +27,11 @@ Get-NetBoxCustomField -Name <String> [<CommonParameters>]
 Get-NetBoxCustomField -Id <Int32> [<CommonParameters>]
 ```
 
+### All
+```
+Get-NetBoxCustomField [-All] [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Long description
 
@@ -66,6 +71,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Returns all custom fields
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

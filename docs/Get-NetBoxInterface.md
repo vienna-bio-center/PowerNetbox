@@ -32,6 +32,11 @@ Get-NetBoxInterface -Id <Int32> [<CommonParameters>]
 Get-NetBoxInterface -Device <Int32> [<CommonParameters>]
 ```
 
+### All
+```
+Get-NetBoxInterface [-All] [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Long description
 
@@ -96,6 +101,21 @@ Is this interface only for management?
 ```yaml
 Type: Boolean
 Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Returns all interfaces
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
 Required: True

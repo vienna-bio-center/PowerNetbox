@@ -12,9 +12,9 @@ Retrieves a device from NetBox
 
 ## SYNTAX
 
-### Byname (Default)
+### All (Default)
 ```
-Get-NetBoxDevice [<CommonParameters>]
+Get-NetBoxDevice [-All] [<CommonParameters>]
 ```
 
 ### ByName
@@ -206,6 +206,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Returns all devices
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

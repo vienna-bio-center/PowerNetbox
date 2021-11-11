@@ -12,9 +12,9 @@ Retrieves a site from NetBox
 
 ## SYNTAX
 
-### Byname (Default)
+### All (Default)
 ```
-Get-NetBoxSite [<CommonParameters>]
+Get-NetBoxSite [-All] [<CommonParameters>]
 ```
 
 ### ByName
@@ -66,6 +66,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Returns all sites
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -12,7 +12,12 @@ Retrieves device types from NetBox
 
 ## SYNTAX
 
-### ByModel (Default)
+### All (Default)
+```
+Get-NetBoxDeviceType [-All] [<CommonParameters>]
+```
+
+### ByModel
 ```
 Get-NetBoxDeviceType -Model <String> [<CommonParameters>]
 ```
@@ -101,6 +106,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Returns all device types
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
