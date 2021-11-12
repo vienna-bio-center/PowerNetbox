@@ -47,7 +47,7 @@ function Test-Config {
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> Test-Config
+      PS C:\> Test-Config | Out-Null
       Explanation of what the example does
    #>
 
@@ -301,7 +301,7 @@ function Get-Site {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/sites/"
 
 
@@ -420,7 +420,7 @@ function New-Site {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/sites/"
 
    if ($null -eq $Slug) {
@@ -566,7 +566,7 @@ function Remove-Site {
    )
 
    begin {
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/dcim/sites/"
    }
 
@@ -645,7 +645,7 @@ function Get-Location {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/locations/"
 
    # If name contains spaces, use slug instead
@@ -735,7 +735,7 @@ function New-Location {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/locations/"
 
    if ($null -eq $Slug) {
@@ -818,7 +818,7 @@ function Remove-Location {
    )
 
    begin {
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/dcim/locations/"
    }
 
@@ -909,7 +909,7 @@ function Get-Rack {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/racks/"
 
    if ($name) {
@@ -1042,7 +1042,7 @@ function New-Rack {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/racks/"
 
    if ($null -eq $Slug) {
@@ -1129,7 +1129,7 @@ function Remove-Rack {
    )
    begin {
 
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/dcim/racks/"
    }
 
@@ -1208,7 +1208,7 @@ function Get-CustomField {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/extras/custom-fields/"
 
    if ($Name) {
@@ -1305,7 +1305,7 @@ function New-CustomField {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/extras/custom-fields/"
 
    $NetBoxContentTypes = New-Object collections.generic.list[object]
@@ -1385,7 +1385,7 @@ function Remove-CustomField {
    )
 
    begin {
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/extras/custom-fields/"
    }
 
@@ -1465,7 +1465,7 @@ function Get-ContentType {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/extras/content-types/"
    $Query = "?model=$($Name.Replace(' ','').ToLower())"
    if ($All) {
@@ -1519,7 +1519,7 @@ function Get-Manufacturer {
       $Id
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/manufacturers/"
 
    if ($Name) {
@@ -1580,7 +1580,7 @@ function New-Manufacturer {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/manufacturers/"
 
    if ($null -eq $Slug) {
@@ -1656,7 +1656,7 @@ function Get-DeviceType {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/device-types/"
 
    if ($Model) {
@@ -1766,7 +1766,7 @@ function New-DeviceType {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/device-types/"
 
    if ($null -eq $Slug) {
@@ -1853,7 +1853,7 @@ function Remove-DeviceType {
 
    begin {
 
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/dcim/device-types/"
    }
 
@@ -1929,6 +1929,7 @@ function Get-Device {
        General notes
     #>
 
+   [OutputType("NetBox.Device")]
    [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
@@ -1972,7 +1973,7 @@ function Get-Device {
       $All
 
    )
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/devices/"
 
    if ($name) {
@@ -2019,10 +2020,10 @@ function Get-Device {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      $Device = $Result
+      [PSCustomObject]$Device = $Result
    }
    else {
-      $Device = $Result.Results
+      [PSCustomObject]$Device = $Result.Results
    }
    $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
    return $Device
@@ -2159,7 +2160,7 @@ function New-Device {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/devices/"
 
    if ($null -eq $Slug) {
@@ -2254,7 +2255,7 @@ function Remove-Device {
 
    begin {
 
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/dcim/devices/"
    }
    process {
@@ -2330,7 +2331,7 @@ function Get-DeviceRole {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/device-roles/"
 
    if ($name) {
@@ -2350,13 +2351,12 @@ function Get-DeviceRole {
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
       $DeviceRole = $Result
-      $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-      return $DeviceRole
    }
    else {
       $DeviceRole = $Result.results
-      return $DeviceRole
    }
+   $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+   return $DeviceRole
 }
 
 function New-DeviceRole {
@@ -2419,7 +2419,7 @@ function New-DeviceRole {
       [Bool]
       $Confirm = $true
    )
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/device-roles/"
 
    if ($null -eq $Slug) {
@@ -2489,7 +2489,7 @@ function Get-InterfaceTemplate {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/interface-templates/"
 
    if ($name) {
@@ -2584,7 +2584,7 @@ function New-InterfaceTemplate {
       $DeviceType
    }
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/interface-templates/"
 
    if ($FindInterfaceType) {
@@ -2675,7 +2675,7 @@ function Get-Interface {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/interfaces/"
 
    if ($name) {
@@ -2768,7 +2768,7 @@ function New-Interface {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/interfaces/"
 
    if ($Device -is [String]) {
@@ -2865,7 +2865,7 @@ function Update-Interface {
       $Confirm = $true
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/interfaces/"
 
    if ($Device -is [String]) {
@@ -2942,7 +2942,7 @@ function Remove-Interface {
 
    begin {
 
-      Test-Config
+      Test-Config | Out-Null
       $URL = "/dcim/interfaces/"
    }
 
@@ -3019,7 +3019,7 @@ function Get-PowerPortTemplate {
       $All
    )
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/power-port-templates/"
 
    if ($name) {
@@ -3116,7 +3116,7 @@ function New-PowerPortTemplate {
       $DeviceType
    }
 
-   Test-Config
+   Test-Config | Out-Null
    $URL = "/dcim/power-port-templates/"
 
    $Body = @{
