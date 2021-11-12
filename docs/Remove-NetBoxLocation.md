@@ -12,8 +12,14 @@ Deletes a location in NetBox
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-Remove-NetBoxLocation [-Name] <String> [-Recurse] [[-Confirm] <Boolean>] [<CommonParameters>]
+Remove-NetBoxLocation -Name <String> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
+```
+
+### ByInputObject
+```
+Remove-NetBoxLocation [-Recurse] [-Confirm <Boolean>] [-InputObject <Object>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -34,11 +40,11 @@ Name of the location
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: ByName
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -68,9 +74,24 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: True
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InputObject
+Location object to delete
+
+```yaml
+Type: Object
+Parameter Sets: ByInputObject
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -79,7 +100,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### Inputs (if any)
+### NetBox.Location
 ## OUTPUTS
 
 ### Output (if any)

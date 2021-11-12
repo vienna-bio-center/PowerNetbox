@@ -82,7 +82,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### Inputs (if any)
 ## OUTPUTS
 
-### Output (if any)
+### NetBox.Manufacturer
 ## NOTES
 General notes
 

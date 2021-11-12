@@ -1,7 +1,7 @@
 function Set-Config {
    <#
    .SYNOPSIS
-      Required to use PowerNetBox, sets up URL and APITToken for connection
+      Required to use PowerNetBox, sets up URL and APIToken for connection
    .DESCRIPTION
       Long description
    .EXAMPLE
@@ -198,7 +198,7 @@ function Get-InterfaceType {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.InterfaceType
     .NOTES
        General notes
     #>
@@ -258,6 +258,8 @@ function Get-InterfaceType {
       $Type = "100gbase-x-qsfp28"
    }
 
+   $Type.PSObject.TypeNames.Insert(0, "NetBox.InterfaceType")
+
    return $Type
 }
 
@@ -279,7 +281,7 @@ function Get-Site {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Site
     .NOTES
        General notes
     #>
@@ -319,11 +321,13 @@ function Get-Site {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $Site = $Result
    }
    else {
-      return $Result.Results
+      $Site = $Result.Results
    }
+   $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
+   return $Site
 }
 
 function New-Site {
@@ -360,7 +364,7 @@ function New-Site {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Site
     .NOTES
        General notes
     #>
@@ -445,7 +449,9 @@ function New-Site {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Site = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
+   return $Site
 }
 
 function Update-Site {
@@ -531,16 +537,19 @@ function Remove-Site {
        Deletes all related objects as well
     .PARAMETER Confirm
       Confirm the creation of the site
+    .PARAMETER InputObject
+      Site object to delete
     .INPUTS
-       Inputs (if any)
+       Netbox Site Object
     .OUTPUTS
        Output (if any)
     .NOTES
        General notes
     #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
       $Name,
 
@@ -550,39 +559,51 @@ function Remove-Site {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
 
-   Test-Config
-   $URL = "/dcim/sites/"
-
-   $Site = Get-Site -Name $Name
-
-   $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Site
-
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $Site
+   begin {
+      Test-Config
+      $URL = "/dcim/sites/"
    }
 
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
-      }
-   }
+   process {
 
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Site.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
-      }
-      else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+      if ($InputObject) {
+         $Name = $InputObject.name
       }
 
+      $Site = Get-Site -Name $Name
+
+      $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Site
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Site
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Site.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+
+      }
    }
 }
 
@@ -604,7 +625,7 @@ function Get-Location {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Location
     .NOTES
        General notes
     #>
@@ -644,11 +665,13 @@ function Get-Location {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $Location = $Result
    }
    else {
-      return $Result.Results
+      $Location = $Result.Results
    }
+   $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
+   return $Location
 }
 
 function New-Location {
@@ -679,7 +702,7 @@ function New-Location {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Location
     .NOTES
        General notes
     #>
@@ -746,7 +769,9 @@ function New-Location {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Location = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
+   return $Location
 }
 
 function Remove-Location {
@@ -764,16 +789,19 @@ function Remove-Location {
        Deletes all related objects as well
     .PARAMETER Confirm
       Confirm the creation of the location
+    .PARAMETER InputObject
+      Location object to delete
    .INPUTS
-      Inputs (if any)
+      NetBox.Location
    .OUTPUTS
       Output (if any)
    .NOTES
       General notes
    #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
       $Name,
 
@@ -783,39 +811,50 @@ function Remove-Location {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
 
-   Test-Config
-   $URL = "/dcim/locations/"
-
-   $Location = Get-Location -Name $Name
-
-   $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Location
-
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $Location
+   begin {
+      Test-Config
+      $URL = "/dcim/locations/"
    }
 
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
-      }
-   }
-
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Location.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
-      }
-      else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+   process {
+      if ($InputObject) {
+         $Name = $InputObject.name
       }
 
+      $Location = Get-Location -Name $Name
+
+      $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Location
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Location
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Location.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+
+      }
    }
 
 }
@@ -842,7 +881,7 @@ function Get-Rack {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Rack
     .NOTES
        General notes
     #>
@@ -909,11 +948,13 @@ function Get-Rack {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $Rack = $Result
    }
    else {
-      return $Result.Results
+      $Rack = $Result.Results
    }
+   $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+   return $Rack
 }
 
 
@@ -949,7 +990,7 @@ function New-Rack {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Rack
     .NOTES
        General notes
     #>
@@ -1039,7 +1080,9 @@ function New-Rack {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+   return $Rack
 }
 
 function Remove-Rack {
@@ -1057,15 +1100,19 @@ function Remove-Rack {
        Deletes all related objects as well
     .PARAMETER Confirm
       Confirm the deletion of the rack
+    .PARAMETER InputObject
+      Rack object to delete
    .INPUTS
-      Inputs (if any)
+      NetBox.Rack
    .OUTPUTS
       Output (if any)
    .NOTES
       General notes
    #>
+
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
       $Name,
 
@@ -1075,40 +1122,52 @@ function Remove-Rack {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
+   begin {
 
-   Test-Config
-   $URL = "/dcim/racks/"
-
-   $Rack = Get-Rack -Name $Name
-
-   $RelatedObjects = Get-RelatedObjects -Object $Rack -ReferenceObjects Rack
-
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $Rack
+      Test-Config
+      $URL = "/dcim/racks/"
    }
 
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
-      }
-   }
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
-      }
-      else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+   process {
+
+      if ($InputObject) {
+         $Name = $InputObject.name
       }
 
-   }
 
+      $Rack = Get-Rack -Name $Name
+
+      $RelatedObjects = Get-RelatedObjects -Object $Rack -ReferenceObjects Rack
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Rack
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+
+      }
+   }
 }
 
 function Get-CustomField {
@@ -1129,7 +1188,7 @@ function Get-CustomField {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.CustomField
     .NOTES
        General notes
     #>
@@ -1168,11 +1227,13 @@ function Get-CustomField {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $CustomFields = $Result
    }
    else {
-      return $Result.Results
+      $CustomFields = $Result.results
    }
+   $CustomFields.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
+   return $CustomFields
 }
 
 function New-CustomField {
@@ -1203,7 +1264,7 @@ function New-CustomField {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.CustomField
     .NOTES
        General notes
     #>
@@ -1272,7 +1333,9 @@ function New-CustomField {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
+   retun $CustomField
 
 }
 
@@ -1289,8 +1352,10 @@ function Remove-CustomField {
        Name of the custom field
     .PARAMETER ID
        ID of the custom field
+    .PARAMETER InputObject
+       Customfield object to delete
     .INPUTS
-       Inputs (if any)
+       NetBox.CustomField
     .OUTPUTS
        Output (if any)
     .NOTES
@@ -1305,44 +1370,63 @@ function Remove-CustomField {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Recurse,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
 
-   Test-Config
-   $URL = "/extras/custom-fields/"
-
-   if ($Name) {
-      $CustomField = Get-CustomField -Name $Name
-   }
-   else {
-      $CustomField = Get-CustomField -Id $Id
+   begin {
+      Test-Config
+      $URL = "/extras/custom-fields/"
    }
 
-   $RelatedObjects = Get-RelatedObjects -Object $CustomField -ReferenceObjects CustomField
+   process {
 
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $CustomField
-   }
-
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.id
       }
-   }
-
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomField.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
+      if ($Name) {
+         $CustomField = Get-CustomField -Name $Name
       }
       else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         $CustomField = Get-CustomField -Id $Id
       }
 
+      $RelatedObjects = Get-RelatedObjects -Object $CustomField -ReferenceObjects CustomField
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $CustomField
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomField.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+      }
    }
 }
 
@@ -1393,11 +1477,13 @@ function Get-ContentType {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $ContentType = $Result
    }
    else {
-      return $Result.Results
+      $ContentType = $Result.results
    }
+   $ContentType.PSObject.TypeNames.Insert(0, "NetBox.ContentType")
+   return $ContentType
 }
 
 function Get-Manufacturer {
@@ -1417,7 +1503,7 @@ function Get-Manufacturer {
    .INPUTS
       Inputs (if any)
    .OUTPUTS
-      Output (if any)
+      NetBox.Manufacturer
    .NOTES
       General notes
    #>
@@ -1448,11 +1534,13 @@ function Get-Manufacturer {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $Manufacturer = $Result
    }
    else {
-      return $Result.Results
+      $Manufacturer = $Result.results
    }
+   $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
+   return $Manufacturer
 }
 
 function New-Manufacturer {
@@ -1473,7 +1561,7 @@ function New-Manufacturer {
    .INPUTS
       Inputs (if any)
    .OUTPUTS
-      Output (if any)
+      NetBox.Manufacturer
    .NOTES
       General notes
    #>
@@ -1516,7 +1604,9 @@ function New-Manufacturer {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Manufacturer = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
+   return $Manufacturer
 }
 function Get-DeviceType {
    <#
@@ -1538,7 +1628,7 @@ function Get-DeviceType {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.DeviceType
     .NOTES
        General notes
     #>
@@ -1589,11 +1679,13 @@ function Get-DeviceType {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $DeviceType = $Result
    }
    else {
-      return $Result.Results
+      $DeviceType = $Result.results
    }
+   $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+   return $DeviceType
 }
 
 function New-DeviceType {
@@ -1622,7 +1714,7 @@ function New-DeviceType {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.DeviceType
     .NOTES
        General notes
     #>
@@ -1711,7 +1803,9 @@ function New-DeviceType {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+   retunr $DeviceType
 }
 
 function Remove-DeviceType {
@@ -1729,18 +1823,21 @@ function Remove-DeviceType {
       Deletes all related objects as well
    .PARAMETER Confirm
       Confirm the deletion of the device type
+    .PARAMETER InputObject
+      device type object to delete
    .INPUTS
-      Inputs (if any)
+      NetBox devicetype object
    .OUTPUTS
       Output (if any)
    .NOTES
       General notes
    #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
-      $Model,
+      $Name,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -1748,38 +1845,50 @@ function Remove-DeviceType {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
-   Test-Config
-   $URL = "/dcim/device-types/"
 
-   $DeviceType = Get-DeviceType -Model $Model
+   begin {
 
-   $RelatedObjects = Get-RelatedObjects -Object $DeviceType -ReferenceObjects DeviceType
-
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $DeviceType
+      Test-Config
+      $URL = "/dcim/device-types/"
    }
 
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
-      }
-   }
-
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceType.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
-      }
-      else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+   process {
+      if ($InputObject) {
+         $Model = $InputObject.Model
       }
 
+      $DeviceType = Get-DeviceType -Model $Model
+
+      $RelatedObjects = Get-RelatedObjects -Object $DeviceType -ReferenceObjects DeviceType
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $DeviceType
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceType.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+      }
    }
 }
 
@@ -1811,11 +1920,11 @@ function Get-Device {
     .PARAMETER DeviceType
        Device type of the device
     .PARAMETER All
-         Returns all devices
+       Returns all devices
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Device
     .NOTES
        General notes
     #>
@@ -1910,11 +2019,13 @@ function Get-Device {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $Device = $Result
    }
    else {
-      return $Result.Results
+      $Device = $Result.Results
    }
+   $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
+   return $Device
 }
 
 function New-Device {
@@ -2093,7 +2204,9 @@ function New-Device {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
+   return $Devive
 }
 
 function Remove-Device {
@@ -2111,16 +2224,19 @@ function Remove-Device {
       Deletes all related objects as well
    .PARAMETER Confirm
       Confirm the deletion of the device
+    .PARAMETER InputObject
+      device object to delete
    .INPUTS
-      Inputs (if any)
+      NetBox.Device
    .OUTPUTS
       Output (if any)
    .NOTES
       General notes
    #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
       $Name,
 
@@ -2130,40 +2246,50 @@ function Remove-Device {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
 
-   Test-Config
-   $URL = "/dcim/devices/"
+   begin {
 
-   $Device = Get-Device -Model $Name
-
-   $RelatedObjects = Get-RelatedObjects -Object $Device -ReferenceObjects Device
-
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $Device
+      Test-Config
+      $URL = "/dcim/devices/"
    }
+   process {
+      if ($InputObject) {
+         $Name = $InputObject.name
+      }
 
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+      $Device = Get-Device -Model $Name
+
+      $RelatedObjects = Get-RelatedObjects -Object $Device -ReferenceObjects Device
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Device
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Device.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
       }
    }
-
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Device.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
-      }
-      else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-      }
-   }
-
 }
 
 function Get-DeviceRole {
@@ -2184,7 +2310,7 @@ function Get-DeviceRole {
    .INPUTS
       Inputs (if any)
    .OUTPUTS
-      Output (if any)
+      NetBox.DeviceRole
    .NOTES
       General notes
    #>
@@ -2223,10 +2349,13 @@ function Get-DeviceRole {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $DeviceRole = $Result
+      $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+      return $DeviceRole
    }
    else {
-      return $Result.Results
+      $DeviceRole = $Result.results
+      return $DeviceRole
    }
 }
 
@@ -2317,7 +2446,9 @@ function New-DeviceRole {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $DeviceRole = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+   return $DeviceRole
 }
 
 function Get-InterfaceTemplate {
@@ -2338,7 +2469,7 @@ function Get-InterfaceTemplate {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.InterfaceTemplate
     .NOTES
        General notes
     #>
@@ -2377,11 +2508,13 @@ function Get-InterfaceTemplate {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $InterfaceTemplate = $Result
    }
    else {
-      return $Result.Results
+      $InterfaceTemplate = $Result.results
    }
+   $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+   return $InterfaceTemplate
 
 }
 
@@ -2409,7 +2542,7 @@ function New-InterfaceTemplate {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.InterfaceTemplate
     .NOTES
        General notes
     #>
@@ -2472,7 +2605,9 @@ function New-InterfaceTemplate {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+   return $InterfaceTemplate
 }
 
 function Get-PowerSupplyType {
@@ -2512,7 +2647,7 @@ function Get-Interface {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.Interface
     .NOTES
        General notes
     #>
@@ -2563,12 +2698,13 @@ function Get-Interface {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $Interface = $Result
    }
    else {
-      return $Result.Results
+      $Interface = $Result.results
    }
-
+   $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
+   return $Interface
 }
 
 function New-Interface {
@@ -2597,7 +2733,7 @@ function New-Interface {
    .INPUTS
       Inputs (if any)
    .OUTPUTS
-      Output (if any)
+      NetBox.Interface
    .NOTES
       General notes
    #>
@@ -2658,7 +2794,9 @@ function New-Interface {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Interface = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
+   return $Interface
 }
 
 function Update-Interface {
@@ -2774,16 +2912,19 @@ function Remove-Interface {
       Deletes all related objects as well
    .PARAMETER Confirm
       Confirm the deletion of the interface
+    .PARAMETER InputObject
+      interface object to delete
    .INPUTS
-      Inputs (if any)
+      NetBox.Interface
    .OUTPUTS
       Output (if any)
    .NOTES
       General notes
    #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
       $Name,
 
@@ -2793,41 +2934,53 @@ function Remove-Interface {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
 
-   Test-Config
-   $URL = "/dcim/interfaces/"
+   begin {
 
-   $Interface = Get-Interface -Model $Name
-
-   $RelatedObjects = Get-RelatedObjects -Object $Interface -ReferenceObjects Interface
-
-   if ($Confirm) {
-      Show-ConfirmDialog -Object $Interface
+      Test-Config
+      $URL = "/dcim/interfaces/"
    }
 
-   # Remove all related objects
-   if ($Recurse) {
-      foreach ($Object in $RelatedObjects) {
-         Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+   process {
+
+      if ($InputObject) {
+         $Name = $InputObject.name
       }
-   }
 
-   try {
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Delete
-   }
-   catch {
-      if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         Write-Error "Delete those objects first or run again using -recurse switch"
+      $Interface = Get-Interface -Model $Name
+
+      $RelatedObjects = Get-RelatedObjects -Object $Interface -ReferenceObjects Interface
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Interface
       }
-      else {
-         Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
       }
    }
 }
-
 function Get-PowerPortTemplate {
    <#
     .SYNOPSIS
@@ -2885,11 +3038,13 @@ function Get-PowerPortTemplate {
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
-      return $Result
+      $PowerPortTemplates = $Result
    }
    else {
-      return $Result.Results
+      $PowerPortTemplates = Result.results
    }
+   $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
+   return $Result.Results
 
 }
 
@@ -2919,7 +3074,7 @@ function New-PowerPortTemplate {
     .INPUTS
        Inputs (if any)
     .OUTPUTS
-       Output (if any)
+       NetBox.PowerPortTemplate
     .NOTES
        General notes
     #>
@@ -2980,13 +3135,53 @@ function New-PowerPortTemplate {
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-
+   $PowerPortTemplates = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+   $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
+   return $PowerPortTemplates
 }
 
 function Remove-PowerPortTemplate {
-   param (
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      NetBox.PowerPortTemplate
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
+   param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Recurse,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
    )
-   FunctionName
+   begin {
+
+   }
+   process {
+      if ($InputObject) {
+         $Name = $InputObject.Name
+      }
+   }
 }

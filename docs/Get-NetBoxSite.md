@@ -93,7 +93,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### Inputs (if any)
 ## OUTPUTS
 
-### Output (if any)
+### NetBox.Site
 ## NOTES
 General notes
 

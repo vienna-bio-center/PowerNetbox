@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-NetBoxConfig
 
 ## SYNOPSIS
-Required to use PowerNetBox, sets up URL and APITToken for connection
+Required to use PowerNetBox, sets up URL and APIToken for connection
 
 ## SYNTAX
 
