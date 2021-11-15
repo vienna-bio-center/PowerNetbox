@@ -886,7 +886,7 @@ function Get-Rack {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -1335,7 +1335,7 @@ function New-CustomField {
 
    $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
    $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
-   retun $CustomField
+   return $CustomField
 
 }
 
@@ -1398,7 +1398,7 @@ function Remove-CustomField {
       if ($Name) {
          $CustomField = Get-CustomField -Name $Name
       }
-      else {
+      if ($Id) {
          $CustomField = Get-CustomField -Id $Id
       }
 
@@ -1508,7 +1508,7 @@ function Get-Manufacturer {
       General notes
    #>
 
-   [CmdletBinding(DefaultParameterSetName = "ByName")]
+   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -1516,7 +1516,11 @@ function Get-Manufacturer {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id
+      $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "All")]
+      [Switch]
+      $All
    )
 
    Test-Config | Out-Null
@@ -1528,6 +1532,10 @@ function Get-Manufacturer {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($All) {
+      $Query = ""
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1608,6 +1616,98 @@ function New-Manufacturer {
    $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
    return $Manufacturer
 }
+
+function Remove-Manufacturer {
+   <#
+    .SYNOPSIS
+       Deletes a manufacturer from NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> Remove-NetBoxManufacturer -Name Dell
+       Deletes manufacturer "dell" from NetBox
+    .PARAMETER Name
+       Name of the custom field
+    .PARAMETER ID
+       ID of the custom field
+    .PARAMETER InputObject
+       Customfield object to delete
+    .INPUTS
+       NetBox.CustomField
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Recurse,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/manufacturers/"
+   }
+
+   process {
+
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.id
+      }
+      if ($Name) {
+         $Manufacturer = Get-Manufacturer -Name $Name
+      }
+      if ($Id) {
+         $Manufacturer = Get-Manufacturer -Id $Id
+      }
+
+      $RelatedObjects = Get-RelatedObjects -Object $Manufacturer -ReferenceObjects Manufacturer
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Manufacturer
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Manufacturer.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+      }
+   }
+
+}
 function Get-DeviceType {
    <#
     .SYNOPSIS
@@ -1664,7 +1764,7 @@ function Get-DeviceType {
    }
 
    if ($Manufacturer) {
-      $Query = "?manufacturer=$($Manufacturer)"
+      $Query = "?manufacturer__ic=$($Manufacturer)"
    }
 
    if ($Id) {
@@ -1773,7 +1873,7 @@ function New-DeviceType {
       $Slug
    }
    else {
-      $Slug = $Model.tolower() -replace " ", "-"
+      $Slug = $Model.tolower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
    }
 
    if ($Manufacturer -is [String]) {
@@ -1805,7 +1905,7 @@ function New-DeviceType {
 
    $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
    $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
-   retunr $DeviceType
+   return $DeviceType
 }
 
 function Remove-DeviceType {
@@ -2173,9 +2273,6 @@ function New-Device {
    if ($DeviceType -is [String]) {
       $DeviceType = (Get-DeviceType -Query $DeviceType).Id
    }
-   else {
-      $DeviceType
-   }
 
    $Body = @{
       name        = $Name
@@ -2451,6 +2548,98 @@ function New-DeviceRole {
    return $DeviceRole
 }
 
+function Remove-DeviceRole {
+   <#
+    .SYNOPSIS
+       Deletes a device role from NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> Remove-DeviceRole -Name Server
+       Deletes device role "server" from NetBox
+    .PARAMETER Name
+       Name of the custom field
+    .PARAMETER ID
+       ID of the custom field
+    .PARAMETER InputObject
+       Customfield object to delete
+    .INPUTS
+       NetBox.CustomField
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Recurse,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-roles/"
+   }
+
+   process {
+
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.id
+      }
+      if ($Name) {
+         $DeviceRole = Get-DeviceRole -Name $Name
+      }
+      if ($Id) {
+         $DeviceRole = Get-DeviceRole -Id $Id
+      }
+
+      $RelatedObjects = Get-RelatedObjects -Object $DeviceRole -ReferenceObjects DeviceRole
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $DeviceRole
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceRole.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+      }
+   }
+
+}
+
 function Get-InterfaceTemplate {
    <#
     .SYNOPSIS
@@ -2580,9 +2769,6 @@ function New-InterfaceTemplate {
    if ($DeviceType -is [String]) {
       $DeviceType = (Get-DeviceType -Query $DeviceType).Id
    }
-   else {
-      $DeviceType
-   }
 
    Test-Config | Out-Null
    $URL = "/dcim/interface-templates/"
@@ -2604,6 +2790,11 @@ function New-InterfaceTemplate {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
+
+   Write-Verbose $DeviceType
+   Write-Verbose $Name
+   Write-Verbose $Type
+   Write-Verbose $ManagmentOnly
 
    $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
    $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
@@ -3111,9 +3302,6 @@ function New-PowerPortTemplate {
 
    if ($DeviceType -is [String]) {
       $DeviceType = (Get-DeviceType -Query $DeviceType).Id
-   }
-   else {
-      $DeviceType
    }
 
    Test-Config | Out-Null
