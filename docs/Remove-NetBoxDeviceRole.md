@@ -5,36 +5,31 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-NetBoxRack
+# Remove-NetBoxDeviceRole
 
 ## SYNOPSIS
-Retrives a rack from NetBox
+Deletes a device role from NetBox
 
 ## SYNTAX
 
-### All (Default)
+### Byname (Default)
 ```
-Get-NetBoxRack [-All] [<CommonParameters>]
+Remove-NetBoxDeviceRole [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
 ```
 
 ### ByName
 ```
-Get-NetBoxRack -Name <String> [<CommonParameters>]
+Remove-NetBoxDeviceRole -Name <String> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
 ```
 
 ### ById
 ```
-Get-NetBoxRack -Id <Int32> [<CommonParameters>]
+Remove-NetBoxDeviceRole -Id <Int32> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
 ```
 
-### BySite
+### ByInputObject
 ```
-Get-NetBoxRack -Site <String> [<CommonParameters>]
-```
-
-### ByLocation
-```
-Get-NetBoxRack -Location <String> [<CommonParameters>]
+Remove-NetBoxDeviceRole [-Recurse] [-Confirm <Boolean>] [-InputObject <Object>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -44,14 +39,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-Get-NetBoxRack -Location "High Density"
-Retrives all racks from High Density location
+Remove-DeviceRole -Name Server
+Deletes device role "server" from NetBox
 ```
 
 ## PARAMETERS
 
 ### -Name
-Name of the rack
+Name of the custom field
 
 ```yaml
 Type: String
@@ -66,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-ID of the rack
+ID of the custom field
 
 ```yaml
 Type: Int32
@@ -80,48 +75,48 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Site
-Site of the rack
-
-```yaml
-Type: String
-Parameter Sets: BySite
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Location
-Location of the rack
-
-```yaml
-Type: String
-Parameter Sets: ByLocation
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all racks
+### -Recurse
+{{ Fill Recurse Description }}
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: All
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: False
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InputObject
+Customfield object to delete
+
+```yaml
+Type: Object
+Parameter Sets: ByInputObject
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -130,10 +125,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### Inputs (if any)
+### NetBox.CustomField
 ## OUTPUTS
 
-### NetBox.Rack
+### Output (if any)
 ## NOTES
 General notes
 

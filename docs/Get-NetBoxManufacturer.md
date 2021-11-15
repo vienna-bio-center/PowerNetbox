@@ -12,7 +12,12 @@ schema: 2.0.0
 
 ## SYNTAX
 
-### ByName (Default)
+### All (Default)
+```
+Get-NetBoxManufacturer [-All] [<CommonParameters>]
+```
+
+### ByName
 ```
 Get-NetBoxManufacturer -Name <String> [<CommonParameters>]
 ```
@@ -35,6 +40,21 @@ PS C:\> {{ Add example code here }}
 {{ Add example description here }}
 
 ## PARAMETERS
+
+### -All
+{{ Fill All Description }}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -Id
 {{ Fill Id Description }}

@@ -23,7 +23,7 @@ Long description
 
 ### EXAMPLE 1
 ```
-Test-Config
+Test-Config | Out-Null
 Explanation of what the example does
 ```
 

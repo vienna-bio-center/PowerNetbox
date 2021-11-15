@@ -12,7 +12,7 @@
     RootModule           = '.\PowerNetBox.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '0.5.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -69,7 +69,48 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport    = '*'
+    FunctionsToExport    = @(
+        "Get-NetBoxContentType",
+        "Get-NetBoxCustomField",
+        "Get-NetBoxDevice",
+        "Get-NetBoxDeviceRole",
+        "Get-NetBoxDeviceType",
+        "Get-NetBoxInterface",
+        "Get-NetBoxInterfaceTemplate",
+        "Get-NetBoxInterfaceType",
+        "Get-NetBoxLocation",
+        "Get-NetBoxManufacturer",
+        "Get-NetBoxNextPage",
+        "Get-NetBoxPowerPortTemplate",
+        "Get-NetBoxPowerSupplyType",
+        "Get-NetBoxRack",
+        "Get-NetBoxRelatedObjects",
+        "Get-NetBoxSite",
+        "New-NetBoxCustomField",
+        "New-NetBoxDevice",
+        "New-NetBoxDeviceRole",
+        "New-NetBoxDeviceType",
+        "New-NetBoxInterface",
+        "New-NetBoxInterfaceTemplate",
+        "New-NetBoxLocation",
+        "New-NetBoxManufacturer",
+        "New-NetBoxPowerPortTemplate",
+        "New-NetBoxRack",
+        "New-NetBoxSite",
+        "Remove-NetBoxCustomField",
+        "Remove-NetBoxDevice",
+        "Remove-NetBoxDeviceRole",
+        "Remove-NetBoxDeviceType",
+        "Remove-NetBoxInterface",
+        "Remove-NetBoxLocation",
+        "Remove-NetBoxManufacturer",
+        "Remove-NetBoxPowerPortTemplate",
+        "Remove-NetBoxRack",
+        "Remove-NetBoxSite",
+        "Set-NetBoxConfig",
+        "Update-NetBoxInterface",
+        "Update-NetBoxSite"
+    )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport      = '*'
