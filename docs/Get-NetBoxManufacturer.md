@@ -27,6 +27,11 @@ Get-NetBoxManufacturer -Name <String> [<CommonParameters>]
 Get-NetBoxManufacturer -Id <Int32> [<CommonParameters>]
 ```
 
+### BySlug
+```
+Get-NetBoxManufacturer -Slug <String> [<CommonParameters>]
+```
+
 ## DESCRIPTION
 {{ Fill in the Description }}
 
@@ -77,6 +82,21 @@ Accept wildcard characters: False
 ```yaml
 Type: String
 Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+{{ Fill Slug Description }}
+
+```yaml
+Type: String
+Parameter Sets: BySlug
 Aliases:
 
 Required: True

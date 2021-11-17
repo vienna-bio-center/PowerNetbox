@@ -32,6 +32,16 @@ Get-NetBoxDeviceType -Manufacturer <String> [<CommonParameters>]
 Get-NetBoxDeviceType -Id <Int32> [<CommonParameters>]
 ```
 
+### BySubDeviceRole
+```
+Get-NetBoxDeviceType -SubDeviceRole <String> [<CommonParameters>]
+```
+
+### BySlug
+```
+Get-NetBoxDeviceType -Slug <String> [<CommonParameters>]
+```
+
 ### Query
 ```
 Get-NetBoxDeviceType -Query <String> [<CommonParameters>]
@@ -91,6 +101,36 @@ Aliases:
 Required: True
 Position: Named
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SubDeviceRole
+Search for a device type by sub device role
+
+```yaml
+Type: String
+Parameter Sets: BySubDeviceRole
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Search for a device type by slug
+
+```yaml
+Type: String
+Parameter Sets: BySlug
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -27,6 +27,11 @@ Get-NetBoxSite -Name <String> [<CommonParameters>]
 Get-NetBoxSite -Id <Int32> [<CommonParameters>]
 ```
 
+### BySlug
+```
+Get-NetBoxSite -Slug <String> [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Long description
 
@@ -66,6 +71,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Search for a site by slug
+
+```yaml
+Type: String
+Parameter Sets: BySlug
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

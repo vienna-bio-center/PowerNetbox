@@ -37,6 +37,11 @@ Get-NetBoxRack -Site <String> [<CommonParameters>]
 Get-NetBoxRack -Location <String> [<CommonParameters>]
 ```
 
+### BySlug
+```
+Get-NetBoxRack -Slug <String> [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Long description
 
@@ -101,6 +106,21 @@ Location of the rack
 ```yaml
 Type: String
 Parameter Sets: ByLocation
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Search for a rack by slug
+
+```yaml
+Type: String
+Parameter Sets: BySlug
 Aliases:
 
 Required: True

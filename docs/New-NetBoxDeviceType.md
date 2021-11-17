@@ -14,9 +14,9 @@ Cretaes a new device type in NetBox
 
 ```
 New-NetBoxDeviceType [-Manufacturer] <Object> [-Model] <String> [[-Slug] <String>] [[-Height] <String>]
- [[-FullDepth] <Boolean>] [[-PartNumber] <String>] [[-Interfaces] <Hashtable[]>] [[-InterfaceType] <String>]
- [[-PowerSupplyConnector] <String>] [[-PowerSupplies] <Hashtable[]>] [[-Confirm] <Boolean>]
- [<CommonParameters>]
+ [[-FullDepth] <Boolean>] [[-PartNumber] <String>] [[-Interfaces] <Hashtable[]>] [[-SubDeviceRole] <String>]
+ [[-InterfaceType] <String>] [[-PowerSupplyConnector] <String>] [[-PowerSupplies] <Hashtable[]>]
+ [[-Confirm] <Boolean>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -138,6 +138,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -SubDeviceRole
+Subdevice role of the device type, "parent" or "child"
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 8
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -InterfaceType
 {{ Fill InterfaceType Description }}
 
@@ -147,7 +162,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: 9
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -162,7 +177,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: 10
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -177,7 +192,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: 11
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -192,7 +207,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
+Position: 12
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

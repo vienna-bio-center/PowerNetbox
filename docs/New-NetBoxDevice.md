@@ -14,8 +14,8 @@ Creates a new device in NetBox
 
 ```
 New-NetBoxDevice -Name <String> -DeviceType <Object> -DeviceRole <String> -Site <String> [-Interfaces <Array>]
- [-InterfaceType <String>] [-PowerSupplies <Array>] [-PowerSupplyConnector <String>] [-Location <String>]
- [-Rack <String>] [-Position <String>] [-Height <String>] [-Hostname <String>] [-ParentDevice <String>]
+ [-InterfaceType <String>] [-PowerSupplies <Array>] [-PowerSupplyConnector <String>] -Location <String>
+ -Rack <String> [-Position <String>] [-Height <String>] [-Hostname <String>] [-ParentDevice <String>]
  [-Face <String>] [-Status <String>] [-AssetTag <String>] [-CustomFields <Hashtable>] [-Confirm <Boolean>]
  [<CommonParameters>]
 ```
@@ -161,7 +161,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -176,7 +176,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False

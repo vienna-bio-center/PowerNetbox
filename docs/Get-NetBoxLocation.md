@@ -27,6 +27,11 @@ Get-NetBoxLocation -Name <String> [<CommonParameters>]
 Get-NetBoxLocation -Id <Int32> [<CommonParameters>]
 ```
 
+### BySlug
+```
+Get-NetBoxLocation -Slug <String> [<CommonParameters>]
+```
+
 ### All
 ```
 Get-NetBoxLocation [-All] [<CommonParameters>]
@@ -71,6 +76,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Search for a location by slug
+
+```yaml
+Type: String
+Parameter Sets: BySlug
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

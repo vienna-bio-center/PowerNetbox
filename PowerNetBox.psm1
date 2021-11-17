@@ -276,6 +276,8 @@ function Get-Site {
        Search for a site by name
     .PARAMETER Id
        Search for a site by ID
+    .PARAMETER Slug
+       Search for a site by slug
     .PARAMETER All
        Returns all sites
     .INPUTS
@@ -296,6 +298,10 @@ function Get-Site {
       [Int32]
       $Id,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
+
       [Parameter(Mandatory = $true, ParameterSetName = "All")]
       [Switch]
       $All
@@ -311,6 +317,10 @@ function Get-Site {
 
    if ($ID) {
       $Query = "?id=$($ID)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
    }
 
    if ($All) {
@@ -443,6 +453,17 @@ function New-Site {
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+   if ($Name) {
+      if (Get-Site -Name $Name) {
+         Write-Warning "Site $Name already exists"
+      }
+   }
+   if ($Slug) {
+      if (Get-Site -Slug $Slug) {
+         Write-Warning "Site $Slug already exists"
+      }
+   }
 
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
@@ -620,6 +641,8 @@ function Get-Location {
        Name of the location
     .PARAMETER ID
        ID of the location
+    .PARAMETER Slug
+       Search for a location by slug
     .PARAMETER All
        Returns all locations
     .INPUTS
@@ -640,6 +663,10 @@ function Get-Location {
       [Int32]
       $Id,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
+
       [Parameter(Mandatory = $true, ParameterSetName = "All")]
       [Switch]
       $All
@@ -655,6 +682,10 @@ function Get-Location {
    }
    else {
       $Query = "?q=$($Name)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
    }
 
    if ($All) {
@@ -763,6 +794,17 @@ function New-Location {
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+   if ($Name) {
+      if (Get-Location -Name $Name) {
+         Write-Warning "Location $Name already exists"
+      }
+   }
+   if ($Slug) {
+      if (Get-Location -Slug $Slug) {
+         Write-Warning "Location $Slug already exists"
+      }
+   }
 
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
@@ -876,6 +918,8 @@ function Get-Rack {
        Site of the rack
     .PARAMETER Location
        Location of the rack
+    .PARAMETER Slug
+       Search for a rack by slug
     .PARAMETER All
        Returns all racks
     .INPUTS
@@ -903,6 +947,10 @@ function Get-Rack {
       [Parameter(Mandatory = $true, ParameterSetName = "ByLocation")]
       [String]
       $Location,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
 
       [Parameter(Mandatory = $true, ParameterSetName = "All")]
       [Switch]
@@ -938,6 +986,11 @@ function Get-Rack {
 
    if ($Location) {
       $Query = "?location__ic=$($Location)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
+
    }
 
    if ($All) {
@@ -1074,6 +1127,18 @@ function New-Rack {
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+
+   if ($Name) {
+      if (Get-Rack -Name $Name) {
+         Write-Warning "Rack $Name already exists"
+      }
+   }
+   if ($Slug) {
+      if (Get-Rack -Slug $Slug) {
+         Write-Warning "Rack $Slug already exists"
+      }
+   }
 
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
@@ -1328,6 +1393,11 @@ function New-CustomField {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+   if ($(Get-CustomField -Name $Name )) {
+      Write-Warning "CustomField $Name already exists"
+      return
+   }
+
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
@@ -1499,6 +1569,8 @@ function Get-Manufacturer {
       Name of the manufacturer
    .PARAMETER ID
       ID of the manufacturer
+    .PARAMETER Slug
+       Search for a manufacturer by slug
    .PARAMETER
    .INPUTS
       Inputs (if any)
@@ -1518,6 +1590,10 @@ function Get-Manufacturer {
       [Int32]
       $Id,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
+
       [Parameter(Mandatory = $true, ParameterSetName = "All")]
       [Switch]
       $All
@@ -1532,6 +1608,10 @@ function Get-Manufacturer {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
    }
 
    if ($All) {
@@ -1606,6 +1686,17 @@ function New-Manufacturer {
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+   if ($Name) {
+      if (Get-Manufacturer -Name $Name) {
+         Write-Warning "Manufacturer $Name already exists"
+      }
+   }
+   if ($Slug) {
+      if (Get-Manufacturer -Slug $Slug) {
+         Write-Warning "Manufacturer $Slug already exists"
+      }
+   }
 
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
@@ -1723,6 +1814,10 @@ function Get-DeviceType {
        Manufacturer of the device type
     .PARAMETER ID
        ID of the device type
+    .PARAMETER SubDeviceRole
+       Search for a device type by sub device role
+    .PARAMETER Slug
+       Search for a device type by slug
     .PARAMETER All
        Returns all device types
     .INPUTS
@@ -1747,6 +1842,14 @@ function Get-DeviceType {
       [Int32]
       $Id,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "BySubDeviceRole")]
+      [String]
+      $SubDeviceRole,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
+
       [Parameter(Mandatory = $true, ParameterSetName = "Query")]
       [String]
       $Query,
@@ -1760,7 +1863,7 @@ function Get-DeviceType {
    $URL = "/dcim/device-types/"
 
    if ($Model) {
-      $Query = "?model__ic=$($Model)"
+      $Query = "?model__ic=$($Model -replace " ", "%20")"
    }
 
    if ($Manufacturer) {
@@ -1769,6 +1872,14 @@ function Get-DeviceType {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($SubDeviceRole) {
+      $Query = "?subdevice_role__ic=$($SubDeviceRole)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
    }
 
    if ($All) {
@@ -1811,6 +1922,8 @@ function New-DeviceType {
          Partnumber of the device
      .PARAMETER Interface
          Interfaces of the device, as hashtable
+    .PARAMETER SubDeviceRole
+       Subdevice role of the device type, "parent" or "child"
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1847,14 +1960,19 @@ function New-DeviceType {
       [Hashtable[]]
       $Interfaces,
 
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("Parent", "Child")]
       [String]
+      $SubDeviceRole,
+
       [Parameter(Mandatory = $false)]
       [ValidateSet("Fixed", "Modular")]
+      [String]
       $InterfaceType,
 
-      [String]
       [Parameter(Mandatory = $false)]
       [ValidateSet("c14", "c20")]
+      [String]
       $PowerSupplyConnector,
 
       [Parameter(Mandatory = $false)]
@@ -1885,18 +2003,30 @@ function New-DeviceType {
 
 
    $Body = @{
-      manufacturer  = $Manufacturer
-      model         = $Model
-      slug          = $Slug
-      part_number   = $PartNumber
-      u_height      = $Height
-      is_full_depth = $FullDepth
-      tags          = $Tags
-      custum_fields = $CustomFields
+      manufacturer   = $Manufacturer
+      model          = $Model
+      slug           = $Slug
+      part_number    = $PartNumber
+      u_height       = $Height
+      is_full_depth  = $FullDepth
+      tags           = $Tags
+      custum_fields  = $CustomFields
+      subdevice_role = $SubDeviceRole
    }
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+   if ($Name) {
+      if (Get-DeviceType -Name $Name) {
+         Write-Warning "DeviceType $Name already exists"
+      }
+   }
+   if ($Slug) {
+      if (Get-DeviceType -Slug $Slug) {
+         Write-Warning "DeviceType $Slug already exists"
+      }
+   }
 
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
@@ -2009,6 +2139,8 @@ function Get-Device {
        All devices from manufacturer
     .PARAMETER ID
        ID of the device
+    .PARAMETER Slug
+       Search for a device by slug
     .PARAMETER MacAddress
        MAC address of the device
     .PARAMETER Site
@@ -2047,6 +2179,10 @@ function Get-Device {
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
       $Id,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByMac")]
       [String]
@@ -2090,6 +2226,10 @@ function Get-Device {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
    }
 
    if ($MacAddress) {
@@ -2212,12 +2352,12 @@ function New-Device {
       [ValidateSet("c14", "c20")]
       $PowerSupplyConnector,
 
-      [Parameter(Mandatory = $false)]
+      [Parameter(Mandatory = $true)]
       [String]
       [ValidateSet("DataCenter 4.47", "High Density", "Low Density")]
       $Location,
 
-      [Parameter(Mandatory = $false)]
+      [Parameter(Mandatory = $true)]
       [String]
       $Rack,
 
@@ -2271,8 +2411,15 @@ function New-Device {
    }
 
    if ($DeviceType -is [String]) {
-      $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+      $Model = $DeviceType
+      $DeviceType = (Get-DeviceType -Model $DeviceType).Id
+      if ($DeviceType -eq $null) {
+         Write-Error "Device type $($Model) does not exist"
+         break
+      }
+
    }
+
 
    $Body = @{
       name        = $Name
@@ -2297,6 +2444,20 @@ function New-Device {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
         ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+   if ($Name) {
+      if (Get-Device -Name $Name) {
+         Write-Warning "Device $Name already exists"
+         return
+      }
+   }
+
+   if ($Slug) {
+      if (Get-Device -Slug $Slug) {
+         Write-Warning "Device $Slug already exists"
+         return
+      }
+   }
+
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
@@ -2305,6 +2466,153 @@ function New-Device {
    $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
    $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
    return $Devive
+}
+
+function Update-Device {
+   <#
+    .SYNOPSIS
+       Creates a new device in NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> New-NetBoxDevice -Name NewHost -Location "low density" -Rack Y-14 -Position 27 -Height 4 -DeviceRole Server -DeviceType "PowerEdge R6515" -Site VBC
+       Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
+    .PARAMETER Name
+       Name of the device
+    .PARAMETER DevuceType
+       Device type of the device
+    .PARAMETER Site
+       Site of the device
+    .PARAMETER Location
+       Location of the device
+    .PARAMETER Rack
+       Rack of the device
+    .PARAMETER Position
+       Position of the device in the rack, lowest occupied
+    .PARAMETER Height
+       Units of the device in the rack, in (U)
+    .PARAMETER DeviceRole
+       Role of the device
+    .PARAMETER Parentdevice
+       Parent device of the device, in case of a chassis
+    .PARAMETER Hostname
+       Hostname of the device
+    .PARAMETER Face
+       Face of the device, front or back, default is front
+    .PARAMETER Status
+       Status of the device, defaults to "active"
+    .PARAMETER AssetTag
+       Asset tag or serial number of the device
+    .PARAMETER CustomFields
+       Custom fields of the device
+   .PARAMETER Confirm
+      Confirm the creation of the device
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
+   param (
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true)]
+      $DeviceType,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      [ValidateSet("Server", "Switch", "Leafswitch")]
+      $DeviceRole,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Site,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      [ValidateSet("DataCenter 4.47", "High Density", "Low Density")]
+      $Location,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Rack,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Position,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Height,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Hostname,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $ParentDevice,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      [ValidateSet("front", "back")]
+      $Face = "front",
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
+      $Status = "active",
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $AssetTag,
+
+      [Parameter(Mandatory = $false)]
+      [Hashtable]
+      $CustomFields,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true
+   )
+
+   Test-Config | Out-Null
+   $URL = "/dcim/devices/"
+
+   if ($Name -is [String]) {
+      $name = (Get-Device -Query $Name).Id
+   }
+   else {
+      $Name
+   }
+
+   $Body = @{
+      name        = $Name
+      device_type = $DeviceType
+      device_role = (Get-DeviceRole -Name $DeviceRole).ID
+      site        = (Get-Site -Name $Site).ID
+      location    = (Get-Location -Name $Location).ID
+      rack        = (Get-Rack -Name $Rack).ID
+      position    = $Position
+      face        = $Face
+      status      = $Status
+      asset_tag   = $AssetTag
+   }
+
+   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+   if ($Confirm) {
+      $OutPutObject = [pscustomobject]$Body
+      Show-ConfirmDialog -Object $OutPutObject
+   }
+
+   Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
 }
 
 function Remove-Device {
@@ -2403,6 +2711,8 @@ function Get-DeviceRole {
       Name of the device role
    .PARAMETER ID
       ID of the device role
+    .PARAMETER Slug
+       Search for a device role by slug
     .PARAMETER All
        Returns all device roles
    .INPUTS
@@ -2423,6 +2733,10 @@ function Get-DeviceRole {
       [Int32]
       $Id,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
+
       [Parameter(Mandatory = $true, ParameterSetName = "All")]
       [Switch]
       $All
@@ -2437,6 +2751,10 @@ function Get-DeviceRole {
 
    if ($Id) {
       $Query = "?id=$($id)"
+   }
+
+   if ($Slug) {
+      $Query = "?slug__ic=$($Slug)"
    }
 
    if ($All) {
@@ -2537,6 +2855,18 @@ function New-DeviceRole {
 
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+
+   if ($Name) {
+      if (Get-DeviceRole -Name $Name) {
+         Write-Warning "DeviceRole $Name already exists"
+      }
+   }
+   if ($Slug) {
+      if (Get-DeviceRole -Slug $Slug) {
+         Write-Warning "DeviceRole $Slug already exists"
+      }
+   }
 
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
@@ -3232,7 +3562,7 @@ function Get-PowerPortTemplate {
       $PowerPortTemplates = $Result
    }
    else {
-      $PowerPortTemplates = Result.results
+      $PowerPortTemplates = $Result.results
    }
    $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
    return $Result.Results

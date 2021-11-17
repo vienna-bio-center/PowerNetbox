@@ -37,6 +37,11 @@ Get-NetBoxDevice -Manufacturer <String> [<CommonParameters>]
 Get-NetBoxDevice -Id <Int32> [<CommonParameters>]
 ```
 
+### BySlug
+```
+Get-NetBoxDevice -Slug <String> [<CommonParameters>]
+```
+
 ### ByMac
 ```
 Get-NetBoxDevice -MacAddress <String> [<CommonParameters>]
@@ -131,6 +136,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Slug
+Search for a device by slug
+
+```yaml
+Type: String
+Parameter Sets: BySlug
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
