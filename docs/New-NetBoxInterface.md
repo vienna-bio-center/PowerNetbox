@@ -14,7 +14,7 @@ Creates an interface in netbox
 
 ```
 New-NetBoxInterface [-Device] <Object> [-Name] <String> [[-Label] <String>] [-Type] <String>
- [[-MacAddress] <String>] [[-ManagmentOnly] <Boolean>] [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-MacAddress] <String>] [[-ManagmentOnly] <Boolean>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -131,6 +131,21 @@ Aliases:
 Required: False
 Position: 7
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Forces the creation of the interface
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

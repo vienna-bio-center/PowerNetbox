@@ -15,7 +15,7 @@ Creates a new rack in NetBox
 ```
 New-NetBoxRack [-Name] <String> [[-Slug] <String>] [-Site] <Object> [[-Location] <Object>] [[-Status] <String>]
  [[-Type] <String>] [[-Width] <Int32>] [[-Height] <Int32>] [[-CustomFields] <String>] [[-Description] <String>]
- [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -192,6 +192,21 @@ Aliases:
 Required: False
 Position: 11
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Force the creation of the rack
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

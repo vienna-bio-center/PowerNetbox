@@ -14,7 +14,7 @@ Creates a custom field in NetBox
 
 ```
 New-NetBoxCustomField [-Name] <String> [-ContentTypes] <String[]> [-Type] <String> [-Label] <String>
- [[-Required] <Boolean>] [[-Choices] <String[]>] [[-Description] <String>] [[-Confirm] <Boolean>]
+ [[-Required] <Boolean>] [[-Choices] <String[]>] [[-Description] <String>] [[-Confirm] <Boolean>] [-Force]
  [<CommonParameters>]
 ```
 
@@ -150,6 +150,21 @@ Aliases:
 Required: False
 Position: 8
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Forces creation of the custom field
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

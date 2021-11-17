@@ -15,7 +15,7 @@ Creates a new site in NetBox
 ```
 New-NetBoxSite [-Name] <String> [[-Slug] <String>] [[-Status] <String>] [[-Region] <String>]
  [[-Group] <String>] [[-Tenant] <String>] [[-CustomFields] <String>] [[-Comment] <String>] [[-Tags] <String>]
- [[-TagColor] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-TagColor] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -207,6 +207,21 @@ Aliases:
 Required: False
 Position: 12
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Force the creation of the site
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

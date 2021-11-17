@@ -14,7 +14,7 @@ Creates new port template in netbox
 
 ```
 New-NetBoxPowerPortTemplate [-DeviceType] <Object> [-Name] <String> [[-Label] <String>] [-Type] <String>
- [[-MaxiumDraw] <Int32>] [[-AllocatedDraw] <Int32>] [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-MaxiumDraw] <Int32>] [[-AllocatedDraw] <Int32>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -131,6 +131,21 @@ Aliases:
 Required: False
 Position: 7
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Forces the creation of the power port template
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

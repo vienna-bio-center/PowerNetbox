@@ -13,7 +13,7 @@ Creates a new manufacturer in NetBox
 ## SYNTAX
 
 ```
-New-NetBoxManufacturer [-Name] <String> [[-Slug] <String>] [[-Confirm] <Boolean>] [<CommonParameters>]
+New-NetBoxManufacturer [-Name] <String> [[-Slug] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -60,7 +60,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Confirm the creation of the location
+Confirm the creation of the manufacturer
 
 ```yaml
 Type: Boolean
@@ -70,6 +70,21 @@ Aliases:
 Required: False
 Position: 3
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Force the creation of the manufacturer
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

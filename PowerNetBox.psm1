@@ -371,6 +371,8 @@ function New-Site {
       Tag color of the site
     .PARAMETER Confirm
       Confirm the creation of the site
+    .PARAMETER Force
+      Force the creation of the site
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -427,11 +429,29 @@ function New-Site {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/sites/"
+
+   if ($Name) {
+      if (Get-Site -Name $Name) {
+         Write-Warning "Site $Name already exists"
+         $Exists = $true
+      }
+   }
+   if ($Slug) {
+      if (Get-Site -Slug $Slug) {
+         Write-Warning "Site $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -454,25 +474,20 @@ function New-Site {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Name) {
-      if (Get-Site -Name $Name) {
-         Write-Warning "Site $Name already exists"
-      }
-   }
-   if ($Slug) {
-      if (Get-Site -Slug $Slug) {
-         Write-Warning "Site $Slug already exists"
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $Site = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
-   return $Site
+   if (-Not $Exists) {
+      $Site = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
+      return $Site
+   }
+   else {
+      return
+   }
+
 }
 
 function Update-Site {
@@ -728,8 +743,10 @@ function New-Location {
          Comment for location
     .PARAMETER Description
          Description of the location
-    .PARAMETER confirm
+    .PARAMETER Confirm
          Confirm the creation of the location
+    .PARAMETER Force
+         Force the creation of the location
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -763,11 +780,28 @@ function New-Location {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/locations/"
+
+   if ($Name) {
+      if (Get-Location -Name $Name) {
+         Write-Warning "Location $Name already exists"
+         $Exists = $true
+      }
+   }
+   if ($Slug) {
+      if (Get-Location -Slug $Slug) {
+         Write-Warning "Location $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -795,25 +829,19 @@ function New-Location {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Name) {
-      if (Get-Location -Name $Name) {
-         Write-Warning "Location $Name already exists"
-      }
-   }
-   if ($Slug) {
-      if (Get-Location -Slug $Slug) {
-         Write-Warning "Location $Slug already exists"
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $Location = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
-   return $Location
+   if (-Not $Exists) {
+      $Location = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
+      return $Location
+   }
+   else {
+      return
+   }
 }
 
 function Remove-Location {
@@ -1040,6 +1068,8 @@ function New-Rack {
          Custom fields of the rack
     .PARAMETER Confirm
          Confirm the creation of the rack
+    .PARAMETER Force
+         Force the creation of the rack
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1092,11 +1122,28 @@ function New-Rack {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/racks/"
+
+   if ($Name) {
+      if (Get-Rack -Name $Name) {
+         Write-Warning "Rack $Name already exists"
+         $Exists = $true
+      }
+   }
+   if ($Slug) {
+      if (Get-Rack -Slug $Slug) {
+         Write-Warning "Rack $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -1128,26 +1175,20 @@ function New-Rack {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-
-   if ($Name) {
-      if (Get-Rack -Name $Name) {
-         Write-Warning "Rack $Name already exists"
-      }
-   }
-   if ($Slug) {
-      if (Get-Rack -Slug $Slug) {
-         Write-Warning "Rack $Slug already exists"
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
-   return $Rack
+   if (-Not $Exists) {
+      $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+      return $Rack
+   }
+   else {
+      return
+   }
+
 }
 
 function Remove-Rack {
@@ -1326,6 +1367,8 @@ function New-CustomField {
        Set the custom field as required
     .PARAMETER Confirm
       Confirm the creation of the location
+    .PARAMETER Force
+      Forces creation of the custom field
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1367,11 +1410,20 @@ function New-CustomField {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
    $URL = "/extras/custom-fields/"
+
+   if ($(Get-CustomField -Name $Name )) {
+      Write-Warning "CustomField $Name already exists"
+      $Exists = $true
+   }
 
    $NetBoxContentTypes = New-Object collections.generic.list[object]
 
@@ -1393,20 +1445,19 @@ function New-CustomField {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($(Get-CustomField -Name $Name )) {
-      Write-Warning "CustomField $Name already exists"
-      return
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
-   return $CustomField
-
+   if (-Not $Exists) {
+      $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
+      return $CustomField
+   }
+   else {
+      return
+   }
 }
 
 function Remove-CustomField {
@@ -1645,7 +1696,9 @@ function New-Manufacturer {
    .PARAMETER Slug
       Slug of the manufacturer, if not specified, it will be generated from the name
    .PARAMETER Confirm
-      Confirm the creation of the location
+      Confirm the creation of the manufacturer
+    .PARAMETER Force
+      Force the creation of the manufacturer
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -1665,11 +1718,28 @@ function New-Manufacturer {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/manufacturers/"
+
+   if ($Name) {
+      if (Get-Manufacturer -Name $Name) {
+         Write-Warning "Manufacturer $Name already exists"
+         $Exists = $true
+      }
+   }
+   if ($Slug) {
+      if (Get-Manufacturer -Slug $Slug) {
+         Write-Warning "Manufacturer $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -1687,25 +1757,19 @@ function New-Manufacturer {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Name) {
-      if (Get-Manufacturer -Name $Name) {
-         Write-Warning "Manufacturer $Name already exists"
-      }
-   }
-   if ($Slug) {
-      if (Get-Manufacturer -Slug $Slug) {
-         Write-Warning "Manufacturer $Slug already exists"
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $Manufacturer = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
-   return $Manufacturer
+   if (-Not $Exists) {
+      $Manufacturer = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
+      return $Manufacturer
+   }
+   else {
+      return
+   }
 }
 
 function Remove-Manufacturer {
@@ -1924,6 +1988,10 @@ function New-DeviceType {
          Interfaces of the device, as hashtable
     .PARAMETER SubDeviceRole
        Subdevice role of the device type, "parent" or "child"
+    .PARAMETER Confirm
+         Confirm the creation of the device type
+    .PARAMETER Force
+         Force the creation of the device type
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1981,11 +2049,28 @@ function New-DeviceType {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/device-types/"
+
+   if ($Name) {
+      if (Get-DeviceType -Name $Name) {
+         Write-Warning "DeviceType $Name already exists"
+         $Exists = $true
+      }
+   }
+   if ($Slug) {
+      if (Get-DeviceType -Slug $Slug) {
+         Write-Warning "DeviceType $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -2017,25 +2102,21 @@ function New-DeviceType {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Name) {
-      if (Get-DeviceType -Name $Name) {
-         Write-Warning "DeviceType $Name already exists"
-      }
-   }
-   if ($Slug) {
-      if (Get-DeviceType -Slug $Slug) {
-         Write-Warning "DeviceType $Slug already exists"
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
-   return $DeviceType
+   if (-Not $Exists) {
+      $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+      return $DeviceType
+   }
+   else {
+      return
+   }
+
+
 }
 
 function Remove-DeviceType {
@@ -2308,6 +2389,8 @@ function New-Device {
        Custom fields of the device
    .PARAMETER Confirm
       Confirm the creation of the device
+    .PARAMETER Force
+      Force the creation of the device
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2333,24 +2416,6 @@ function New-Device {
       [Parameter(Mandatory = $true)]
       [String]
       $Site,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "ByParameter")]
-      [Array]
-      $Interfaces,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      [ValidateSet("Fixed", "Modular")]
-      $InterfaceType,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "ByParameter")]
-      [Array]
-      $PowerSupplies,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      [ValidateSet("c14", "c20")]
-      $PowerSupplyConnector,
 
       [Parameter(Mandatory = $true)]
       [String]
@@ -2397,11 +2462,29 @@ function New-Device {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/devices/"
+
+   if ($Name) {
+      if (Get-Device -Name $Name) {
+         Write-Warning "Device $Name already exists"
+         $Exists = $true
+      }
+   }
+
+   if ($Slug) {
+      if (Get-Device -Slug $Slug) {
+         Write-Warning "Device $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -2413,7 +2496,7 @@ function New-Device {
    if ($DeviceType -is [String]) {
       $Model = $DeviceType
       $DeviceType = (Get-DeviceType -Model $DeviceType).Id
-      if ($DeviceType -eq $null) {
+      if ($null -eq $DeviceType) {
          Write-Error "Device type $($Model) does not exist"
          break
       }
@@ -2444,28 +2527,19 @@ function New-Device {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
         ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Name) {
-      if (Get-Device -Name $Name) {
-         Write-Warning "Device $Name already exists"
-         return
-      }
-   }
-
-   if ($Slug) {
-      if (Get-Device -Slug $Slug) {
-         Write-Warning "Device $Slug already exists"
-         return
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
-   return $Devive
+   if (-Not $Exists) {
+      $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
+      return $Devive
+   }
+   else {
+      return
+   }
 }
 
 function Update-Device {
@@ -2796,7 +2870,9 @@ function New-DeviceRole {
    .PARAMETER CustomFields
       Custom fields of the device role
    .PARAMETER Confirm
-      Confirm the deletion of the device
+      Confirm the deletion of the device role
+    .PARAMETER Force
+      Forces the creation of the device role
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2832,10 +2908,27 @@ function New-DeviceRole {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
    Test-Config | Out-Null
    $URL = "/dcim/device-roles/"
+
+   if ($Name) {
+      if (Get-DeviceRole -Name $Name) {
+         Write-Warning "DeviceRole $Name already exists"
+         $Exists = $true
+      }
+   }
+   if ($Slug) {
+      if (Get-DeviceRole -Slug $Slug) {
+         Write-Warning "DeviceRole $Slug already exists"
+         $Exists = $true
+      }
+   }
 
    if ($null -eq $Slug) {
       $Slug
@@ -2856,26 +2949,19 @@ function New-DeviceRole {
    # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-
-   if ($Name) {
-      if (Get-DeviceRole -Name $Name) {
-         Write-Warning "DeviceRole $Name already exists"
-      }
-   }
-   if ($Slug) {
-      if (Get-DeviceRole -Slug $Slug) {
-         Write-Warning "DeviceRole $Slug already exists"
-      }
-   }
-
    if ($Confirm) {
       $OutPutObject = [pscustomobject]$Body
       Show-ConfirmDialog -Object $OutPutObject
    }
 
-   $DeviceRole = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-   return $DeviceRole
+   if (-Not $Exists) {
+      $DeviceRole = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+      return $DeviceRole
+   }
+   else {
+      return
+   }
 }
 
 function Remove-DeviceRole {
@@ -3057,7 +3143,9 @@ function New-InterfaceTemplate {
     .PARAMETER ManagementOnly
       Is this interface template only for management?
    .PARAMETER Confirm
-      Confirm the deletion of the device
+      Confirm the creation of the device
+    .PARAMETER Force
+      Force the creation of the device
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -3088,12 +3176,16 @@ function New-InterfaceTemplate {
       $ManagmentOnly,
 
       [Parameter(Mandatory = $false)]
+      [Switch]
+      $FindInterfaceType,
+
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true,
 
       [Parameter(Mandatory = $false)]
       [Switch]
-      $FindInterfaceType
+      $Force
    )
 
    if ($DeviceType -is [String]) {
@@ -3251,6 +3343,8 @@ function New-Interface {
       Is this interface only for management?
    .PARAMETER Confirm
       Confirm the creation of the interface
+    .PARAMETER Force
+      Forces the creation of the interface
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -3286,7 +3380,11 @@ function New-Interface {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    Test-Config | Out-Null
@@ -3592,6 +3690,8 @@ function New-PowerPortTemplate {
       Allocated power of the power port template
     .PARAMETER Confirm
       Confirm the creation of the power port template
+    .PARAMETER Force
+      Forces the creation of the power port template
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -3627,7 +3727,11 @@ function New-PowerPortTemplate {
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $Confirm = $true
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
    )
 
    if ($DeviceType -is [String]) {

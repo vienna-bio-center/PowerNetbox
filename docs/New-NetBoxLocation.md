@@ -14,7 +14,7 @@ Creates a location in NetBox
 
 ```
 New-NetBoxLocation [-Name] <String> [[-Slug] <String>] [-Site] <Object> [[-Parent] <Object>]
- [[-CustomFields] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-CustomFields] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -131,6 +131,21 @@ Aliases:
 Required: False
 Position: 7
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Force the creation of the location
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

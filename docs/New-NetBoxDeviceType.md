@@ -16,7 +16,7 @@ Cretaes a new device type in NetBox
 New-NetBoxDeviceType [-Manufacturer] <Object> [-Model] <String> [[-Slug] <String>] [[-Height] <String>]
  [[-FullDepth] <Boolean>] [[-PartNumber] <String>] [[-Interfaces] <Hashtable[]>] [[-SubDeviceRole] <String>]
  [[-InterfaceType] <String>] [[-PowerSupplyConnector] <String>] [[-PowerSupplies] <Hashtable[]>]
- [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -199,7 +199,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the creation of the device type
 
 ```yaml
 Type: Boolean
@@ -209,6 +209,21 @@ Aliases:
 Required: False
 Position: 12
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Force the creation of the device type
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -14,7 +14,7 @@ Creates a new device role in NetBox
 
 ```
 New-NetBoxDeviceRole [-Name] <String> [[-Slug] <String>] [[-Color] <String>] [[-VMRole] <Boolean>]
- [[-CustomFields] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [<CommonParameters>]
+ [[-CustomFields] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -121,7 +121,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Confirm the deletion of the device
+Confirm the deletion of the device role
 
 ```yaml
 Type: Boolean
@@ -131,6 +131,21 @@ Aliases:
 Required: False
 Position: 7
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Forces the creation of the device role
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -13,11 +13,10 @@ Creates a new device in NetBox
 ## SYNTAX
 
 ```
-New-NetBoxDevice -Name <String> -DeviceType <Object> -DeviceRole <String> -Site <String> [-Interfaces <Array>]
- [-InterfaceType <String>] [-PowerSupplies <Array>] [-PowerSupplyConnector <String>] -Location <String>
- -Rack <String> [-Position <String>] [-Height <String>] [-Hostname <String>] [-ParentDevice <String>]
- [-Face <String>] [-Status <String>] [-AssetTag <String>] [-CustomFields <Hashtable>] [-Confirm <Boolean>]
- [<CommonParameters>]
+New-NetBoxDevice [-Name] <String> [-DeviceType] <Object> [-DeviceRole] <String> [-Site] <String>
+ [-Location] <String> [-Rack] <String> [[-Position] <String>] [[-Height] <String>] [[-Hostname] <String>]
+ [[-ParentDevice] <String>] [[-Face] <String>] [[-Status] <String>] [[-AssetTag] <String>]
+ [[-CustomFields] <Hashtable>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -42,7 +41,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -57,7 +56,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -72,7 +71,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -87,67 +86,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Interfaces
-{{ Fill Interfaces Description }}
-
-```yaml
-Type: Array
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -InterfaceType
-{{ Fill InterfaceType Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PowerSupplies
-{{ Fill PowerSupplies Description }}
-
-```yaml
-Type: Array
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PowerSupplyConnector
-{{ Fill PowerSupplyConnector Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -162,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 5
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -177,7 +116,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -192,7 +131,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 7
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -207,7 +146,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 8
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -222,7 +161,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 9
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -237,7 +176,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 10
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -252,7 +191,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 11
 Default value: Front
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -267,7 +206,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 12
 Default value: Active
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -282,7 +221,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 13
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -297,7 +236,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 14
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -312,8 +251,23 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 15
 Default value: True
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Force
+Force the creation of the device
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
