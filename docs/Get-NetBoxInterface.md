@@ -12,29 +12,9 @@ Get a specific interface from netbox
 
 ## SYNTAX
 
-### Byname (Default)
 ```
-Get-NetBoxInterface [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxInterface -Name <String> -ManagementOnly <Boolean> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxInterface -Id <Int32> [<CommonParameters>]
-```
-
-### ByDevice
-```
-Get-NetBoxInterface -Device <Int32> [<CommonParameters>]
-```
-
-### All
-```
-Get-NetBoxInterface [-All] [<CommonParameters>]
+Get-NetBoxInterface [-Name <String>] [-Id <Int32>] [-Device <Int32>] [-ManagementOnly <Boolean>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -55,10 +35,10 @@ Name of the interface
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -70,10 +50,10 @@ ID of the interface
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -85,10 +65,10 @@ Name of the parent device
 
 ```yaml
 Type: Int32
-Parameter Sets: ByDevice
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -100,25 +80,10 @@ Is this interface only for management?
 
 ```yaml
 Type: Boolean
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all interfaces
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
+Required: False
 Position: Named
 Default value: False
 Accept pipeline input: False

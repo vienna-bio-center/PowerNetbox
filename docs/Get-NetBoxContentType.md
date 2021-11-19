@@ -12,14 +12,8 @@ Retrieves content types from NetBox
 
 ## SYNTAX
 
-### SingleItem (Default)
 ```
-Get-NetBoxContentType -Name <String> [-All] [<CommonParameters>]
-```
-
-### AllItems
-```
-Get-NetBoxContentType [-Name <String>] [-All] [<CommonParameters>]
+Get-NetBoxContentType [-Name <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -40,51 +34,12 @@ Name of the content type
 
 ```yaml
 Type: String
-Parameter Sets: SingleItem
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: String
-Parameter Sets: AllItems
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Retrieves all content types from NetBox
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: SingleItem
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AllItems
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -12,39 +12,9 @@ Retrieves device types from NetBox
 
 ## SYNTAX
 
-### All (Default)
 ```
-Get-NetBoxDeviceType [-All] [<CommonParameters>]
-```
-
-### ByModel
-```
-Get-NetBoxDeviceType -Model <String> [<CommonParameters>]
-```
-
-### ByManufacturer
-```
-Get-NetBoxDeviceType -Manufacturer <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxDeviceType -Id <Int32> [<CommonParameters>]
-```
-
-### BySubDeviceRole
-```
-Get-NetBoxDeviceType -SubDeviceRole <String> [<CommonParameters>]
-```
-
-### BySlug
-```
-Get-NetBoxDeviceType -Slug <String> [<CommonParameters>]
-```
-
-### Query
-```
-Get-NetBoxDeviceType -Query <String> [<CommonParameters>]
+Get-NetBoxDeviceType [-Model <String>] [-Manufacturer <String>] [-Id <Int32>] [-SubDeviceRole <String>]
+ [-Slug <String>] [-Query <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -65,10 +35,10 @@ Model of the device type
 
 ```yaml
 Type: String
-Parameter Sets: ByModel
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -80,10 +50,10 @@ Manufacturer of the device type
 
 ```yaml
 Type: String
-Parameter Sets: ByManufacturer
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -95,10 +65,10 @@ ID of the device type
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -110,10 +80,10 @@ Search for a device type by sub device role
 
 ```yaml
 Type: String
-Parameter Sets: BySubDeviceRole
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -125,10 +95,10 @@ Search for a device type by slug
 
 ```yaml
 Type: String
-Parameter Sets: BySlug
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -140,27 +110,12 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Query
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all device types
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

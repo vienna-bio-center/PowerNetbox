@@ -12,24 +12,8 @@ Retrievess a custom field from NetBox
 
 ## SYNTAX
 
-### Byname (Default)
 ```
-Get-NetBoxCustomField [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxCustomField -Name <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxCustomField -Id <Int32> [<CommonParameters>]
-```
-
-### All
-```
-Get-NetBoxCustomField [-All] [<CommonParameters>]
+Get-NetBoxCustomField [-Name <String>] [-Id <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,10 +34,10 @@ Name of the custom field
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -65,27 +49,12 @@ ID of the custom field
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all custom fields
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

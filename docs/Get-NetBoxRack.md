@@ -12,34 +12,9 @@ Retrives a rack from NetBox
 
 ## SYNTAX
 
-### All (Default)
 ```
-Get-NetBoxRack [-All] [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxRack -Name <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxRack -Id <Int32> [<CommonParameters>]
-```
-
-### BySite
-```
-Get-NetBoxRack -Site <String> [<CommonParameters>]
-```
-
-### ByLocation
-```
-Get-NetBoxRack -Location <String> [<CommonParameters>]
-```
-
-### BySlug
-```
-Get-NetBoxRack -Slug <String> [<CommonParameters>]
+Get-NetBoxRack [-Name <String>] [-Id <Int32>] [-Site <String>] [-Location <String>] [-Slug <String>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -60,10 +35,10 @@ Name of the rack
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -75,10 +50,10 @@ ID of the rack
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -90,10 +65,10 @@ Site of the rack
 
 ```yaml
 Type: String
-Parameter Sets: BySite
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -105,10 +80,10 @@ Location of the rack
 
 ```yaml
 Type: String
-Parameter Sets: ByLocation
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -120,27 +95,12 @@ Search for a rack by slug
 
 ```yaml
 Type: String
-Parameter Sets: BySlug
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all racks
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

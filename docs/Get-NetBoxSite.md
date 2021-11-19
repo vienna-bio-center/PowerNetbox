@@ -12,24 +12,8 @@ Retrieves a site from NetBox
 
 ## SYNTAX
 
-### All (Default)
 ```
-Get-NetBoxSite [-All] [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxSite -Name <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxSite -Id <Int32> [<CommonParameters>]
-```
-
-### BySlug
-```
-Get-NetBoxSite -Slug <String> [<CommonParameters>]
+Get-NetBoxSite [-Name <String>] [-Id <Int32>] [-Slug <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,10 +34,10 @@ Search for a site by name
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -65,10 +49,10 @@ Search for a site by ID
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -80,27 +64,12 @@ Search for a site by slug
 
 ```yaml
 Type: String
-Parameter Sets: BySlug
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all sites
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

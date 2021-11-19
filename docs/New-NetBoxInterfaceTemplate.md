@@ -14,7 +14,8 @@ Creates a new interface template in NetBox
 
 ```
 New-NetBoxInterfaceTemplate [-Name] <String> [-DeviceType] <Object> [[-Label] <String>] [-Type] <String>
- [[-ManagmentOnly] <Boolean>] [-FindInterfaceType] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+ [[-ManagmentOnly] <Boolean>] [-FindInterfaceType] [[-LinkSpeed] <String>] [[-InterfaceType] <String>]
+ [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -120,6 +121,36 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -LinkSpeed
+{{ Fill LinkSpeed Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InterfaceType
+{{ Fill InterfaceType Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Confirm
 Confirm the creation of the device
 
@@ -129,7 +160,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: 8
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

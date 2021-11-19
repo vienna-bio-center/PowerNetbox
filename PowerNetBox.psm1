@@ -278,8 +278,6 @@ function Get-Site {
        Search for a site by ID
     .PARAMETER Slug
        Search for a site by slug
-    .PARAMETER All
-       Returns all sites
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -288,43 +286,35 @@ function Get-Site {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Slug,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Slug
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/sites/"
 
+   $Query = "?"
 
-   if ($Name) {
-      $Query = "?name__ic=$($Name)"
+   if ($name) {
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
-   if ($ID) {
-      $Query = "?id=$($ID)"
+   if ($Id) {
+      $Query = $Query + "id=$($id)&"
    }
 
    if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "?slug__ic=$($Slug)"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -658,8 +648,6 @@ function Get-Location {
        ID of the location
     .PARAMETER Slug
        Search for a location by slug
-    .PARAMETER All
-       Returns all locations
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -668,43 +656,36 @@ function Get-Location {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Slug,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Slug
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/locations/"
 
+   $Query = "?"
+
    # If name contains spaces, use slug instead
    if ($Name -like " ") {
       $Slug = $Name.tolower() -replace " ", "-"
-      $Query = "?slug__ic=$($Slug)"
+      $Query = $Query + "slug__ic=$($Slug)&"
    }
    else {
-      $Query = "?q=$($Name)"
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "slug__ic=$($Slug)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -948,8 +929,6 @@ function Get-Rack {
        Location of the rack
     .PARAMETER Slug
        Search for a rack by slug
-    .PARAMETER All
-       Returns all racks
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -958,71 +937,63 @@ function Get-Rack {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySite")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Site,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByLocation")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Location,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Slug,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Slug
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/racks/"
 
-   if ($name) {
-      $Query = "?name=$($Name)"
+   $Query = "?"
+
+   if ($Name) {
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Model) {
-      $Query = "?model__ic=$($Model)"
+      $Query = $Query + "model__ic=$($Model)&"
    }
 
    if ($Manufacturer) {
-      $Query = "?manufacturer=$($Manufacturer)"
+      $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
+      $Query = $Query + "id=$($id)&"
    }
 
    if ($MacAddress) {
-      $Query = "?mac_address=$($MacAddress)"
+      $Query = $Query + "?mac_address=$($MacAddress)"
    }
 
    if ($Site) {
-      $Query = "?site__ic=$($Site)"
+      $Query = $Query + "site__ic=$($Site)&"
    }
 
    if ($Location) {
-      $Query = "?location__ic=$($Location)"
+      $Query = $Query + "Location__ic=$($Location)&"
    }
 
    if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
-
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "slug__ic=$($Slug)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1289,8 +1260,6 @@ function Get-CustomField {
        Name of the custom field
     .PARAMETER ID
        ID of the custom field
-    .PARAMETER All
-       Returns all custom fields
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1299,34 +1268,27 @@ function Get-CustomField {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Id
    )
 
    Test-Config | Out-Null
    $URL = "/extras/custom-fields/"
 
+   $Query = "?"
+
    if ($Name) {
-      $Query = "?name__ic=$($Name)"
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "id=$($id)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -1562,8 +1524,6 @@ function Get-ContentType {
        Retrieves content type "Device" from NetBox
     .PARAMETER Name
        Name of the content type
-    .PARAMETER All
-       Retrieves all content types from NetBox
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1572,29 +1532,23 @@ function Get-ContentType {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "SingleItem")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "SingleItem")]
-      [Parameter(Mandatory = $false, ParameterSetName = "AllItems")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [ValidateSet("Site", "Location", "Rack", "Device", "Device Role")]
       [String]
-      $Name,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "SingleItem")]
-      [Parameter(Mandatory = $true, ParameterSetName = "AllItems")]
-      [Switch]
-      $All
+      $Name
    )
 
    Test-Config | Out-Null
    $URL = "/extras/content-types/"
-   $Query = "?model=$($Name.Replace(' ','').ToLower())"
-   if ($All) {
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Get
+
+   $Query = ""
+
+   if ($Name) {
+      $Query = "?model=$($Name.Replace(' ','').ToLower())"
    }
-   else {
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
-   }
+
+   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
 
    if ($Result.Count -gt 50) {
       $Result = Get-NextPage -Result $Result
@@ -1882,8 +1836,6 @@ function Get-DeviceType {
        Search for a device type by sub device role
     .PARAMETER Slug
        Search for a device type by slug
-    .PARAMETER All
-       Returns all device types
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1892,62 +1844,56 @@ function Get-DeviceType {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "All")]
+   [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByModel")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Model,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByManufacturer")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Manufacturer,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySubDeviceRole")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $SubDeviceRole,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Slug,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "Query")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Query,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Query
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/device-types/"
 
+   $Query = "?"
+
    if ($Model) {
-      $Query = "?model__ic=$($Model -replace " ", "%20")"
+      $Query = $Query + "model__ic=$($Model)&"
    }
 
    if ($Manufacturer) {
-      $Query = "?manufacturer__ic=$($Manufacturer)"
+      $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
+      $Query = $Query + "id=$($id)&"
    }
 
    if ($SubDeviceRole) {
-      $Query = "?subdevice_role__ic=$($SubDeviceRole)"
+      $Query = $Query + "?subdevice_role__ic=$($SubDeviceRole)"
    }
 
    if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "slug__ic=$($Slug)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -2232,8 +2178,6 @@ function Get-Device {
        All devices from Rack
     .PARAMETER DeviceType
        Device type of the device
-    .PARAMETER All
-       Returns all devices
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2242,99 +2186,91 @@ function Get-Device {
        General notes
     #>
 
-   [OutputType("NetBox.Device")]
-   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByModel")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Model,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByManufacturer")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Manufacturer,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Slug,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByMac")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $MacAddress,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySite")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Site,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByLocation")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Location,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByRack")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Rack,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByDeviceType")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $DeviceType,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
-
+      $DeviceType
    )
+
    Test-Config | Out-Null
    $URL = "/dcim/devices/"
 
+   $Query = "?"
+
    if ($name) {
-      $Query = "?name=$($Name)"
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Model) {
-      $Query = "?model=$($Model)"
+      $Query = $Query + "model__ic=$($Model)&"
    }
 
    if ($Manufacturer) {
-      $Query = "?manufacturer=$($Manufacturer)"
+      $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
+      $Query = $Query + "id=$($id)&"
    }
 
    if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
+      $Query = $Query + "slug__ic=$($Slug)&"
    }
 
    if ($MacAddress) {
-      $Query = "?mac_address=$($MacAddress)"
+      $Query = $Query + "mac_address=$($MacAddress)&"
    }
 
    if ($Site) {
-      $Query = "?site__ic=$($Site)"
+      $Query = $Query + "site__ic=$($Site)&"
    }
 
    if ($Location) {
-      $Query = "?Location__ic=$($Location)"
+      $Query = $Query + "Location__ic=$($Location)&"
    }
 
    if ($Rack) {
-      $Query = "?rack=$($Rack)"
+      $Query = $Query + "rack=$($Rack)&"
    }
 
    if ($DeviceType) {
-      $Query = "?device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -2787,8 +2723,6 @@ function Get-DeviceRole {
       ID of the device role
     .PARAMETER Slug
        Search for a device role by slug
-    .PARAMETER All
-       Returns all device roles
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2797,42 +2731,35 @@ function Get-DeviceRole {
       General notes
    #>
 
-   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Slug,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Slug
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/device-roles/"
 
-   if ($name) {
-      $Query = "?name=$($Name)"
+   $Query = "?"
+
+   if ($Name) {
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
+      $Query = $Query + "id=$($id)&"
    }
 
    if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "slug__ic=$($Slug)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -3097,16 +3024,14 @@ function Get-InterfaceTemplate {
    Test-Config | Out-Null
    $URL = "/dcim/interface-templates/"
 
-   if ($name) {
-      $Query = "?name=$($Name)"
+   $Query = "?"
+
+   if ($Name) {
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "id=$($id)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -3180,6 +3105,14 @@ function New-InterfaceTemplate {
       $FindInterfaceType,
 
       [Parameter(Mandatory = $false)]
+      [String]
+      $LinkSpeed,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InterfaceType,
+
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true,
 
@@ -3196,7 +3129,7 @@ function New-InterfaceTemplate {
    $URL = "/dcim/interface-templates/"
 
    if ($FindInterfaceType) {
-      $Type = $(Get-NetBoxInterfaceType -Linkspeed $Interface.Linkspeed -InterfaceType $InterfaceType)
+      $Type = $(Get-InterfaceType -Linkspeed $LinkSpeed -InterfaceType $InterfaceType)
    }
 
    $Body = @{
@@ -3265,46 +3198,43 @@ function Get-Interface {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByDevice")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Device,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Bool]
-      $ManagementOnly,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $ManagementOnly
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/interfaces/"
 
-   if ($name) {
-      $Query = "?name=$($Name)"
+   $Query = "?"
+
+   if ($Name) {
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($Id)"
+      $Query = $Query + "id=$($id)&"
    }
 
-   if ($Deviec) {
-      $Query = "?device__ic=$($Device)"
+   if ($Device) {
+      $Query = $Query + "?device__ic=$($Device)&"
    }
 
    if ($ManagementOnly) {
-      $Query = "?mgmt_only=$($ManagementOnly.ToString())"
+      $Query = $Query + "?mgmt_only=$($ManagementOnly.ToString())&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -3613,8 +3543,6 @@ function Get-PowerPortTemplate {
        Name of the power port template
     .PARAMETER ID
        ID of the power port template
-    .PARAMETER All
-       Returns all power port templates
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -3623,34 +3551,27 @@ function Get-PowerPortTemplate {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Id
    )
 
    Test-Config | Out-Null
    $URL = "/dcim/power-port-templates/"
 
-   if ($name) {
-      $Query = "?name=$($Name)"
+   $Query = "?"
+
+   if ($Name) {
+      $Query = $Query + "name__ic=$($Name)&"
    }
 
    if ($Id) {
-      $Query = "?id=$($id)"
-   }
-
-   if ($All) {
-      $Query = ""
+      $Query = $Query + "id=$($id)&"
    }
 
    $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
@@ -3807,3 +3728,208 @@ function Remove-PowerPortTemplate {
       }
    }
 }
+
+function Get-Cable {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
+   param (
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Label,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Device,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Rack
+   )
+
+   if ($DeviceType -is [String]) {
+      $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+   }
+
+   Test-Config | Out-Null
+   $URL = "/dcim/cables/"
+
+   $Query = "?"
+
+   if ($Label) {
+      $Query = $Query + "?Label__ic=$($Label)&"
+   }
+
+   if ($Id) {
+      $Query = $Query + "id=$($id)&"
+   }
+
+   if ($Device) {
+      $Query = $Query + "?device__ic=$($Device)&"
+   }
+
+   if ($Rack) {
+      $Query = $Query + "rack=$($Rack)&"
+   }
+
+   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+   if ($Result.Count -gt 50) {
+      $Result = Get-NextPage -Result $Result
+      $Cable = $Result
+   }
+   else {
+      $Cable = $Result.results
+   }
+   $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.Cable")
+   return $Cable
+}
+
+function New-Cable {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   param (
+      [Parameter(Mandatory = $true)]
+      $DeviceA,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $InterfaceA,
+
+      [Parameter(Mandatory = $true)]
+      $DeviceB,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $InterfaceB,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Label,
+
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("cat3", "cat5", "cat5e", "cat6", "cat6a", "cat7", "cat7a", "cat8", "dac-active", "dac-passive", "mrj21-trunk", "coaxial", "mmf", "mmf-om1", "mmf-om2", "mmf-om3", "mmf-om4", "mmf-om5", "smf", "smf-os1", "smf-os2", "aoc", "power")]
+      [String]
+      $Type,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Color,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Status,
+
+      [Parameter(Mandatory = $false)]
+      [Int32]
+      $Length,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+
+   $InterfaceA = Get-Interface -Device $DeviceA -Interface $InterfaceA
+   $InterfaceB = Get-Interface -Device $DeviceB -Interface $InterfaceB
+
+   $Body = @{
+      termination_a_type = "dcim.interface"
+      termination_a_id   = $InterfaceA.id
+      termination_b_type = "dcim.interface"
+      termination_b_id   = $InterfaceB.id
+      type               = $Type
+      label              = $Label
+      color              = $Color
+      status             = $Status
+      length             = $Length
+   }
+
+
+   FunctionName
+}
+
+# function Update-Cable {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+
+# }
+
+# function Remove-Cable {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+
+# }

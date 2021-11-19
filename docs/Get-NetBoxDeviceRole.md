@@ -12,24 +12,8 @@ Retrives devices roles from Netbox
 
 ## SYNTAX
 
-### All (Default)
 ```
-Get-NetBoxDeviceRole [-All] [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxDeviceRole -Name <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxDeviceRole -Id <Int32> [<CommonParameters>]
-```
-
-### BySlug
-```
-Get-NetBoxDeviceRole -Slug <String> [<CommonParameters>]
+Get-NetBoxDeviceRole [-Name <String>] [-Id <Int32>] [-Slug <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,10 +34,10 @@ Name of the device role
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -65,10 +49,10 @@ ID of the device role
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -80,27 +64,12 @@ Search for a device role by slug
 
 ```yaml
 Type: String
-Parameter Sets: BySlug
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all device roles
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

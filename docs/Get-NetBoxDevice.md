@@ -12,59 +12,10 @@ Retrieves a device from NetBox
 
 ## SYNTAX
 
-### All (Default)
 ```
-Get-NetBoxDevice [-All] [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxDevice -Name <String> [<CommonParameters>]
-```
-
-### ByModel
-```
-Get-NetBoxDevice -Model <String> [<CommonParameters>]
-```
-
-### ByManufacturer
-```
-Get-NetBoxDevice -Manufacturer <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxDevice -Id <Int32> [<CommonParameters>]
-```
-
-### BySlug
-```
-Get-NetBoxDevice -Slug <String> [<CommonParameters>]
-```
-
-### ByMac
-```
-Get-NetBoxDevice -MacAddress <String> [<CommonParameters>]
-```
-
-### BySite
-```
-Get-NetBoxDevice -Site <String> [<CommonParameters>]
-```
-
-### ByLocation
-```
-Get-NetBoxDevice -Location <String> [<CommonParameters>]
-```
-
-### ByRack
-```
-Get-NetBoxDevice -Rack <String> [<CommonParameters>]
-```
-
-### ByDeviceType
-```
-Get-NetBoxDevice -DeviceType <String> [<CommonParameters>]
+Get-NetBoxDevice [-Name <String>] [-Model <String>] [-Manufacturer <String>] [-Id <Int32>] [-Slug <String>]
+ [-MacAddress <String>] [-Site <String>] [-Location <String>] [-Rack <String>] [-DeviceType <String>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -85,10 +36,10 @@ Name of the device
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -100,10 +51,10 @@ All devices of this model
 
 ```yaml
 Type: String
-Parameter Sets: ByModel
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -115,10 +66,10 @@ All devices from manufacturer
 
 ```yaml
 Type: String
-Parameter Sets: ByManufacturer
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -130,10 +81,10 @@ ID of the device
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
@@ -145,10 +96,10 @@ Search for a device by slug
 
 ```yaml
 Type: String
-Parameter Sets: BySlug
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -160,10 +111,10 @@ MAC address of the device
 
 ```yaml
 Type: String
-Parameter Sets: ByMac
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -175,10 +126,10 @@ All devices from Site
 
 ```yaml
 Type: String
-Parameter Sets: BySite
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -190,10 +141,10 @@ All devices from Location
 
 ```yaml
 Type: String
-Parameter Sets: ByLocation
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -205,10 +156,10 @@ All devices from Rack
 
 ```yaml
 Type: String
-Parameter Sets: ByRack
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -220,27 +171,12 @@ Device type of the device
 
 ```yaml
 Type: String
-Parameter Sets: ByDeviceType
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all devices
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

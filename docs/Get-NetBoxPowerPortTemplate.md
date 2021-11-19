@@ -12,24 +12,8 @@ Retrives a power port template from netbox
 
 ## SYNTAX
 
-### Byname (Default)
 ```
-Get-NetBoxPowerPortTemplate [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxPowerPortTemplate -Name <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxPowerPortTemplate -Id <Int32> [<CommonParameters>]
-```
-
-### All
-```
-Get-NetBoxPowerPortTemplate [-All] [<CommonParameters>]
+Get-NetBoxPowerPortTemplate [-Name <String>] [-Id <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,10 +34,10 @@ Name of the power port template
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -65,27 +49,12 @@ ID of the power port template
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Returns all power port templates
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
