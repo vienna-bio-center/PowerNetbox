@@ -76,15 +76,15 @@ function Get-NextPage {
       $Result
    )
    $CompleteResult = New-Object collections.generic.list[object]
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Get
 
-   $CompleteResult = $Result.Results
+   $CompleteResult += $Result.Results
 
-   do {
-      $Result = Invoke-RestMethod -Uri $Result.next @RestParams -Method Get
-      $CompleteResult += $Result.Results
-   } until ($null -eq $result.next)
-
+   if ($null -ne $result.next) {
+      do {
+         $Result = Invoke-RestMethod -Uri $Result.next @RestParams -Method Get
+         $CompleteResult += $Result.Results
+      } until ($null -eq $result.next)
+   }
    return $CompleteResult
 }
 
@@ -319,17 +319,17 @@ function Get-Site {
          $Query = $Query + "?slug__ic=$($Slug)"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $Site = $Result
+      $Sites = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Site = $item
+         $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
+         $Sites += $Site
       }
-      else {
-         $Site = $Result.Results
-      }
-      $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
-      return $Site
+
+      return $Sites
    }
 }
 
@@ -584,6 +584,10 @@ function Remove-Site {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $Id,
+
       [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
@@ -602,11 +606,22 @@ function Remove-Site {
    }
 
    process {
-      if ($InputObject) {
-         $Name = $InputObject.name
+      if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Site")) {
+         Write-Error "InputObject is not type NetBox.Site"
+         break
       }
 
-      $Site = Get-Site -Name $Name
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.Id
+      }
+
+      if ($Id) {
+         $Site = Get-Site -ID $Id
+      }
+      else {
+         $Site = Get-Site -Name $Name
+      }
 
       $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Site
 
@@ -695,17 +710,17 @@ function Get-Location {
          $Query = $Query + "slug__ic=$($Slug)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $Location = $Result
+      $Locations = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Location = $item
+         $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
+         $Locations += $Location
       }
-      else {
-         $Location = $Result.Results
-      }
-      $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
-      return $Location
+
+      return $Locations
    }
 }
 
@@ -868,6 +883,10 @@ function Remove-Location {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $Id,
+
       [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
@@ -886,11 +905,22 @@ function Remove-Location {
    }
 
    process {
-      if ($InputObject) {
-         $Name = $InputObject.name
+      if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Location")) {
+         Write-Error "InputObject is not type NetBox.Location"
+         break
       }
 
-      $Location = Get-Location -Name $Name
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.Id
+      }
+
+      if ($ID) {
+         $Location = Get-Location -Id $Id
+      }
+      else {
+         $Location = Get-Location -Name $Name
+      }
 
       $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Location
 
@@ -1011,17 +1041,17 @@ function Get-Rack {
          $Query = $Query + "slug__ic=$($Slug)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $Rack = $Result
+      $Racks = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Rack = $item
+         $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+         $Racks += $Rack
       }
-      else {
-         $Rack = $Result.Results
-      }
-      $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
-      return $Rack
+
+      return $Racks
    }
 }
 
@@ -1211,6 +1241,10 @@ function Remove-Rack {
       [String]
       $Name,
 
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $Id,
+
       [Parameter(Mandatory = $false)]
       [Switch]
       $Recurse,
@@ -1229,12 +1263,22 @@ function Remove-Rack {
    }
 
    process {
-      if ($InputObject) {
-         $Name = $InputObject.name
+      if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Rack")) {
+         Write-Error "InputObject is not type NetBox.Rack"
+         break
       }
 
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.id
+      }
 
-      $Rack = Get-Rack -Name $Name
+      if ($Id) {
+         $Rack = Get-Rack -ID $Id
+      }
+      else {
+         $Rack = Get-Rack -Name $Name
+      }
 
       $RelatedObjects = Get-RelatedObjects -Object $Rack -ReferenceObjects Rack
 
@@ -1311,17 +1355,17 @@ function Get-CustomField {
          $Query = $Query + "id=$($id)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $CustomFields = $Result
+      $Customfields = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Customfield = $item
+         $Customfield.PSObject.TypeNames.Insert(0, "NetBox.Customfield")
+         $Customfields += $Customfield
       }
-      else {
-         $CustomFields = $Result.results
-      }
-      $CustomFields.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
-      return $CustomFields
+
+      return $Customfields
    }
 }
 
@@ -1498,15 +1542,21 @@ function Remove-CustomField {
    }
 
    process {
+      if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Customfield")) {
+         Write-Error "InputObject is not type NetBox.Customfield"
+         break
+      }
+
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.id
+         $Id = $InputObject.Id
       }
-      if ($Name) {
-         $CustomField = Get-CustomField -Name $Name
-      }
+
       if ($Id) {
          $CustomField = Get-CustomField -Id $Id
+      }
+      else {
+         $CustomField = Get-CustomField -Name $Name
       }
 
       $RelatedObjects = Get-RelatedObjects -Object $CustomField -ReferenceObjects CustomField
@@ -1575,17 +1625,17 @@ function Get-ContentType {
          $Query = "?model=$($Name.Replace(' ','').ToLower())"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $ContentType = $Result
+      $ContentTypes = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$ContentType = $item
+         $ContentType.PSObject.TypeNames.Insert(0, "NetBox.ContentType")
+         $ContentTypes += $ContentType
       }
-      else {
-         $ContentType = $Result.results
-      }
-      $ContentType.PSObject.TypeNames.Insert(0, "NetBox.ContentType")
-      return $ContentType
+
+      return $ContentTypes
    }
 }
 
@@ -1943,17 +1993,17 @@ function Get-DeviceType {
          $Query = $Query + "u_height=$($Height)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $DeviceType = $Result
+      $DeviceTypes = New-Object collections.generic.list[object]
+
+      foreach ($item in $Result) {
+         [PSCustomObject]$DeviceType = $item
+         $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+         $DeviceTypes += $DeviceType
       }
-      else {
-         $DeviceType = $Result.results
-      }
-      $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
-      return $DeviceType
+
+      return $DeviceTypes
    }
 }
 
@@ -2328,17 +2378,17 @@ function Get-Device {
          $Query = $Query + "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         [PSCustomObject]$Device = $Result
+      $Devices = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Device = $item
+         $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
+         $Devices += $Device
       }
-      else {
-         [PSCustomObject]$Device = $Result.Results
-      }
-      $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
-      return $Device
+
+      return $Devices
    }
 }
 function New-Device {
@@ -2827,17 +2877,17 @@ function Get-DeviceRole {
          $Query = $Query + "slug__ic=$($Slug)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $DeviceRole = $Result
+      $DeviceRoles = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$DeviceRole = $item
+         $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+         $DeviceRoles += $DeviceRole
       }
-      else {
-         $DeviceRole = $Result.results
-      }
-      $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-      return $DeviceRole
+
+      return $DeviceRoles
    }
 }
 
@@ -3107,17 +3157,17 @@ function Get-InterfaceTemplate {
          $Query = $Query + "id=$($id)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $InterfaceTemplate = $Result
+      $InterfaceTemplates = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$InterfaceTemplate = $item
+         $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+         $InterfaceTemplates += $InterfaceTemplate
       }
-      else {
-         $InterfaceTemplate = $Result.results
-      }
-      $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
-      return $InterfaceTemplate
+
+      return $InterfaceTemplates
    }
 }
 
@@ -3316,17 +3366,17 @@ function Get-Interface {
          $Query = $Query + "?mgmt_only=$($ManagementOnly.ToString())&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $Interface = $Result
+      $Interfaces = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Interface = $item
+         $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
+         $Interfaces += $Interface
       }
-      else {
-         $Interface = $Result.results
-      }
-      $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
-      return $Interface
+
+      return $Interfaces
    }
 }
 function New-Interface {
@@ -3662,15 +3712,17 @@ function Get-PowerPortTemplate {
 
       $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $PowerPortTemplates = $Result
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
+
+      $PowerPortTemplates = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$PowerPortTemplate = $item
+         $PowerPortTemplate.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
+         $PowerPortTemplates += $PowerPortTemplate
       }
-      else {
-         $PowerPortTemplates = $Result.results
-      }
-      $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
-      return $Result.Results
+
+      return $PowerPortTemplates
    }
 }
 
@@ -3891,18 +3943,17 @@ function Get-Cable {
          $Query = $Query + "rack=$($Rack)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      if ($Result.Count -gt 50) {
-         $Result = Get-NextPage -Result $Result
-         $Cable = $Result
-      }
-      else {
-         $Cable = $Result.results
+      $Cables = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$Cable = $item
+         $Cable.PSObject.TypeNames.Insert(0, "NetBox.Cable")
+         $Cables += $Cable
       }
 
-      $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.Cable")
-      return $Cable
+      return $Cables
    }
 }
 
