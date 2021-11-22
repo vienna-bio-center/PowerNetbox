@@ -70,6 +70,7 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = @(
+        "Get-Cable",
         "Get-ContentType",
         "Get-CustomField",
         "Get-Device",
@@ -86,6 +87,7 @@
         "Get-Rack",
         "Get-RelatedObjects",
         "Get-Site",
+        "New-Cable",
         "New-CustomField",
         "New-Device",
         "New-DeviceRole",
@@ -97,6 +99,7 @@
         "New-PowerPortTemplate",
         "New-Rack",
         "New-Site",
+        "Remove-Cable",
         "Remove-CustomField",
         "Remove-Device",
         "Remove-DeviceRole",
@@ -108,6 +111,7 @@
         "Remove-Rack",
         "Remove-Site",
         "Set-Config",
+        "Update-Interface",
         "Update-Interface",
         "Update-Site"
     )
