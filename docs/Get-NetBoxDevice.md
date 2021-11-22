@@ -67,7 +67,7 @@ All devices from manufacturer
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Vendor
 
 Required: False
 Position: Named

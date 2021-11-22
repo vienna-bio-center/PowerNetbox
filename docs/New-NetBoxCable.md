@@ -5,18 +5,17 @@ online version:
 schema: 2.0.0
 ---
 
-# New-NetBoxDeviceType
+# New-NetBoxCable
 
 ## SYNOPSIS
-Cretaes a new device type in NetBox
+Creates a new cable in NetBox
 
 ## SYNTAX
 
 ```
-New-NetBoxDeviceType [-Manufacturer] <Object> [-Model] <String> [[-Slug] <String>] [[-Height] <String>]
- [[-FullDepth] <Boolean>] [[-PartNumber] <String>] [[-Interfaces] <Hashtable[]>] [[-SubDeviceRole] <String>]
- [[-InterfaceType] <String>] [[-PowerSupplyConnector] <String>] [[-PowerSupplies] <Hashtable[]>]
- [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxCable [[-DeviceA] <Object>] [-InterfaceA] <String> [[-DeviceB] <Object>] [-InterfaceB] <String>
+ [[-Label] <String>] [-Type] <String> [[-Color] <String>] [[-Status] <String>] [[-Length] <Int32>]
+ [[-LengthUnit] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -26,29 +25,29 @@ Long description
 
 ### EXAMPLE 1
 ```
-New-NetboxDeviceType -Model "Cisco Catalyst 2960" -Manufacturer "Cisco" -Height "4"
-Creates device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox
+New-NetBoxCable -InterfaceA "Gig-E 1" -DeviceA ServerA -InterfaceB "GigabitEthernet1/0/39" -DeviceB SwitchB -Label "Super important Cable" -Type cat6 -Color "aa1409" -Length 100 -LengthUnit m
+Creates a cable between ServerA, Gig-E 1 and SwitchB, GigabitEthernet1/0/39 with the label "Super important Cable" and the type cat6 and the color "aa1409" and the length 100m
 ```
 
 ## PARAMETERS
 
-### -Manufacturer
-Name of the manufacturer
+### -DeviceA
+Endpoint Device A of the cable
 
 ```yaml
 Type: Object
 Parameter Sets: (All)
-Aliases: Vendor
+Aliases:
 
-Required: True
+Required: False
 Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Model
-Model of the device type
+### -InterfaceA
+Endpoint Interface A of the cable
 
 ```yaml
 Type: String
@@ -62,11 +61,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Slug
-Slug of the device type, if not specified, it will be generated from the model
+### -DeviceB
+Endpoint Device B of the cable
 
 ```yaml
-Type: String
+Type: Object
 Parameter Sets: (All)
 Aliases:
 
@@ -77,39 +76,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Height
-Height of the device in U(Units)
+### -InterfaceB
+Endpoint Interface B of the cable
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FullDepth
-Is device fulldepth?
-defaults to true
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: True
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PartNumber
-Partnumber of the device
+### -Label
+Label of the cable
 
 ```yaml
 Type: String
@@ -117,17 +100,34 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Type
+Type of the cable, e.g.
+cat6
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
 Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Interfaces
-{{ Fill Interfaces Description }}
+### -Color
+Color of the cable, e.g.
+"aa1409"
 
 ```yaml
-Type: Hashtable[]
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -138,8 +138,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SubDeviceRole
-Subdevice role of the device type, "parent" or "child"
+### -Status
+{{ Fill Status Description }}
 
 ```yaml
 Type: String
@@ -153,23 +153,25 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InterfaceType
-{{ Fill InterfaceType Description }}
+### -Length
+Length of the cable, e.g.
+10
 
 ```yaml
-Type: String
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: 9
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PowerSupplyConnector
-{{ Fill PowerSupplyConnector Description }}
+### -LengthUnit
+Length unit of the cable, e.g.
+m(eter)
 
 ```yaml
 Type: String
@@ -183,23 +185,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PowerSupplies
-{{ Fill PowerSupplies Description }}
-
-```yaml
-Type: Hashtable[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 11
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Confirm
-Confirm the creation of the device type
+Confirm the creation of the cable
 
 ```yaml
 Type: Boolean
@@ -207,14 +194,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 12
+Position: 11
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Force
-Force the creation of the device type
+Force the creation of the cable (overwrite existing cable)
 
 ```yaml
 Type: SwitchParameter
@@ -233,10 +220,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### Inputs (if any)
+### NetBox.Cable
 ## OUTPUTS
 
-### NetBox.DeviceType
+### Netbox.Cable
 ## NOTES
 General notes
 

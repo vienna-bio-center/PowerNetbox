@@ -5,16 +5,15 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-NetBoxDeviceType
+# Get-NetBoxCable
 
 ## SYNOPSIS
-Retrieves device types from NetBox
+Gets cables form NetBox
 
 ## SYNTAX
 
 ```
-Get-NetBoxDeviceType [-Model <String>] [-Manufacturer <String>] [-Id <Int32>] [-SubDeviceRole <String>]
- [-Slug <String>] [-Height <String>] [-Query <String>] [<CommonParameters>]
+Get-NetBoxCable [-Label <String>] [-Id <Int32>] [-Device <String>] [-Rack <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,14 +23,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-Get-NetboxDeviceType -Model "Cisco Catalyst 2960"
-Retrives DeviceType for Cisco Catalyst 2960 from NetBox
+Get-Cable -Device "ServerA"
+Gets all cables for ServerA
 ```
 
 ## PARAMETERS
 
-### -Model
-Model of the device type
+### -Label
+{{ Fill Label Description }}
 
 ```yaml
 Type: String
@@ -45,23 +44,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Manufacturer
-Manufacturer of the device type
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: Vendor
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Id
-ID of the device type
+ID of the cable
 
 ```yaml
 Type: Int32
@@ -75,8 +59,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SubDeviceRole
-Search for a device type by sub device role
+### -Device
+Name of the parent device
 
 ```yaml
 Type: String
@@ -90,38 +74,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Slug
-Search for a device type by slug
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Height
-{{ Fill Height Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Query
-{{ Fill Query Description }}
+### -Rack
+Name of the parent rack
 
 ```yaml
 Type: String
@@ -143,7 +97,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### Inputs (if any)
 ## OUTPUTS
 
-### NetBox.DeviceType
+### NetBox.Interface
 ## NOTES
 General notes
 

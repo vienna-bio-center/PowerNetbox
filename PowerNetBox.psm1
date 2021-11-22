@@ -180,8 +180,8 @@ function Show-ConfirmDialog {
       Write-Error "Canceled by User"
       break
    }
-
 }
+
 function Get-InterfaceType {
    <#
     .SYNOPSIS
@@ -300,34 +300,37 @@ function Get-Site {
       $Slug
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/sites/"
-
-   $Query = "?"
-
-   if ($name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/sites/"
    }
+   process {
+      $Query = "?"
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+      if ($name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($Slug) {
-      $Query = $Query + "?slug__ic=$($Slug)"
-   }
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Slug) {
+         $Query = $Query + "?slug__ic=$($Slug)"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $Site = $Result
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $Site = $Result
+      }
+      else {
+         $Site = $Result.Results
+      }
+      $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
+      return $Site
    }
-   else {
-      $Site = $Result.Results
-   }
-   $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
-   return $Site
 }
 
 function New-Site {
@@ -424,60 +427,62 @@ function New-Site {
       [Parameter(Mandatory = $false)]
       [Switch]
       $Force
-
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/sites/"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/sites/"
+   }
 
-   if ($Name) {
-      if (Get-Site -Name $Name) {
-         Write-Warning "Site $Name already exists"
-         $Exists = $true
+   process {
+      if ($Name) {
+         if (Get-Site -Name $Name) {
+            Write-Warning "Site $Name already exists"
+            $Exists = $true
+         }
       }
-   }
-   if ($Slug) {
-      if (Get-Site -Slug $Slug) {
-         Write-Warning "Site $Slug already exists"
-         $Exists = $true
+      if ($Slug) {
+         if (Get-Site -Slug $Slug) {
+            Write-Warning "Site $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Name.tolower() -replace " ", "-"
-   }
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Name.tolower() -replace " ", "-"
+      }
 
-   $Body = @{
-      name        = $Name
-      slug        = $Slug
-      status      = $Status
-      region      = $Region
-      group       = $Group
-      tenant      = $Tenant
-      comment     = $Comment
-      description = $Description
-   }
+      $Body = @{
+         name        = $Name
+         slug        = $Slug
+         status      = $Status
+         region      = $Region
+         group       = $Group
+         tenant      = $Tenant
+         comment     = $Comment
+         description = $Description
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $Site = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
-      return $Site
+      if (-Not $Exists) {
+         $Site = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
+         return $Site
+      }
+      else {
+         return
+      }
    }
-   else {
-      return
-   }
-
 }
 
 function Update-Site {
@@ -597,7 +602,6 @@ function Remove-Site {
    }
 
    process {
-
       if ($InputObject) {
          $Name = $InputObject.name
       }
@@ -670,35 +674,39 @@ function Get-Location {
       $Slug
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/locations/"
-
-   $Query = "?"
-
-   # If name contains spaces, use slug instead
-   if ($Name -like " ") {
-      $Slug = $Name.tolower() -replace " ", "-"
-      $Query = $Query + "slug__ic=$($Slug)&"
-   }
-   else {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/locations/"
    }
 
-   if ($Slug) {
-      $Query = $Query + "slug__ic=$($Slug)&"
-   }
+   process {
+      $Query = "?"
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      # If name contains spaces, use slug instead
+      if ($Name -like " ") {
+         $Slug = $Name.tolower() -replace " ", "-"
+         $Query = $Query + "slug__ic=$($Slug)&"
+      }
+      else {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $Location = $Result
+      if ($Slug) {
+         $Query = $Query + "slug__ic=$($Slug)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $Location = $Result
+      }
+      else {
+         $Location = $Result.Results
+      }
+      $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
+      return $Location
    }
-   else {
-      $Location = $Result.Results
-   }
-   $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
-   return $Location
 }
 
 function New-Location {
@@ -768,60 +776,64 @@ function New-Location {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/locations/"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/locations/"
+   }
 
-   if ($Name) {
-      if (Get-Location -Name $Name) {
-         Write-Warning "Location $Name already exists"
-         $Exists = $true
+   process {
+      if ($Name) {
+         if (Get-Location -Name $Name) {
+            Write-Warning "Location $Name already exists"
+            $Exists = $true
+         }
       }
-   }
-   if ($Slug) {
-      if (Get-Location -Slug $Slug) {
-         Write-Warning "Location $Slug already exists"
-         $Exists = $true
+      if ($Slug) {
+         if (Get-Location -Slug $Slug) {
+            Write-Warning "Location $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Name.tolower() -replace " ", "-"
-   }
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Name.tolower() -replace " ", "-"
+      }
 
-   if ($Site -is [String]) {
-      $Site = (Get-Site -Name $Site).ID
-   }
+      if ($Site -is [String]) {
+         $Site = (Get-Site -Name $Site).ID
+      }
 
-   if ($Parent -is [String]) {
-      $Parent = (Get-Location -Name $Parent).ID
-   }
+      if ($Parent -is [String]) {
+         $Parent = (Get-Location -Name $Parent).ID
+      }
 
-   $Body = @{
-      name        = $Name
-      slug        = $Slug
-      site        = $Site
-      parent      = $Parent
-      description = $Description
-   }
+      $Body = @{
+         name        = $Name
+         slug        = $Slug
+         site        = $Site
+         parent      = $Parent
+         description = $Description
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $Location = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
-      return $Location
-   }
-   else {
-      return
+      if (-Not $Exists) {
+         $Location = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
+         return $Location
+      }
+      else {
+         return
+      }
    }
 }
 
@@ -959,56 +971,59 @@ function Get-Rack {
       $Slug
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/racks/"
-
-   $Query = "?"
-
-   if ($Name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/racks/"
    }
 
-   if ($Model) {
-      $Query = $Query + "model__ic=$($Model)&"
-   }
+   process {
+      $Query = "?"
 
-   if ($Manufacturer) {
-      $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
-   }
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+      if ($Model) {
+         $Query = $Query + "model__ic=$($Model)&"
+      }
 
-   if ($MacAddress) {
-      $Query = $Query + "?mac_address=$($MacAddress)"
-   }
+      if ($Manufacturer) {
+         $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
+      }
 
-   if ($Site) {
-      $Query = $Query + "site__ic=$($Site)&"
-   }
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
-   if ($Location) {
-      $Query = $Query + "Location__ic=$($Location)&"
-   }
+      if ($MacAddress) {
+         $Query = $Query + "?mac_address=$($MacAddress)"
+      }
 
-   if ($Slug) {
-      $Query = $Query + "slug__ic=$($Slug)&"
-   }
+      if ($Site) {
+         $Query = $Query + "site__ic=$($Site)&"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Location) {
+         $Query = $Query + "Location__ic=$($Location)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $Rack = $Result
+      if ($Slug) {
+         $Query = $Query + "slug__ic=$($Slug)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $Rack = $Result
+      }
+      else {
+         $Rack = $Result.Results
+      }
+      $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+      return $Rack
    }
-   else {
-      $Rack = $Result.Results
-   }
-   $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
-   return $Rack
 }
-
 
 function New-Rack {
    <#
@@ -1100,68 +1115,71 @@ function New-Rack {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/racks/"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/racks/"
+   }
 
-   if ($Name) {
-      if (Get-Rack -Name $Name) {
-         Write-Warning "Rack $Name already exists"
-         $Exists = $true
+   process {
+      if ($Name) {
+         if (Get-Rack -Name $Name) {
+            Write-Warning "Rack $Name already exists"
+            $Exists = $true
+         }
       }
-   }
-   if ($Slug) {
-      if (Get-Rack -Slug $Slug) {
-         Write-Warning "Rack $Slug already exists"
-         $Exists = $true
+      if ($Slug) {
+         if (Get-Rack -Slug $Slug) {
+            Write-Warning "Rack $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Name.tolower() -replace " ", "-"
-   }
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Name.tolower() -replace " ", "-"
+      }
 
-   if ($Site -is [String]) {
-      $Site = (Get-Site -Name $Site).ID
-   }
+      if ($Site -is [String]) {
+         $Site = (Get-Site -Name $Site).ID
+      }
 
-   if ($Location -is [String]) {
-      $Location = (Get-Location -Name $Location).ID
-   }
+      if ($Location -is [String]) {
+         $Location = (Get-Location -Name $Location).ID
+      }
 
-   $Body = @{
-      name        = $Name
-      slug        = $Slug
-      site        = $Site
-      location    = $Location
-      status      = $Status
-      type        = $Type
-      width       = $Width
-      u_height    = $Height
-      description = $Description
-   }
+      $Body = @{
+         name        = $Name
+         slug        = $Slug
+         site        = $Site
+         location    = $Location
+         status      = $Status
+         type        = $Type
+         width       = $Width
+         u_height    = $Height
+         description = $Description
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
-      return $Rack
-   }
-   else {
-      return
-   }
+      if (-Not $Exists) {
+         $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+         return $Rack
+      }
+      else {
+         return
+      }
 
+   }
 }
-
 function Remove-Rack {
    <#
    .SYNOPSIS
@@ -1211,7 +1229,6 @@ function Remove-Rack {
    }
 
    process {
-
       if ($InputObject) {
          $Name = $InputObject.name
       }
@@ -1278,30 +1295,34 @@ function Get-CustomField {
       $Id
    )
 
-   Test-Config | Out-Null
-   $URL = "/extras/custom-fields/"
-
-   $Query = "?"
-
-   if ($Name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/custom-fields/"
    }
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+   process {
+      $Query = "?"
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $CustomFields = $Result
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $CustomFields = $Result
+      }
+      else {
+         $CustomFields = $Result.results
+      }
+      $CustomFields.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
+      return $CustomFields
    }
-   else {
-      $CustomFields = $Result.results
-   }
-   $CustomFields.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
-   return $CustomFields
 }
 
 function New-CustomField {
@@ -1379,46 +1400,50 @@ function New-CustomField {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/extras/custom-fields/"
-
-   if ($(Get-CustomField -Name $Name )) {
-      Write-Warning "CustomField $Name already exists"
-      $Exists = $true
+   begin {
+      Test-Config | Out-Null
+      $URL = "/extras/custom-fields/"
    }
 
-   $NetBoxContentTypes = New-Object collections.generic.list[object]
+   process {
+      if ($(Get-CustomField -Name $Name )) {
+         Write-Warning "CustomField $Name already exists"
+         $Exists = $true
+      }
 
-   foreach ($ContentType in $ContentTypes) {
-      $NetBoxContentType = Get-ContentType -Name $ContentType
-      $NetBoxContentTypes += "$($NetBoxContentType.app_label).$($NetBoxContentType.model)"
-   }
+      $NetBoxContentTypes = New-Object collections.generic.list[object]
 
-   $Body = @{
-      name          = $Name
-      label         = $Label
-      type          = $Type
-      required      = $Required
-      choices       = $Choices
-      description   = $Description
-      content_types = $NetBoxContentTypes
-   }
+      foreach ($ContentType in $ContentTypes) {
+         $NetBoxContentType = Get-ContentType -Name $ContentType
+         $NetBoxContentTypes += "$($NetBoxContentType.app_label).$($NetBoxContentType.model)"
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      $Body = @{
+         name          = $Name
+         label         = $Label
+         type          = $Type
+         required      = $Required
+         choices       = $Choices
+         description   = $Description
+         content_types = $NetBoxContentTypes
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
-      return $CustomField
-   }
-   else {
-      return
+      if (-Not $Exists) {
+         $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
+         return $CustomField
+      }
+      else {
+         return
+      }
    }
 }
 
@@ -1473,7 +1498,6 @@ function Remove-CustomField {
    }
 
    process {
-
       if ($InputObject) {
          $Name = $InputObject.name
          $Id = $InputObject.id
@@ -1539,26 +1563,30 @@ function Get-ContentType {
       $Name
    )
 
-   Test-Config | Out-Null
-   $URL = "/extras/content-types/"
-
-   $Query = ""
-
-   if ($Name) {
-      $Query = "?model=$($Name.Replace(' ','').ToLower())"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/api/dcim/content-types/"
    }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+   process {
+      $Query = ""
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $ContentType = $Result
+      if ($Name) {
+         $Query = "?model=$($Name.Replace(' ','').ToLower())"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $ContentType = $Result
+      }
+      else {
+         $ContentType = $Result.results
+      }
+      $ContentType.PSObject.TypeNames.Insert(0, "NetBox.ContentType")
+      return $ContentType
    }
-   else {
-      $ContentType = $Result.results
-   }
-   $ContentType.PSObject.TypeNames.Insert(0, "NetBox.ContentType")
-   return $ContentType
 }
 
 function Get-Manufacturer {
@@ -1604,36 +1632,40 @@ function Get-Manufacturer {
       $All
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/manufacturers/"
-
-   if ($Name) {
-      $Query = "?name__ic=$($Name)"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/manufacturers/"
    }
 
-   if ($Id) {
-      $Query = "?id=$($id)"
-   }
+   process {
+      if ($Name) {
+         $Query = "?name__ic=$($Name)"
+      }
 
-   if ($Slug) {
-      $Query = "?slug__ic=$($Slug)"
-   }
+      if ($Id) {
+         $Query = "?id=$($id)"
+      }
 
-   if ($All) {
-      $Query = ""
-   }
+      if ($Slug) {
+         $Query = "?slug__ic=$($Slug)"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($All) {
+         $Query = ""
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $Manufacturer = $Result
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $Manufacturer = $Result
+      }
+      else {
+         $Manufacturer = $Result.results
+      }
+      $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
+      return $Manufacturer
    }
-   else {
-      $Manufacturer = $Result.results
-   }
-   $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
-   return $Manufacturer
 }
 
 function New-Manufacturer {
@@ -1679,50 +1711,54 @@ function New-Manufacturer {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/manufacturers/"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/manufacturers/"
+   }
 
-   if ($Name) {
-      if (Get-Manufacturer -Name $Name) {
-         Write-Warning "Manufacturer $Name already exists"
-         $Exists = $true
+   process {
+      if ($Name) {
+         if (Get-Manufacturer -Name $Name) {
+            Write-Warning "Manufacturer $Name already exists"
+            $Exists = $true
+         }
       }
-   }
-   if ($Slug) {
-      if (Get-Manufacturer -Slug $Slug) {
-         Write-Warning "Manufacturer $Slug already exists"
-         $Exists = $true
+      if ($Slug) {
+         if (Get-Manufacturer -Slug $Slug) {
+            Write-Warning "Manufacturer $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Name.tolower() -replace " ", "-"
-   }
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Name.tolower() -replace " ", "-"
+      }
 
-   $Body = @{
-      name          = $Name
-      slug          = $Slug
-      custum_fields = $CustomFields
-   }
+      $Body = @{
+         name          = $Name
+         slug          = $Slug
+         custum_fields = $CustomFields
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $Manufacturer = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
-      return $Manufacturer
-   }
-   else {
-      return
+      if (-Not $Exists) {
+         $Manufacturer = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
+         return $Manufacturer
+      }
+      else {
+         return
+      }
    }
 }
 
@@ -1777,7 +1813,6 @@ function Remove-Manufacturer {
    }
 
    process {
-
       if ($InputObject) {
          $Name = $InputObject.name
          $Id = $InputObject.id
@@ -1851,6 +1886,7 @@ function Get-DeviceType {
       $Model,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("Vendor")]
       [String]
       $Manufacturer,
 
@@ -1868,45 +1904,57 @@ function Get-DeviceType {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
+      $Height,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
       $Query
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/device-types/"
-
-   $Query = "?"
-
-   if ($Model) {
-      $Query = $Query + "model__ic=$($Model)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-types/"
    }
 
-   if ($Manufacturer) {
-      $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
-   }
+   process {
+      $Query = "?"
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+      if ($Model) {
+         $Query = $Query + "model__ic=$($Model)&"
+      }
 
-   if ($SubDeviceRole) {
-      $Query = $Query + "?subdevice_role__ic=$($SubDeviceRole)"
-   }
+      if ($Manufacturer) {
+         $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
+      }
 
-   if ($Slug) {
-      $Query = $Query + "slug__ic=$($Slug)&"
-   }
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($SubDeviceRole) {
+         $Query = $Query + "?subdevice_role__ic=$($SubDeviceRole)"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $DeviceType = $Result
+      if ($Slug) {
+         $Query = $Query + "slug__ic=$($Slug)&"
+      }
+
+      if ($Height) {
+         $Query = $Query + "u_height=$($Height)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $DeviceType = $Result
+      }
+      else {
+         $DeviceType = $Result.results
+      }
+      $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+      return $DeviceType
    }
-   else {
-      $DeviceType = $Result.results
-   }
-   $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
-   return $DeviceType
 }
 
 function New-DeviceType {
@@ -1948,6 +1996,7 @@ function New-DeviceType {
 
    param (
       [Parameter(Mandatory = $true)]
+      [Alias("Vendor")]
       $Manufacturer,
 
       [Parameter(Mandatory = $true)]
@@ -2002,66 +2051,68 @@ function New-DeviceType {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/device-types/"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-types/"
+   }
 
-   if ($Name) {
-      if (Get-DeviceType -Name $Name) {
-         Write-Warning "DeviceType $Name already exists"
-         $Exists = $true
+   process {
+      if ($Name) {
+         if (Get-DeviceType -Name $Name) {
+            Write-Warning "DeviceType $Name already exists"
+            $Exists = $true
+         }
       }
-   }
-   if ($Slug) {
-      if (Get-DeviceType -Slug $Slug) {
-         Write-Warning "DeviceType $Slug already exists"
-         $Exists = $true
+      if ($Slug) {
+         if (Get-DeviceType -Slug $Slug) {
+            Write-Warning "DeviceType $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Model.tolower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
-   }
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Model.tolower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
+      }
 
-   if ($Manufacturer -is [String]) {
-      $Manufacturer = (Get-Manufacturer -Name $Manufacturer).Id
-   }
-   else {
-      $Manufacturer
-   }
+      if ($Manufacturer -is [String]) {
+         $Manufacturer = (Get-Manufacturer -Name $Manufacturer).Id
+      }
+      else {
+         $Manufacturer
+      }
 
+      $Body = @{
+         manufacturer   = $Manufacturer
+         model          = $Model
+         slug           = $Slug
+         part_number    = $PartNumber
+         u_height       = $Height
+         is_full_depth  = $FullDepth
+         tags           = $Tags
+         custum_fields  = $CustomFields
+         subdevice_role = $SubDeviceRole
+      }
 
-   $Body = @{
-      manufacturer   = $Manufacturer
-      model          = $Model
-      slug           = $Slug
-      part_number    = $PartNumber
-      u_height       = $Height
-      is_full_depth  = $FullDepth
-      tags           = $Tags
-      custum_fields  = $CustomFields
-      subdevice_role = $SubDeviceRole
-   }
-
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
-      return $DeviceType
+      if (-Not $Exists) {
+         $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+         return $DeviceType
+      }
+      else {
+         return
+      }
    }
-   else {
-      return
-   }
-
 
 }
 
@@ -2196,6 +2247,7 @@ function Get-Device {
       $Model,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("Vendor")]
       [String]
       $Manufacturer,
 
@@ -2228,64 +2280,67 @@ function Get-Device {
       $DeviceType
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/devices/"
-
-   $Query = "?"
-
-   if ($name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/devices/"
    }
 
-   if ($Model) {
-      $Query = $Query + "model__ic=$($Model)&"
-   }
+   process {
+      $Query = "?"
 
-   if ($Manufacturer) {
-      $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
-   }
+      if ($name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+      if ($Model) {
+         $Query = $Query + "model__ic=$($Model)&"
+      }
 
-   if ($Slug) {
-      $Query = $Query + "slug__ic=$($Slug)&"
-   }
+      if ($Manufacturer) {
+         $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
+      }
 
-   if ($MacAddress) {
-      $Query = $Query + "mac_address=$($MacAddress)&"
-   }
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
-   if ($Site) {
-      $Query = $Query + "site__ic=$($Site)&"
-   }
+      if ($Slug) {
+         $Query = $Query + "slug__ic=$($Slug)&"
+      }
 
-   if ($Location) {
-      $Query = $Query + "Location__ic=$($Location)&"
-   }
+      if ($MacAddress) {
+         $Query = $Query + "mac_address=$($MacAddress)&"
+      }
 
-   if ($Rack) {
-      $Query = $Query + "rack=$($Rack)&"
-   }
+      if ($Site) {
+         $Query = $Query + "site__ic=$($Site)&"
+      }
 
-   if ($DeviceType) {
-      $Query = $Query + "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
-   }
+      if ($Location) {
+         $Query = $Query + "Location__ic=$($Location)&"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Rack) {
+         $Query = $Query + "rack=$($Rack)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      [PSCustomObject]$Device = $Result
+      if ($DeviceType) {
+         $Query = $Query + "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         [PSCustomObject]$Device = $Result
+      }
+      else {
+         [PSCustomObject]$Device = $Result.Results
+      }
+      $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
+      return $Device
    }
-   else {
-      [PSCustomObject]$Device = $Result.Results
-   }
-   $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
-   return $Device
 }
-
 function New-Device {
    <#
     .SYNOPSIS
@@ -2405,76 +2460,79 @@ function New-Device {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/devices/"
-
-   if ($Name) {
-      if (Get-Device -Name $Name) {
-         Write-Warning "Device $Name already exists"
-         $Exists = $true
-      }
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/devices/"
    }
 
-   if ($Slug) {
-      if (Get-Device -Slug $Slug) {
-         Write-Warning "Device $Slug already exists"
-         $Exists = $true
-      }
-   }
-
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Name.tolower() -replace " ", "-"
-   }
-
-   if ($DeviceType -is [String]) {
-      $Model = $DeviceType
-      $DeviceType = (Get-DeviceType -Model $DeviceType).Id
-      if ($null -eq $DeviceType) {
-         Write-Error "Device type $($Model) does not exist"
-         break
+   process {
+      if ($Name) {
+         if (Get-Device -Name $Name) {
+            Write-Warning "Device $Name already exists"
+            $Exists = $true
+         }
       }
 
-   }
-
-
-   $Body = @{
-      name        = $Name
-      device_type = $DeviceType
-      device_role = (Get-DeviceRole -Name $DeviceRole).ID
-      site        = (Get-Site -Name $Site).ID
-      location    = (Get-Location -Name $Location).ID
-      rack        = (Get-Rack -Name $Rack).ID
-      position    = $Position
-      face        = $Face
-      status      = $Status
-      asset_tag   = $AssetTag
-   }
-
-   if ($ParentDevice) {
-      $ParentDevice =
-      $Body.parent_device = @{
-         name = (Get-Device -Name $ParentDevice).Name
+      if ($Slug) {
+         if (Get-Device -Slug $Slug) {
+            Write-Warning "Device $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Name.tolower() -replace " ", "-"
+      }
+
+      if ($DeviceType -is [String]) {
+         $Model = $DeviceType
+         $DeviceType = (Get-DeviceType -Model $DeviceType).Id
+         if ($null -eq $DeviceType) {
+            Write-Error "Device type $($Model) does not exist"
+            break
+         }
+
+      }
+
+      $Body = @{
+         name        = $Name
+         device_type = $DeviceType
+         device_role = (Get-DeviceRole -Name $DeviceRole).ID
+         site        = (Get-Site -Name $Site).ID
+         location    = (Get-Location -Name $Location).ID
+         rack        = (Get-Rack -Name $Rack).ID
+         position    = $Position
+         face        = $Face
+         status      = $Status
+         asset_tag   = $AssetTag
+      }
+
+      if ($ParentDevice) {
+         $ParentDevice =
+         $Body.parent_device = @{
+            name = (Get-Device -Name $ParentDevice).Name
+         }
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
         ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
-      return $Devive
-   }
-   else {
-      return
+      if (-Not $Exists) {
+         $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
+         return $Devive
+      }
+      else {
+         return
+      }
    }
 }
 
@@ -2591,38 +2649,42 @@ function Update-Device {
       $Confirm = $true
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/devices/"
-
-   if ($Name -is [String]) {
-      $name = (Get-Device -Query $Name).Id
-   }
-   else {
-      $Name
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/devices/"
    }
 
-   $Body = @{
-      name        = $Name
-      device_type = $DeviceType
-      device_role = (Get-DeviceRole -Name $DeviceRole).ID
-      site        = (Get-Site -Name $Site).ID
-      location    = (Get-Location -Name $Location).ID
-      rack        = (Get-Rack -Name $Rack).ID
-      position    = $Position
-      face        = $Face
-      status      = $Status
-      asset_tag   = $AssetTag
-   }
+   process {
+      if ($Name -is [String]) {
+         $name = (Get-Device -Query $Name).Id
+      }
+      else {
+         $Name
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      $Body = @{
+         name        = $Name
+         device_type = $DeviceType
+         device_role = (Get-DeviceRole -Name $DeviceRole).ID
+         site        = (Get-Site -Name $Site).ID
+         location    = (Get-Location -Name $Location).ID
+         rack        = (Get-Rack -Name $Rack).ID
+         position    = $Position
+         face        = $Face
+         status      = $Status
+         asset_tag   = $AssetTag
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+   }
 }
 
 function Remove-Device {
@@ -2745,34 +2807,38 @@ function Get-DeviceRole {
       $Slug
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/device-roles/"
-
-   $Query = "?"
-
-   if ($Name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-roles/"
    }
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+   process {
+      $Query = "?"
 
-   if ($Slug) {
-      $Query = $Query + "slug__ic=$($Slug)&"
-   }
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $DeviceRole = $Result
+      if ($Slug) {
+         $Query = $Query + "slug__ic=$($Slug)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $DeviceRole = $Result
+      }
+      else {
+         $DeviceRole = $Result.results
+      }
+      $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+      return $DeviceRole
    }
-   else {
-      $DeviceRole = $Result.results
-   }
-   $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-   return $DeviceRole
 }
 
 function New-DeviceRole {
@@ -2841,53 +2907,58 @@ function New-DeviceRole {
       [Switch]
       $Force
    )
-   Test-Config | Out-Null
-   $URL = "/dcim/device-roles/"
 
-   if ($Name) {
-      if (Get-DeviceRole -Name $Name) {
-         Write-Warning "DeviceRole $Name already exists"
-         $Exists = $true
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-roles/"
+   }
+
+   process {
+      if ($Name) {
+         if (Get-DeviceRole -Name $Name) {
+            Write-Warning "DeviceRole $Name already exists"
+            $Exists = $true
+         }
       }
-   }
-   if ($Slug) {
-      if (Get-DeviceRole -Slug $Slug) {
-         Write-Warning "DeviceRole $Slug already exists"
-         $Exists = $true
+      if ($Slug) {
+         if (Get-DeviceRole -Slug $Slug) {
+            Write-Warning "DeviceRole $Slug already exists"
+            $Exists = $true
+         }
       }
-   }
 
-   if ($null -eq $Slug) {
-      $Slug
-   }
-   else {
-      $Slug = $Name.tolower() -replace " ", "-"
-   }
+      if ($null -eq $Slug) {
+         $Slug
+      }
+      else {
+         $Slug = $Name.tolower() -replace " ", "-"
+      }
 
-   $Body = @{
-      name        = $Name
-      slug        = $Slug
-      color       = $Color
-      vm_role     = $VMRole
-      comment     = $Comment
-      description = $Description
-   }
+      $Body = @{
+         name        = $Name
+         slug        = $Slug
+         color       = $Color
+         vm_role     = $VMRole
+         comment     = $Comment
+         description = $Description
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   if (-Not $Exists) {
-      $DeviceRole = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-      return $DeviceRole
-   }
-   else {
-      return
+      if (-Not $Exists) {
+         $DeviceRole = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
+         return $DeviceRole
+      }
+      else {
+         return
+      }
    }
 }
 
@@ -2942,7 +3013,6 @@ function Remove-DeviceRole {
    }
 
    process {
-
       if ($InputObject) {
          $Name = $InputObject.name
          $Id = $InputObject.id
@@ -3021,31 +3091,34 @@ function Get-InterfaceTemplate {
       $All
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/interface-templates/"
-
-   $Query = "?"
-
-   if ($Name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/interface-templates/"
    }
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+   process {
+      $Query = "?"
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $InterfaceTemplate = $Result
-   }
-   else {
-      $InterfaceTemplate = $Result.results
-   }
-   $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
-   return $InterfaceTemplate
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $InterfaceTemplate = $Result
+      }
+      else {
+         $InterfaceTemplate = $Result.results
+      }
+      $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+      return $InterfaceTemplate
+   }
 }
 
 function New-InterfaceTemplate {
@@ -3121,41 +3194,44 @@ function New-InterfaceTemplate {
       $Force
    )
 
-   if ($DeviceType -is [String]) {
-      $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/interface-templates/"
    }
 
-   Test-Config | Out-Null
-   $URL = "/dcim/interface-templates/"
+   process {
+      if ($DeviceType -is [String]) {
+         $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+      }
 
-   if ($FindInterfaceType) {
-      $Type = $(Get-InterfaceType -Linkspeed $LinkSpeed -InterfaceType $InterfaceType)
-   }
+      if ($FindInterfaceType) {
+         $Type = $(Get-InterfaceType -Linkspeed $LinkSpeed -InterfaceType $InterfaceType)
+      }
 
-   $Body = @{
-      device_type = $DeviceType
-      name        = $Name
-      type        = $Type
-      mgmt_only   = $ManagmentOnly
-   }
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      $Body = @{
+         device_type = $DeviceType
+         name        = $Name
+         type        = $Type
+         mgmt_only   = $ManagmentOnly
+      }
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      Write-Verbose $DeviceType
+      Write-Verbose $Name
+      Write-Verbose $Type
+      Write-Verbose $ManagmentOnly
+
+      $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+      return $InterfaceTemplate
    }
-
-   Write-Verbose $DeviceType
-   Write-Verbose $Name
-   Write-Verbose $Type
-   Write-Verbose $ManagmentOnly
-
-   $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
-   return $InterfaceTemplate
 }
-
 function Get-PowerSupplyType {
    param (
       $PowerSupplyConnector
@@ -3216,40 +3292,43 @@ function Get-Interface {
       $ManagementOnly
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/interfaces/"
-
-   $Query = "?"
-
-   if ($Name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/interfaces/"
    }
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
+   process {
+      $Query = "?"
 
-   if ($Device) {
-      $Query = $Query + "?device__ic=$($Device)&"
-   }
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
 
-   if ($ManagementOnly) {
-      $Query = $Query + "?mgmt_only=$($ManagementOnly.ToString())&"
-   }
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
 
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      if ($Device) {
+         $Query = $Query + "?device__ic=$($Device)&"
+      }
 
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $Interface = $Result
+      if ($ManagementOnly) {
+         $Query = $Query + "?mgmt_only=$($ManagementOnly.ToString())&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $Interface = $Result
+      }
+      else {
+         $Interface = $Result.results
+      }
+      $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
+      return $Interface
    }
-   else {
-      $Interface = $Result.results
-   }
-   $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
-   return $Interface
 }
-
 function New-Interface {
    <#
    .SYNOPSIS
@@ -3317,37 +3396,40 @@ function New-Interface {
       $Force
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/interfaces/"
-
-   if ($Device -is [String]) {
-      $Device = (Get-Device -Query $Device).Id
-   }
-   else {
-      $Device
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/interfaces/"
    }
 
-   $Body = @{
-      device      = $Device
-      name        = $Name
-      type        = $Type
-      mgmt_only   = $ManagmentOnly
-      mac_address = $MacAddress
+   process {
+      if ($Device -is [String]) {
+         $Device = (Get-Device -Query $Device).Id
+      }
+      else {
+         $Device
+      }
 
-   }
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      $Body = @{
+         device      = $Device
+         name        = $Name
+         type        = $Type
+         mgmt_only   = $ManagmentOnly
+         mac_address = $MacAddress
+
+      }
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      $Interface = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
+      return $Interface
    }
-
-   $Interface = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
-   return $Interface
 }
-
 function Update-Interface {
    <#
    .SYNOPSIS
@@ -3414,36 +3496,39 @@ function Update-Interface {
       $Confirm = $true
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/interfaces/"
-
-   if ($Device -is [String]) {
-      $Device = (Get-Device -Query $Device).Id
-   }
-   else {
-      $Device
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/interfaces/"
    }
 
-   $Interface = Get-Interface -Name $Name
+   process {
+      if ($Device -is [String]) {
+         $Device = (Get-Device -Query $Device).Id
+      }
+      else {
+         $Device
+      }
 
-   $Body = @{
-      device      = $Device
-      name        = $Name
-      type        = $Type
-      mgmt_only   = $ManagmentOnly
-      mac_address = $MacAddress
-   }
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      $Interface = Get-Interface -Name $Name
+
+      $Body = @{
+         device      = $Device
+         name        = $Name
+         type        = $Type
+         mgmt_only   = $ManagmentOnly
+         mac_address = $MacAddress
+      }
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
    }
-
-   Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
 }
-
 function Remove-Interface {
    <#
    .SYNOPSIS
@@ -3496,7 +3581,6 @@ function Remove-Interface {
    }
 
    process {
-
       if ($InputObject) {
          $Name = $InputObject.name
       }
@@ -3561,31 +3645,33 @@ function Get-PowerPortTemplate {
       $Id
    )
 
-   Test-Config | Out-Null
-   $URL = "/dcim/power-port-templates/"
-
-   $Query = "?"
-
-   if ($Name) {
-      $Query = $Query + "name__ic=$($Name)&"
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/power-port-templates/"
    }
+   process {
+      $Query = "?"
 
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
+
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $PowerPortTemplates = $Result
+      }
+      else {
+         $PowerPortTemplates = $Result.results
+      }
+      $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
+      return $Result.Results
    }
-
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
-
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $PowerPortTemplates = $Result
-   }
-   else {
-      $PowerPortTemplates = $Result.results
-   }
-   $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
-   return $Result.Results
-
 }
 
 function New-PowerPortTemplate {
@@ -3655,32 +3741,37 @@ function New-PowerPortTemplate {
       $Force
    )
 
-   if ($DeviceType -is [String]) {
-      $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/power-port-templates/"
    }
 
-   Test-Config | Out-Null
-   $URL = "/dcim/power-port-templates/"
+   process {
 
-   $Body = @{
-      device_type    = $DeviceType
-      name           = $Name
-      type           = $Type
-      maximum_draw   = $MaxiumDraw
-      allocated_draw = $AllocatedDraw
-   }
+      if ($DeviceType -is [String]) {
+         $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+      }
 
-   # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      $Body = @{
+         device_type    = $DeviceType
+         name           = $Name
+         type           = $Type
+         maximum_draw   = $MaxiumDraw
+         allocated_draw = $AllocatedDraw
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
-   if ($Confirm) {
-      $OutPutObject = [pscustomobject]$Body
-      Show-ConfirmDialog -Object $OutPutObject
-   }
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
 
-   $PowerPortTemplates = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-   $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
-   return $PowerPortTemplates
+      $PowerPortTemplates = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
+      return $PowerPortTemplates
+   }
 }
 
 function Remove-PowerPortTemplate {
@@ -3720,7 +3811,8 @@ function Remove-PowerPortTemplate {
       $InputObject
    )
    begin {
-
+      Test-Config | Out-Null
+      $URL = "/dcim/power-port-templates/"
    }
    process {
       if ($InputObject) {
@@ -3732,18 +3824,24 @@ function Remove-PowerPortTemplate {
 function Get-Cable {
    <#
    .SYNOPSIS
-      Short description
+      Gets cables form NetBox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Get-Cable -Device "ServerA"
+      Gets all cables for ServerA
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the cable
+   .PARAMETER ID
+      ID of the cable
+   .PARAMETER Device
+      Name of the parent device
+   .PARAMETER Rack
+      Name of the parent rack
    .INPUTS
       Inputs (if any)
    .OUTPUTS
-      Output (if any)
+      NetBox.Interface
    .NOTES
       General notes
    #>
@@ -3766,71 +3864,95 @@ function Get-Cable {
       $Rack
    )
 
-   if ($DeviceType -is [String]) {
-      $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/cables/"
    }
+   process {
+      if ($DeviceType -is [String]) {
+         $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+      }
 
-   Test-Config | Out-Null
-   $URL = "/dcim/cables/"
+      $Query = "?"
 
-   $Query = "?"
+      if ($Label) {
+         $Query = $Query + "?Label__ic=$($Label)&"
+      }
 
-   if ($Label) {
-      $Query = $Query + "?Label__ic=$($Label)&"
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      if ($Device) {
+         $Query = $Query + "?device__ic=$($Device)&"
+      }
+
+      if ($Rack) {
+         $Query = $Query + "rack=$($Rack)&"
+      }
+
+      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+
+      if ($Result.Count -gt 50) {
+         $Result = Get-NextPage -Result $Result
+         $Cable = $Result
+      }
+      else {
+         $Cable = $Result.results
+      }
+
+      $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.Cable")
+      return $Cable
    }
-
-   if ($Id) {
-      $Query = $Query + "id=$($id)&"
-   }
-
-   if ($Device) {
-      $Query = $Query + "?device__ic=$($Device)&"
-   }
-
-   if ($Rack) {
-      $Query = $Query + "rack=$($Rack)&"
-   }
-
-   $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
-
-   if ($Result.Count -gt 50) {
-      $Result = Get-NextPage -Result $Result
-      $Cable = $Result
-   }
-   else {
-      $Cable = $Result.results
-   }
-   $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.Cable")
-   return $Cable
 }
 
 function New-Cable {
    <#
    .SYNOPSIS
-      Short description
+      Creates a new cable in NetBox
    .DESCRIPTION
       Long description
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> New-NetBoxCable -InterfaceA "Gig-E 1" -DeviceA ServerA -InterfaceB "GigabitEthernet1/0/39" -DeviceB SwitchB -Label "Super important Cable" -Type cat6 -Color "aa1409" -Length 100 -LengthUnit m
+      Creates a cable between ServerA, Gig-E 1 and SwitchB, GigabitEthernet1/0/39 with the label "Super important Cable" and the type cat6 and the color "aa1409" and the length 100m
+   .PARAMETER DeviceA
+      Endpoint Device A of the cable
+   .PARAMETER InterfaceA
+      Endpoint Interface A of the cable
+   .PARAMETER DeviceB
+      Endpoint Device B of the cable
+   .PARAMETER InterfaceB
+      Endpoint Interface B of the cable
+   .PARAMETER Label
+      Label of the cable
+   .PARAMETER Type
+      Type of the cable, e.g. cat6
+   .PARAMETER Color
+      Color of the cable, e.g. "aa1409"
+   .PARAMETER Length
+      Length of the cable, e.g. 10
+   .PARAMETER LengthUnit
+      Length unit of the cable, e.g. m(eter)
+   .PARAMETER Confirm
+      Confirm the creation of the cable
+   .PARAMETER Force
+      Force the creation of the cable (overwrite existing cable)
    .INPUTS
-      Inputs (if any)
+      NetBox.Cable
    .OUTPUTS
-      Output (if any)
+      Netbox.Cable
    .NOTES
       General notes
    #>
    param (
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       $DeviceA,
 
       [Parameter(Mandatory = $true)]
       [String]
       $InterfaceA,
 
-      [Parameter(Mandatory = $true)]
+      [Parameter(Mandatory = $false)]
       $DeviceB,
 
       [Parameter(Mandatory = $true)]
@@ -3859,6 +3981,11 @@ function New-Cable {
       $Length,
 
       [Parameter(Mandatory = $false)]
+      [ValidateSet("km", "m", "cm", "mi", "ft", "in")]
+      [String]
+      $LengthUnit,
+
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true,
 
@@ -3867,34 +3994,62 @@ function New-Cable {
       $Force
    )
 
-   $InterfaceA = Get-Interface -Device $DeviceA -Interface $InterfaceA
-   $InterfaceB = Get-Interface -Device $DeviceB -Interface $InterfaceB
-
-   $Body = @{
-      termination_a_type = "dcim.interface"
-      termination_a_id   = $InterfaceA.id
-      termination_b_type = "dcim.interface"
-      termination_b_id   = $InterfaceB.id
-      type               = $Type
-      label              = $Label
-      color              = $Color
-      status             = $Status
-      length             = $Length
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/cables/"
    }
 
+   process {
 
-   FunctionName
+      $StartPoint = Get-Interface -Device $DeviceA -Name $InterfaceA
+
+      $EndPoint = Get-Interface -Device $DeviceB -Name $InterfaceB
+
+      if ($StartPoint -eq $EndPoint) {
+         Write-Error "Cannot create a cable between the same interface"
+         break
+      }
+      if (($Null -ne $StartPoint.Cable) -or ($Null -ne $EndPoint.Cable)) {
+         Write-Error "Cannot create a cable between an interface that already has a cable"
+         break
+      }
+
+      $Body = @{
+         termination_a_type = "dcim.interface"
+         termination_a_id   = $StartPoint.id
+         termination_b_type = "dcim.interface"
+         termination_b_id   = $EndPoint.id
+         type               = $Type
+         label              = $Label
+         color              = $Color
+         status             = $Status
+         length             = $Length
+         length_unit        = $LengthUnit
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      $Cable = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $Cable.PSObject.TypeNames.Insert(0, "NetBox.Cable")
+      return $Cable
+   }
 }
 
 # function Update-Cable {
 #    <#
 #    .SYNOPSIS
-#       Short description
+#       Updates an existing cable in NetBox
 #    .DESCRIPTION
 #       Long description
 #    .EXAMPLE
-#       PS C:\> <example usage>
-#       Explanation of what the example does
+#       PS C:\> Update-NetBoxCable -Id 1 -Label "Normal Cable" -Color "ffffff"
+#       Updates the cable with the id 1 with the label "Normal Cable" and the color "ffffff"
 #    .PARAMETER Name
 #       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
 #    .INPUTS
@@ -3905,31 +4060,149 @@ function New-Cable {
 #       General notes
 #    #>
 #    param (
-#       OptionalParameters
+#       [Parameter(Mandatory = $true)]
+#       $DeviceA,
+
+#       [Parameter(Mandatory = $true)]
+#       [String]
+#       $InterfaceA,
+
+#       [Parameter(Mandatory = $true)]
+#       $DeviceB,
+
+#       [Parameter(Mandatory = $true)]
+#       [String]
+#       $InterfaceB,
+
+#       [Parameter(Mandatory = $false)]
+#       [String]
+#       $Label,
+
+#       [Parameter(Mandatory = $true)]
+#       [ValidateSet("cat3", "cat5", "cat5e", "cat6", "cat6a", "cat7", "cat7a", "cat8", "dac-active", "dac-passive", "mrj21-trunk", "coaxial", "mmf", "mmf-om1", "mmf-om2", "mmf-om3", "mmf-om4", "mmf-om5", "smf", "smf-os1", "smf-os2", "aoc", "power")]
+#       [String]
+#       $Type,
+
+#       [Parameter(Mandatory = $false)]
+#       [String]
+#       $Color,
+
+#       [Parameter(Mandatory = $false)]
+#       [String]
+#       $Status,
+
+#       [Parameter(Mandatory = $false)]
+#       [Int32]
+#       $Length,
+
+#       [Parameter(Mandatory = $false)]
+#       [Bool]
+#       $Confirm = $true,
+
+#       [Parameter(Mandatory = $false)]
+#       [Switch]
+#       $Force
 #    )
 
+#    begin {
+#       Test-Config | Out-Null
+#       $URL = "/dcim/cables/"
+#    }
+
+#    process {
+#       $Body = @{
+#          termination_a_type = "dcim.interface"
+#          termination_a_id   = $(Get-Interface -Device $DeviceA -Interface $InterfaceA).id
+#          termination_b_type = "dcim.interface"
+#          termination_b_id   = $(Get-Interface -Device $DeviceB -Interface $InterfaceB).id
+#          type               = $Type
+#          label              = $Label
+#          color              = $Color
+#          status             = $Status
+#          length             = $Length
+#       }
+
+#       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+#    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+#       if ($Confirm) {
+#          $OutPutObject = [pscustomobject]$Body
+#          Show-ConfirmDialog -Object $OutPutObject
+#       }
+
+#       $Cable = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+#       $Cable.PSObject.TypeNames.Insert(0, "NetBox.Cable")
+#       return $Cable
+#    }
 # }
 
-# function Remove-Cable {
-#    <#
-#    .SYNOPSIS
-#       Short description
-#    .DESCRIPTION
-#       Long description
-#    .EXAMPLE
-#       PS C:\> <example usage>
-#       Explanation of what the example does
-#    .PARAMETER Name
-#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
-#    .INPUTS
-#       Inputs (if any)
-#    .OUTPUTS
-#       Output (if any)
-#    .NOTES
-#       General notes
-#    #>
-#    param (
-#       OptionalParameters
-#    )
+function Remove-Cable {
+   <#
+   .SYNOPSIS
+      Deletes a cable from NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> Remove-NetboxCable -Id 1
+      Deletes cable with the id 1
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   param (
+      [Parameter(Mandatory = $True)]
+      [String]
+      $Label,
 
-# }
+      [Parameter(Mandatory = $false)]
+      [String]
+      $ID,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/cables/"
+   }
+   process {
+      if ($Label) {
+         $Cable = Get-Cable -Label $Label
+      }
+      elseif ($ID) {
+         $Cable = Get-Cable -ID $ID
+      }
+      else {
+         Write-Error "Either -Label or -ID must be specified"
+      }
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $Interface
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Cable.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+      }
+   }
+
+}
