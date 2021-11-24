@@ -316,8 +316,10 @@ function Get-Site {
       }
 
       if ($Slug) {
-         $Query = $Query + "?slug__ic=$($Slug)"
+         $Query = $Query + "slug__ic=$($Slug)"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -710,6 +712,8 @@ function Get-Location {
          $Query = $Query + "slug__ic=$($Slug)&"
       }
 
+      $Query = $Query.TrimEnd("&")
+
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
       $Locations = New-Object collections.generic.list[object]
@@ -1026,7 +1030,7 @@ function Get-Rack {
       }
 
       if ($MacAddress) {
-         $Query = $Query + "?mac_address=$($MacAddress)"
+         $Query = $Query + "mac_address=$($MacAddress)"
       }
 
       if ($Site) {
@@ -1040,6 +1044,8 @@ function Get-Rack {
       if ($Slug) {
          $Query = $Query + "slug__ic=$($Slug)&"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -1341,7 +1347,7 @@ function Get-CustomField {
 
    begin {
       Test-Config | Out-Null
-      $URL = "/custom-fields/"
+      $URL = "/extras/custom-fields/"
    }
 
    process {
@@ -1354,6 +1360,8 @@ function Get-CustomField {
       if ($Id) {
          $Query = $Query + "id=$($id)&"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -1615,7 +1623,7 @@ function Get-ContentType {
 
    begin {
       Test-Config | Out-Null
-      $URL = "/api/dcim/content-types/"
+      $URL = "/extras/content-types/"
    }
 
    process {
@@ -1624,6 +1632,8 @@ function Get-ContentType {
       if ($Name) {
          $Query = "?model=$($Name.Replace(' ','').ToLower())"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -1663,23 +1673,18 @@ function Get-Manufacturer {
       General notes
    #>
 
-   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "BySlug")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Slug,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      $Slug
    )
 
    begin {
@@ -1688,21 +1693,21 @@ function Get-Manufacturer {
    }
 
    process {
+      $Query = "?"
+
       if ($Name) {
-         $Query = "?name__ic=$($Name)"
+         $Query = $Query + "name__ic=$($Name)&"
       }
 
       if ($Id) {
-         $Query = "?id=$($id)"
+         $Query = $Query + "id=$($id)&"
       }
 
       if ($Slug) {
-         $Query = "?slug__ic=$($Slug)"
+         $Query = $Query + "slug__ic=$($Slug)&"
       }
 
-      if ($All) {
-         $Query = ""
-      }
+      $Query = $Query.TrimEnd("&")
 
       $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
 
@@ -1900,8 +1905,8 @@ function Remove-Manufacturer {
          }
       }
    }
-
 }
+
 function Get-DeviceType {
    <#
     .SYNOPSIS
@@ -1982,7 +1987,7 @@ function Get-DeviceType {
       }
 
       if ($SubDeviceRole) {
-         $Query = $Query + "?subdevice_role__ic=$($SubDeviceRole)"
+         $Query = $Query + "subdevice_role__ic=$($SubDeviceRole)"
       }
 
       if ($Slug) {
@@ -1992,6 +1997,8 @@ function Get-DeviceType {
       if ($Height) {
          $Query = $Query + "u_height=$($Height)&"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -2163,7 +2170,6 @@ function New-DeviceType {
          return
       }
    }
-
 }
 
 function Remove-DeviceType {
@@ -2377,6 +2383,8 @@ function Get-Device {
       if ($DeviceType) {
          $Query = $Query + "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -2877,6 +2885,8 @@ function Get-DeviceRole {
          $Query = $Query + "slug__ic=$($Slug)&"
       }
 
+      $Query = $Query.TrimEnd("&")
+
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
       $DeviceRoles = New-Object collections.generic.list[object]
@@ -3100,7 +3110,6 @@ function Remove-DeviceRole {
          }
       }
    }
-
 }
 
 function Get-InterfaceTemplate {
@@ -3156,6 +3165,8 @@ function Get-InterfaceTemplate {
       if ($Id) {
          $Query = $Query + "id=$($id)&"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -3334,8 +3345,12 @@ function Get-Interface {
       $Id,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
+      [String]
       $Device,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $DeviceID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Bool]
@@ -3359,14 +3374,18 @@ function Get-Interface {
       }
 
       if ($Device) {
-         $Query = $Query + "?device__ic=$($Device)&"
+         $Query = $Query + "device=$((Get-NetBoxDevice -Name $Device).Name)&"
       }
 
       if ($ManagementOnly) {
-         $Query = $Query + "?mgmt_only=$($ManagementOnly.ToString())&"
+         $Query = $Query + "mgmt_only=$($ManagementOnly.ToString())&"
       }
 
+      $Query = $Query.TrimEnd("&")
+
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
+
+      Write-Verbose $($NetboxURL + $URL + $Query)
 
       $Interfaces = New-Object collections.generic.list[object]
 
@@ -3480,6 +3499,7 @@ function New-Interface {
       return $Interface
    }
 }
+
 function Update-Interface {
    <#
    .SYNOPSIS
@@ -3579,6 +3599,7 @@ function Update-Interface {
       Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
    }
 }
+
 function Remove-Interface {
    <#
    .SYNOPSIS
@@ -3664,6 +3685,7 @@ function Remove-Interface {
       }
    }
 }
+
 function Get-PowerPortTemplate {
    <#
     .SYNOPSIS
@@ -3710,7 +3732,7 @@ function Get-PowerPortTemplate {
          $Query = $Query + "id=$($id)&"
       }
 
-      $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -3928,7 +3950,7 @@ function Get-Cable {
       $Query = "?"
 
       if ($Label) {
-         $Query = $Query + "?Label__ic=$($Label)&"
+         $Query = $Query + "Label__ic=$($Label)&"
       }
 
       if ($Id) {
@@ -3936,12 +3958,14 @@ function Get-Cable {
       }
 
       if ($Device) {
-         $Query = $Query + "?device__ic=$($Device)&"
+         $Query = $Query + "device__ic=$($Device)&"
       }
 
       if ($Rack) {
          $Query = $Query + "rack=$($Rack)&"
       }
+
+      $Query = $Query.TrimEnd("&")
 
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
@@ -4255,5 +4279,4 @@ function Remove-Cable {
          }
       }
    }
-
 }
