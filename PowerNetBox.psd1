@@ -12,7 +12,7 @@
     RootModule           = '.\PowerNetBox.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.5.0'
+    ModuleVersion        = '0.6.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -75,6 +75,7 @@
         "Get-CustomField",
         "Get-Device",
         "Get-DeviceRole",
+        "Get-DeviceBayTemplate",
         "Get-DeviceType",
         "Get-Interface",
         "Get-InterfaceTemplate",
@@ -87,10 +88,12 @@
         "Get-Rack",
         "Get-RelatedObjects",
         "Get-Site",
+        "Import-DeviceType",
         "New-Cable",
         "New-CustomField",
         "New-Device",
         "New-DeviceRole",
+        "New-DeviceBayTemplate",
         "New-DeviceType",
         "New-Interface",
         "New-InterfaceTemplate",
