@@ -17,6 +17,11 @@ Deletes a rack from NetBox
 Remove-NetBoxRack -Name <String> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
 ```
 
+### ByID
+```
+Remove-NetBoxRack -Id <Int32> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
+```
+
 ### ByInputObject
 ```
 Remove-NetBoxRack [-Recurse] [-Confirm <Boolean>] [-InputObject <Object>] [<CommonParameters>]
@@ -46,6 +51,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Id
+{{ Fill Id Description }}
+
+```yaml
+Type: Int32
+Parameter Sets: ByID
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

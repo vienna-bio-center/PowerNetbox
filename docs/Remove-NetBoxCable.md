@@ -8,12 +8,12 @@ schema: 2.0.0
 # Remove-NetBoxCable
 
 ## SYNOPSIS
-Short description
+Deletes a cable from NetBox
 
 ## SYNTAX
 
 ```
-Remove-NetBoxCable [[-Label] <String>] [[-ID] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+Remove-NetBoxCable [-Label] <String> [[-ID] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -23,8 +23,8 @@ Long description
 
 ### EXAMPLE 1
 ```
-<example usage>
-Explanation of what the example does
+Remove-NetboxCable -Id 1
+Deletes cable with the id 1
 ```
 
 ## PARAMETERS
@@ -37,7 +37,7 @@ Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 1
 Default value: None
 Accept pipeline input: False

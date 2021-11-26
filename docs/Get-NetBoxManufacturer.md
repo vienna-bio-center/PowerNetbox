@@ -12,24 +12,8 @@ schema: 2.0.0
 
 ## SYNTAX
 
-### All (Default)
 ```
-Get-NetBoxManufacturer [-All] [<CommonParameters>]
-```
-
-### ByName
-```
-Get-NetBoxManufacturer -Name <String> [<CommonParameters>]
-```
-
-### ById
-```
-Get-NetBoxManufacturer -Id <Int32> [<CommonParameters>]
-```
-
-### BySlug
-```
-Get-NetBoxManufacturer -Slug <String> [<CommonParameters>]
+Get-NetBoxManufacturer [-Name <String>] [-Id <Int32>] [-Slug <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -46,30 +30,15 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Id
 {{ Fill Id Description }}
 
 ```yaml
 Type: Int32
-Parameter Sets: ById
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -81,10 +50,10 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -96,10 +65,10 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: BySlug
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

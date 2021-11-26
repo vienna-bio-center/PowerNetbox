@@ -13,8 +13,8 @@ Get a specific interface from netbox
 ## SYNTAX
 
 ```
-Get-NetBoxInterface [-Name <String>] [-Id <Int32>] [-Device <Int32>] [-ManagementOnly <Boolean>]
- [<CommonParameters>]
+Get-NetBoxInterface [-Name <String>] [-Id <Int32>] [-Device <String>] [-DeviceID <Int32>]
+ [-ManagementOnly <Boolean>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -62,6 +62,21 @@ Accept wildcard characters: False
 
 ### -Device
 Name of the parent device
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceID
+{{ Fill DeviceID Description }}
 
 ```yaml
 Type: Int32
