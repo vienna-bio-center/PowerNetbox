@@ -741,8 +741,10 @@ function New-Location {
          Name of the location
     .PARAMETER Slug
          Slug of the location, if not specified, it will be generated from the name
-    .PARAMETER Site
-         Site of the location
+    .PARAMETER SiteName
+         Name of the Site of the location
+    .PARAMETER SiteID
+         ID of the Site of the location
     .PARAMETER Parent
          Parent of the location
     .PARAMETER CustomFields
@@ -763,6 +765,7 @@ function New-Location {
        General notes
     #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true)]
       [String]
@@ -772,8 +775,13 @@ function New-Location {
       [String]
       $Slug,
 
-      [Parameter(Mandatory = $true)]
-      $Site,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $SiteName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $SiteID,
 
       [Parameter(Mandatory = $false)]
       $Parent,
@@ -821,8 +829,12 @@ function New-Location {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
-      if ($Site -is [String]) {
-         $Site = (Get-Site -Name $Site).ID
+      if ($SiteName) {
+         $Site = Get-Site -Name $SiteName
+      }
+
+      if ($SiteID) {
+         $Site = Get-Site -Id $SiteID
       }
 
       if ($Parent -is [String]) {
@@ -832,7 +844,7 @@ function New-Location {
       $Body = @{
          name        = $Name
          slug        = $Slug
-         site        = $Site
+         site        = $Site.ID
          parent      = $Parent
          description = $Description
       }
@@ -1074,10 +1086,14 @@ function New-Rack {
        Name of the rack
     .PARAMETER Slug
          Slug of the rack, if not specified, it will be generated from the name
-    .PARAMETER Site
-         Site of the rack
-    .PARAMETER Location
-         Location of the rack
+    .PARAMETER SiteName
+         Name of the Site of the rack
+    .PARAMETER SiteID
+         ID of the Site of the rack
+    .PARAMETER LocationName
+         Name of the Location of the rack
+    .PARAMETER LocationID
+         ID of the Location of the rack
     .PARAMETER Status
          Status of the rack, Defaults to Active
     .PARAMETER Width
@@ -1099,7 +1115,7 @@ function New-Rack {
     .NOTES
        General notes
     #>
-
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true)]
       [String]
@@ -1109,11 +1125,21 @@ function New-Rack {
       [String]
       $Slug,
 
-      [Parameter(Mandatory = $true)]
-      $Site,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $SiteName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $SiteID,
 
       [Parameter(Mandatory = $false)]
-      $Location,
+      [String]
+      $LocationName,
+
+      [Parameter(Mandatory = $false)]
+      [Int32]
+      $LocationID,
 
       [Parameter(Mandatory = $false)]
       [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
@@ -1177,19 +1203,27 @@ function New-Rack {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
-      if ($Site -is [String]) {
-         $Site = (Get-Site -Name $Site).ID
+      if ($SiteName) {
+         $Site = Get-Site -Name $SiteName
       }
 
-      if ($Location -is [String]) {
-         $Location = (Get-Location -Name $Location).ID
+      if ($SiteID) {
+         $Site = Get-Site -Id $SiteID
+      }
+
+      if ($LocationName) {
+         $Location = Get-Location -Name $Location
+      }
+
+      if ($LocationID) {
+         $Location = Get-Location -ID $LocationID
       }
 
       $Body = @{
          name        = $Name
          slug        = $Slug
-         site        = $Site
-         location    = $Location
+         site        = $Site.ID
+         location    = $Location.ID
          status      = $Status
          type        = $Type
          width       = $Width
@@ -1198,7 +1232,7 @@ function New-Rack {
       }
 
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -1775,13 +1809,23 @@ function New-Manufacturer {
       if ($Name) {
          if (Get-Manufacturer -Name $Name) {
             Write-Warning "Manufacturer $Name already exists"
-            $Exists = $true
+            if ($Force) {
+               $Exists = $true
+            }
+            else {
+               return
+            }
          }
       }
       if ($Slug) {
          if (Get-Manufacturer -Slug $Slug) {
             Write-Warning "Manufacturer $Slug already exists"
-            $Exists = $true
+            if ($Force) {
+               $Exists = $true
+            }
+            else {
+               return
+            }
          }
       }
 
@@ -1926,6 +1970,8 @@ function Get-DeviceType {
        Search for a device type by sub device role
     .PARAMETER Slug
        Search for a device type by slug
+    .PARAMETER Exact
+       Search for exacte match instead of partial
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -1937,6 +1983,7 @@ function Get-DeviceType {
    [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
    param (
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("Name")]
       [String]
       $Model,
 
@@ -1955,6 +2002,10 @@ function Get-DeviceType {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
+      $PartNumber,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
       $Slug,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
@@ -1963,7 +2014,11 @@ function Get-DeviceType {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Query
+      $Query,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Switch]
+      $Exact
    )
 
    begin {
@@ -1975,11 +2030,16 @@ function Get-DeviceType {
       $Query = "?"
 
       if ($Model) {
-         $Query = $Query + "model__ic=$($Model)&"
+         if ($Exact) {
+            $Query = $Query + "model=$($Model.Replace(" ","%20"))&"
+         }
+         else {
+            $Query = $Query + "model__ic=$($Model)&"
+         }
       }
 
       if ($Manufacturer) {
-         $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
+         $Query = $Query + "manufacturer_id=$((Get-Manufacturer -Name $Manufacturer).ID)&"
       }
 
       if ($Id) {
@@ -1990,8 +2050,17 @@ function Get-DeviceType {
          $Query = $Query + "subdevice_role__ic=$($SubDeviceRole)"
       }
 
+      if ($PartNumber) {
+         $Query = $Query + "part_number__ic=$($PartNumber)"
+      }
+
       if ($Slug) {
-         $Query = $Query + "slug__ic=$($Slug)&"
+         if ($Exact) {
+            $Query = $Query + "slug=$($Slug)&"
+         }
+         else {
+            $Query = $Query + "slug__ic=$($Slug)&"
+         }
       }
 
       if ($Height) {
@@ -2023,8 +2092,10 @@ function New-DeviceType {
     .EXAMPLE
        PS C:\> New-NetboxDeviceType -Model "Cisco Catalyst 2960" -Manufacturer "Cisco" -Height "4"
        Creates device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox
-    .PARAMETER Manufacturer
+    .PARAMETER ManufacturerName
        Name of the manufacturer
+    .PARAMETER ManufacturerID
+       ID of the manufacturer
     .PARAMETER Model
        Model of the device type
     .PARAMETER Slug
@@ -2051,13 +2122,21 @@ function New-DeviceType {
        General notes
     #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-      [Parameter(Mandatory = $true)]
-      [Alias("Vendor")]
-      $Manufacturer,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Alias("VendorName")]
+      [String]
+      $ManufacturerName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Alias("VendorID")]
+      [Int32]
+      $ManufacturerID,
 
       [Parameter(Mandatory = $true)]
       [String]
+      [Alias("Name")]
       $Model,
 
       [Parameter(Mandatory = $false)]
@@ -2100,6 +2179,10 @@ function New-DeviceType {
       $PowerSupplies,
 
       [Parameter(Mandatory = $false)]
+      [Hashtable[]]
+      $DeviceBays,
+
+      [Parameter(Mandatory = $false)]
       [Bool]
       $Confirm = $true,
 
@@ -2114,14 +2197,14 @@ function New-DeviceType {
    }
 
    process {
-      if ($Name) {
-         if (Get-DeviceType -Name $Name) {
-            Write-Warning "DeviceType $Name already exists"
+      if ($Model) {
+         if (Get-DeviceType -Name $Model -Exact) {
+            Write-Warning "DeviceType $Model already exists"
             $Exists = $true
          }
       }
       if ($Slug) {
-         if (Get-DeviceType -Slug $Slug) {
+         if (Get-DeviceType -Slug $Slug -Exact) {
             Write-Warning "DeviceType $Slug already exists"
             $Exists = $true
          }
@@ -2134,15 +2217,15 @@ function New-DeviceType {
          $Slug = $Model.tolower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
       }
 
-      if ($Manufacturer -is [String]) {
-         $Manufacturer = (Get-Manufacturer -Name $Manufacturer).Id
+      if ($ManufacturerName) {
+         $Manufacturer = Get-Manufacturer -Name $ManufacturerName
       }
-      else {
-         $Manufacturer
+      if ($ManufacturerID) {
+         $Manufacturer = Get-Manufacturer -ID $ManufacturerID
       }
 
       $Body = @{
-         manufacturer   = $Manufacturer
+         manufacturer   = $Manufacturer.ID
          model          = $Model
          slug           = $Slug
          part_number    = $PartNumber
@@ -2154,7 +2237,7 @@ function New-DeviceType {
       }
 
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -2256,6 +2339,93 @@ function Remove-DeviceType {
    }
 }
 
+function Import-DeviceType {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   [CmdletBinding()]
+   param (
+      [Parameter()]
+      [String]
+      [Alias("YamlFile")]
+      $Path
+   )
+   $DeviceType = Get-Content $path | ConvertFrom-Yaml
+
+   Write-Verbose $($DeviceType | Format-Table | Out-String)
+
+   Write-Verbose $($DeviceType.Interfaces | Format-Table | Out-String)
+
+   New-Manufacturer -Name $DeviceType.Manufacturer -Confirm $false | Out-Null
+
+   $NewDeviceTypeParams = @{
+      ManufacturerName = $DeviceType.Manufacturer
+      Model            = $DeviceType.Model
+      Confirm          = $false
+   }
+
+   if ($DeviceType.u_height) {
+      $NewDeviceTypeParams["height"] = $DeviceType.u_height
+   }
+
+   if ($DeviceType.is_full_depth) {
+      $NewDeviceTypeParams["FullDepth"] = $DeviceType.is_full_depth
+   }
+
+   if ($DeviceType.subdevice_role) {
+      $NewDeviceTypeParams["SubDeviceRole"] = $DeviceType.subdevice_role
+   }
+
+   if ($DeviceType.part_number) {
+      $NewDeviceTypeParams["PartNumber"] = $DeviceType.part_number
+   }
+
+   if ($DeviceType.slug) {
+      $NewDeviceTypeParams["Slug"] = $DeviceType.slug
+   }
+
+   if ($DeviceType."device-bays") {
+      $NewDeviceTypeParams["DeviceBays"] = $DeviceType."device-bays"
+   }
+
+   Write-Verbose $($NewDeviceTypeParams | Format-Table | Out-String )
+
+   $NewDeviceType = New-DeviceType @NewDeviceTypeParams -Confirm $false | Out-Null
+
+   if ($NewDeviceType -eq $null) {
+      $NewDeviceType = Get-NetBoxDeviceType -Model $DeviceType.Model -Manufacturer $DeviceType.Manufacturer
+   }
+
+   foreach ($Interface in $DeviceType.interfaces) {
+      Write-Verbose "Creating Interfaces"
+      New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagmentOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.id -Confirm $false | Out-Null
+   }
+
+   foreach ($PSU in $DeviceType."power-ports") {
+      Write-Verbose "Creating PSUs"
+      New-PowerPortTemplate -Name $PSU.Name -Type $PSU.Type -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+   }
+
+   foreach ($DeviceBay in $DeviceType."device-bays") {
+      Write-Verbose "Creating Device Bays"
+      New-DeviceBayTemplate -Name $DeviceBay.Name -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+   }
+}
+
 function Get-Device {
    <#
     .SYNOPSIS
@@ -2353,7 +2523,7 @@ function Get-Device {
       }
 
       if ($Manufacturer) {
-         $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
+         $Query = $Query + "manufacturer=$($Manufacturer)&"
       }
 
       if ($Id) {
@@ -2410,8 +2580,10 @@ function New-Device {
        Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
     .PARAMETER Name
        Name of the device
-    .PARAMETER DevuceType
-       Device type of the device
+    .PARAMETER DevuceTypeName
+       Name of the Device type of the device
+    .PARAMETER DevuceTypeID
+       ID of the Device type of the device
     .PARAMETER Site
        Site of the device
     .PARAMETER Location
@@ -2447,19 +2619,23 @@ function New-Device {
     .NOTES
        General notes
     #>
-
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
 
       [Parameter(Mandatory = $true)]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true)]
-      $DeviceType,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceTypeName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $DeviceTypeID,
 
       [Parameter(Mandatory = $true)]
       [String]
-      [ValidateSet("Server", "Switch", "Leafswitch")]
       $DeviceRole,
 
       [Parameter(Mandatory = $true)]
@@ -2494,7 +2670,7 @@ function New-Device {
       [Parameter(Mandatory = $false)]
       [String]
       [ValidateSet("front", "back")]
-      $Face = "front",
+      $Face,
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -2545,19 +2721,22 @@ function New-Device {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
-      if ($DeviceType -is [String]) {
-         $Model = $DeviceType
-         $DeviceType = (Get-DeviceType -Model $DeviceType).Id
-         if ($null -eq $DeviceType) {
-            Write-Error "Device type $($Model) does not exist"
-            break
-         }
+      if ($DeviceTypeName) {
+         $DeviceType = Get-DeviceType -Model $DeviceTypeName
+      }
 
+      if ($DeviceTypeID) {
+         $DeviceType = Get-DeviceType -ID $DeviceTypeID
+      }
+
+      if ($null -eq $DeviceType) {
+         Write-Error "Device type $($Model) does not exist"
+         break
       }
 
       $Body = @{
          name        = $Name
-         device_type = $DeviceType
+         device_type = $DeviceType.ID
          device_role = (Get-DeviceRole -Name $DeviceRole).ID
          site        = (Get-Site -Name $Site).ID
          location    = (Get-Location -Name $Location).ID
@@ -2652,7 +2831,6 @@ function Update-Device {
 
       [Parameter(Mandatory = $true)]
       [String]
-      [ValidateSet("Server", "Switch", "Leafswitch")]
       $DeviceRole,
 
       [Parameter(Mandatory = $true)]
@@ -3135,19 +3313,22 @@ function Get-InterfaceTemplate {
        General notes
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "All")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
-      [Int32]
-      $Id,
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $DeviceTypeName,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "All")]
-      [Switch]
-      $All
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $DeviceTypeID,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id
    )
 
    begin {
@@ -3160,6 +3341,13 @@ function Get-InterfaceTemplate {
 
       if ($Name) {
          $Query = $Query + "name__ic=$($Name)&"
+      }
+
+      if ($DeviceTypeName) {
+         $Query = $Query + "devicetype_id=$($(Get-DeviceType -Name $DeviceTypeName).ID)&"
+      }
+      if ($DeviceTypeID) {
+         $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
 
       if ($Id) {
@@ -3193,8 +3381,10 @@ function New-InterfaceTemplate {
        Creates an interface template "FastEthernet" for devicetype "Poweredge R6515" with type "100base-tx"
     .PARAMETER Name
        Name of the interface template
-    .PARAMETER DeviceType
+    .PARAMETER DeviceTypeName
       Name of the device type
+    .PARAMETER DeviceTypeID
+      ID of the device type
     .PARAMETER Label
       Label of the interface template
     .PARAMETER Type
@@ -3213,13 +3403,19 @@ function New-InterfaceTemplate {
        General notes
     #>
 
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
       [Parameter(Mandatory = $true)]
       [String]
       $Name,
 
-      [Parameter(Mandatory = $true)]
-      $DeviceType,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceTypeName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $DeviceTypeID,
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -3261,8 +3457,17 @@ function New-InterfaceTemplate {
    }
 
    process {
-      if ($DeviceType -is [String]) {
-         $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+      if ($DeviceTypeName) {
+         $DeviceType = Get-DeviceType -Name $DeviceTypeName
+      }
+
+      if ($DeviceTypeID) {
+         $DeviceType = Get-DeviceType -ID $DeviceTypeID
+      }
+
+      if (Get-InterfaceTemplate -DeviceTypeID $DeviceType.ID -Name $Name ) {
+         Write-Warning "InterfaceTemplate $($DeviceType.Model) - $Name already exists"
+         $Exists = $true
       }
 
       if ($FindInterfaceType) {
@@ -3270,27 +3475,27 @@ function New-InterfaceTemplate {
       }
 
       $Body = @{
-         device_type = $DeviceType
+         device_type = $DeviceType.ID
          name        = $Name
          type        = $Type
          mgmt_only   = $ManagmentOnly
       }
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      Write-Verbose $DeviceType
-      Write-Verbose $Name
-      Write-Verbose $Type
-      Write-Verbose $ManagmentOnly
-
-      $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
-      return $InterfaceTemplate
+      if (-Not $Exists) {
+         $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+         return $InterfaceTemplate
+      }
+      else {
+         return
+      }
    }
 }
 function Get-PowerSupplyType {
@@ -3411,8 +3616,10 @@ function New-Interface {
       Name of the interface
    .PARAMETER Label
       Label of the interface
-   .PARAMETER Device
+   .PARAMETER DeviceName
       Name of the parent device
+   .PARAMETER DeviceID
+      ID of the parent device
    .PARAMETER Type
       Type of the interface
    .PARAMETER MacAddress
@@ -3432,8 +3639,13 @@ function New-Interface {
    #>
 
    param (
-      [Parameter(Mandatory = $true)]
-      $Device,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $DeviceID,
 
       [Parameter(Mandatory = $true)]
       [String]
@@ -3471,15 +3683,16 @@ function New-Interface {
    }
 
    process {
-      if ($Device -is [String]) {
-         $Device = (Get-Device -Query $Device).Id
+      if ($DeviceName) {
+         $Device = Get-Device -Name $DeviceName
       }
-      else {
-         $Device
+
+      if ($DeviceName) {
+         $Device = Get-Device -ID $DeviceID
       }
 
       $Body = @{
-         device      = $Device
+         device      = $Device.ID
          name        = $Name
          type        = $Type
          mgmt_only   = $ManagmentOnly
@@ -3487,7 +3700,7 @@ function New-Interface {
 
       }
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -3533,8 +3746,13 @@ function Update-Interface {
 
    [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true)]
-      $Device,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $DeviceID,
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -3572,11 +3790,12 @@ function Update-Interface {
    }
 
    process {
-      if ($Device -is [String]) {
-         $Device = (Get-Device -Query $Device).Id
+      if ($DeviceName) {
+         $Device = Get-Device -Name $DeviceName
       }
-      else {
-         $Device
+
+      if ($DeviceName) {
+         $Device = Get-Device -ID $DeviceID
       }
 
       $Interface = Get-Interface -Name $Name
@@ -3713,6 +3932,14 @@ function Get-PowerPortTemplate {
       $Name,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $DeviceTypeName,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $DeviceTypeID,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $Id
    )
@@ -3726,6 +3953,13 @@ function Get-PowerPortTemplate {
 
       if ($Name) {
          $Query = $Query + "name__ic=$($Name)&"
+      }
+
+      if ($DeviceTypeName) {
+         $Query = $Query + "devicetype_id=$($(Get-DeviceType -Name $DeviceTypeName).ID)&"
+      }
+      if ($DeviceTypeID) {
+         $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
 
       if ($Id) {
@@ -3759,8 +3993,10 @@ function New-PowerPortTemplate {
        Creates a new power port template with name "PSU1"
     .PARAMETER Name
        Name of the power port template
-    .PARAMETER DeviceType
-      Device type of the power port template
+    .PARAMETER DevuceTypeName
+       Name of the Device type of the device
+    .PARAMETER DevuceTypeID
+       ID of the Device type of the device
     .PARAMETER Type
       Type of the power port template
     .PARAMETER Label
@@ -3781,9 +4017,15 @@ function New-PowerPortTemplate {
        General notes
     #>
 
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true)]
-      $DeviceType,
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceTypeName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $DeviceTypeID,
 
       [Parameter(Mandatory = $true)]
       [String]
@@ -3821,13 +4063,21 @@ function New-PowerPortTemplate {
    }
 
    process {
+      if ($DeviceTypeName) {
+         $DeviceType = Get-DeviceType -Model $DeviceTypeName
+      }
 
-      if ($DeviceType -is [String]) {
-         $DeviceType = (Get-DeviceType -Query $DeviceType).Id
+      if ($DeviceTypeID) {
+         $DeviceType = Get-DeviceType -ID $DeviceTypeID
+      }
+
+      if (Get-PowerPortTemplate -DeviceTypeID $DeviceType.ID -Name $Name ) {
+         Write-Warning "PowerPortTemplate $($DeviceType.Model) - $Name already exists"
+         $Exists = $true
       }
 
       $Body = @{
-         device_type    = $DeviceType
+         device_type    = $DeviceType.ID
          name           = $Name
          type           = $Type
          maximum_draw   = $MaxiumDraw
@@ -3835,16 +4085,20 @@ function New-PowerPortTemplate {
       }
 
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
-
-      $PowerPortTemplates = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
-      return $PowerPortTemplates
+      if (-Not $Exists) {
+         $PowerPortTemplates = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $PowerPortTemplates.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
+         return $PowerPortTemplates
+      }
+      else {
+         return
+      }
    }
 }
 
@@ -3942,11 +4196,8 @@ function Get-Cable {
       Test-Config | Out-Null
       $URL = "/dcim/cables/"
    }
-   process {
-      if ($DeviceType -is [String]) {
-         $DeviceType = (Get-DeviceType -Query $DeviceType).Id
-      }
 
+   process {
       $Query = "?"
 
       if ($Label) {
@@ -4103,7 +4354,7 @@ function New-Cable {
       }
 
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -4277,6 +4528,170 @@ function Remove-Cable {
          else {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
          }
+      }
+   }
+}
+
+function Get-DeviceBayTemplate {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
+   param (
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $DeviceTypeName,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $DeviceTypeID,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id
+   )
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-bay-templates/"
+   }
+   process {
+      $Query = "?"
+
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
+
+      if ($DeviceTypeName) {
+         $Query = $Query + "devicetype_id=$($(Get-DeviceType -Name $DeviceTypeName).ID)&"
+      }
+      if ($DeviceTypeID) {
+         $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
+      }
+
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      $Query = $Query.TrimEnd("&")
+
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
+
+      $DeviceBayTemplates = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$DeviceBayTemplate = $item
+         $DeviceBayTemplate.PSObject.TypeNames.Insert(0, "NetBox.DeviceBayTemplate")
+         $DeviceBayTemplates += $DeviceBayTemplate
+      }
+
+      return $InterfaceTemplates
+   }
+}
+
+function New-DeviceBayTemplate {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   param (
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "ByName")]
+      [String]
+      $DeviceTypeName,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "ByID")]
+      [Int32]
+      $DeviceTypeID,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Label,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Description,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-bay-templates/"
+   }
+
+   process {
+      if ($DeviceTypeName) {
+         $DeviceType = Get-DeviceType -Model $DeviceTypeName
+      }
+
+      if ($DeviceTypeID) {
+         $DeviceType = Get-DeviceType -ID $DeviceTypeID
+      }
+
+      $Body = @{
+         device_type = $DeviceType.ID
+         name        = $Name
+         label       = $Label
+         description = $Description
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      if (-Not $Exists) {
+         $DeviceBayTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $DeviceBayTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+         return $DeviceBayTemplate
+      }
+      else {
+         return
       }
    }
 }
