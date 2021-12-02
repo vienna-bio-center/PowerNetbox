@@ -3813,21 +3813,21 @@ function Update-Interface {
          $Device = Get-Device -Name $DeviceName
       }
 
-      if ($DeviceName) {
+      if ($DeviceID) {
          $Device = Get-Device -ID $DeviceID
       }
 
-      $Interface = Get-Interface -Name $Name
+      $Interface = Get-Interface -Name $Name -DeviceID $Device.ID
 
       $Body = @{
-         device      = $Device
+         device      = $Device.ID
          name        = $Name
          type        = $Type
          mgmt_only   = $ManagmentOnly
          mac_address = $MacAddress
       }
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
