@@ -2455,6 +2455,8 @@ function Get-Device {
        All devices from Rack
     .PARAMETER DeviceType
        Device type of the device
+    .PARAMETER Exact
+       Search for exacte match instead of partial
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -2503,7 +2505,11 @@ function Get-Device {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $DeviceType
+      $DeviceType,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Switch]
+      $Exact
    )
 
    begin {
@@ -2515,7 +2521,12 @@ function Get-Device {
       $Query = "?"
 
       if ($name) {
-         $Query = $Query + "name__ic=$($Name)&"
+         if ($Exact) {
+            $Query = $Query + "name=$($Name)&"
+         }
+         else {
+            $Query = $Query + "name__ic=$($Name)&"
+         }
       }
 
       if ($Model) {
@@ -2701,7 +2712,7 @@ function New-Device {
 
    process {
       if ($Name) {
-         if (Get-Device -Name $Name) {
+         if (Get-Device -Name $Name -Exact) {
             Write-Warning "Device $Name already exists"
             $Exists = $true
          }
@@ -3551,7 +3562,7 @@ function Get-Interface {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Device,
+      $DeviceName,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
@@ -3578,8 +3589,12 @@ function Get-Interface {
          $Query = $Query + "id=$($id)&"
       }
 
-      if ($Device) {
-         $Query = $Query + "device=$((Get-NetBoxDevice -Name $Device).Name)&"
+      if ($DeviceName) {
+         $Query = $Query + "device_id=$((Get-NetBoxDevice -Name $DeviceName).ID)&"
+      }
+
+      if ($DeviceID) {
+         $Query = $Query + "device_id=$((Get-NetBoxDevice -Id $DeviceID).ID)&"
       }
 
       if ($ManagementOnly) {
@@ -3746,11 +3761,15 @@ function Update-Interface {
 
    [CmdletBinding(DefaultParameterSetName = "Byname")]
    param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByDeviceName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ById")]
       [String]
       $DeviceName,
 
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Parameter(Mandatory = $true, ParameterSetName = "ByDeviceId")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ByName")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ById")]
       [Int32]
       $DeviceID,
 
