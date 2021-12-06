@@ -12,9 +12,16 @@ Creates a location in NetBox
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-New-NetBoxLocation [-Name] <String> [[-Slug] <String>] [-Site] <Object> [[-Parent] <Object>]
- [[-CustomFields] <String>] [[-Description] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxLocation -Name <String> [-Slug <String>] -SiteName <String> [-Parent <Object>]
+ [-CustomFields <String>] [-Description <String>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
+```
+
+### ByID
+```
+New-NetBoxLocation -Name <String> [-Slug <String>] -SiteID <Int32> [-Parent <Object>] [-CustomFields <String>]
+ [-Description <String>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -39,7 +46,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -54,23 +61,38 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Site
-Site of the location
+### -SiteName
+Name of the Site of the location
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByName
 Aliases:
 
 Required: True
-Position: 3
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SiteID
+ID of the Site of the location
+
+```yaml
+Type: Int32
+Parameter Sets: ByID
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -84,7 +106,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -99,7 +121,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -114,7 +136,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -129,7 +151,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

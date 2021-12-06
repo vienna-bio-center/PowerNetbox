@@ -30,7 +30,7 @@ Deletes cable with the id 1
 ## PARAMETERS
 
 ### -Label
-{{ Fill Label Description }}
+Label of the Cable
 
 ```yaml
 Type: String
@@ -45,7 +45,7 @@ Accept wildcard characters: False
 ```
 
 ### -ID
-{{ Fill ID Description }}
+ID of the Cable
 
 ```yaml
 Type: String
@@ -60,7 +60,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-Prompts you for confirmation before running the cmdlet.
+Confirm the deletion of the cable
 
 ```yaml
 Type: Boolean

@@ -5,7 +5,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-NetBoxPowerSupplyType
+# Import-NetBoxDeviceType
 
 ## SYNOPSIS
 Short description
@@ -13,7 +13,7 @@ Short description
 ## SYNTAX
 
 ```
-Get-NetBoxPowerSupplyType [[-PowerSupplyConnector] <Object>]
+Import-NetBoxDeviceType [[-Path] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,13 +29,13 @@ Explanation of what the example does
 
 ## PARAMETERS
 
-### -PowerSupplyConnector
-{{ Fill PowerSupplyConnector Description }}
+### -Path
+Path to the yaml file to import
 
 ```yaml
-Type: Object
+Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: YamlFile
 
 Required: False
 Position: 1
@@ -43,6 +43,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

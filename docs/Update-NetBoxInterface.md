@@ -14,19 +14,31 @@ Updates an existing interface in netbox
 
 ### Byname (Default)
 ```
-Update-NetBoxInterface -Device <Object> [-Label <String>] -Type <String> [-MacAddress <String>]
- [-ManagmentOnly <Boolean>] [-Confirm <Boolean>] [<CommonParameters>]
-```
-
-### ByName
-```
-Update-NetBoxInterface -Device <Object> -Name <String> [-Label <String>] -Type <String> [-MacAddress <String>]
- [-ManagmentOnly <Boolean>] [-Confirm <Boolean>] [<CommonParameters>]
+Update-NetBoxInterface [-Label <String>] -Type <String> [-MacAddress <String>] [-ManagmentOnly <Boolean>]
+ [-Confirm <Boolean>] [<CommonParameters>]
 ```
 
 ### ById
 ```
-Update-NetBoxInterface -Device <Object> -Id <Int32> [-Label <String>] -Type <String> [-MacAddress <String>]
+Update-NetBoxInterface [-DeviceName <String>] [-DeviceID <Int32>] -Id <Int32> [-Label <String>] -Type <String>
+ [-MacAddress <String>] [-ManagmentOnly <Boolean>] [-Confirm <Boolean>] [<CommonParameters>]
+```
+
+### ByName
+```
+Update-NetBoxInterface [-DeviceName <String>] [-DeviceID <Int32>] -Name <String> [-Label <String>]
+ -Type <String> [-MacAddress <String>] [-ManagmentOnly <Boolean>] [-Confirm <Boolean>] [<CommonParameters>]
+```
+
+### ByDeviceName
+```
+Update-NetBoxInterface -DeviceName <String> [-Label <String>] -Type <String> [-MacAddress <String>]
+ [-ManagmentOnly <Boolean>] [-Confirm <Boolean>] [<CommonParameters>]
+```
+
+### ByDeviceId
+```
+Update-NetBoxInterface -DeviceID <Int32> [-Label <String>] -Type <String> [-MacAddress <String>]
  [-ManagmentOnly <Boolean>] [-Confirm <Boolean>] [<CommonParameters>]
 ```
 
@@ -43,12 +55,24 @@ Updates an interface with id "1" to have name "NewInterface" with type "10gbase-
 
 ## PARAMETERS
 
-### -Device
+### -DeviceName
 Name of the parent device
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ById, ByName
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+```yaml
+Type: String
+Parameter Sets: ByDeviceName
 Aliases:
 
 Required: True
@@ -58,8 +82,35 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DeviceID
+ID of the parent device
+
+```yaml
+Type: Int32
+Parameter Sets: ById, ByName
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+```yaml
+Type: Int32
+Parameter Sets: ByDeviceId
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Name
-Name of the interface
+{{ Fill Name Description }}
 
 ```yaml
 Type: String
@@ -134,7 +185,7 @@ Accept wildcard characters: False
 ```
 
 ### -ManagmentOnly
-{{ Fill ManagmentOnly Description }}
+Is this interface only for management?
 
 ```yaml
 Type: Boolean

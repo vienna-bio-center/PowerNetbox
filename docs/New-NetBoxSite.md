@@ -182,7 +182,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
-{{ Fill Description Description }}
+Descripion of the site
 
 ```yaml
 Type: String

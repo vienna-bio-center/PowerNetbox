@@ -5,15 +5,16 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-NetBoxCable
+# Get-NetBoxDeviceBayTemplate
 
 ## SYNOPSIS
-Gets cables form NetBox
+Short description
 
 ## SYNTAX
 
 ```
-Get-NetBoxCable [-Label <String>] [-Id <Int32>] [-Device <String>] [-Rack <String>] [<CommonParameters>]
+Get-NetBoxDeviceBayTemplate [-Name <String>] [-Id <Int32>] [-DeviceTypeName <String>] [-DeviceTypeID <Int32>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -23,14 +24,14 @@ Long description
 
 ### EXAMPLE 1
 ```
-Get-Cable -Device "ServerA"
-Gets all cables for ServerA
+<example usage>
+Explanation of what the example does
 ```
 
 ## PARAMETERS
 
-### -Label
-Name of the cable
+### -Name
+Name of the device bay
 
 ```yaml
 Type: String
@@ -45,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Id
-ID of the cable
+Id of the device bay
 
 ```yaml
 Type: Int32
@@ -59,8 +60,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Device
-Name of the parent device
+### -DeviceTypeName
+Name of the device Type
 
 ```yaml
 Type: String
@@ -74,17 +75,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Rack
-Name of the parent rack
+### -DeviceTypeID
+ID of the device type
 
 ```yaml
-Type: String
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -97,7 +98,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### Inputs (if any)
 ## OUTPUTS
 
-### NetBox.Interface
+### Output (if any)
 ## NOTES
 General notes
 

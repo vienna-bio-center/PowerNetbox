@@ -14,7 +14,7 @@ Retrieves device types from NetBox
 
 ```
 Get-NetBoxDeviceType [-Model <String>] [-Manufacturer <String>] [-Id <Int32>] [-SubDeviceRole <String>]
- [-Slug <String>] [-Height <String>] [-Query <String>] [<CommonParameters>]
+ [-PartNumber <String>] [-Slug <String>] [-Height <String>] [-Exact] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,7 +36,7 @@ Model of the device type
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Name
 
 Required: False
 Position: Named
@@ -90,6 +90,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -PartNumber
+Search for a device type by part number
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Slug
 Search for a device type by slug
 
@@ -106,7 +121,7 @@ Accept wildcard characters: False
 ```
 
 ### -Height
-{{ Fill Height Description }}
+Search for a device type by height
 
 ```yaml
 Type: String
@@ -120,17 +135,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Query
-{{ Fill Query Description }}
+### -Exact
+Search for exacte match instead of partial
 
 ```yaml
-Type: String
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

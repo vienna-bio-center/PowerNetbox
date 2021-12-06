@@ -12,11 +12,20 @@ Creates a new device in NetBox
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-New-NetBoxDevice [-Name] <String> [-DeviceType] <Object> [-DeviceRole] <String> [-Site] <String>
- [-Location] <String> [-Rack] <String> [[-Position] <String>] [[-Height] <String>] [[-Hostname] <String>]
- [[-ParentDevice] <String>] [[-Face] <String>] [[-Status] <String>] [[-AssetTag] <String>]
- [[-CustomFields] <Hashtable>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxDevice -Name <String> -DeviceTypeName <String> -DeviceRole <String> -Site <String> -Location <String>
+ -Rack <String> [-Position <String>] [-Height <String>] [-Hostname <String>] [-ParentDevice <String>]
+ [-Face <String>] [-Status <String>] [-AssetTag <String>] [-CustomFields <Hashtable>] [-Confirm <Boolean>]
+ [-Force] [<CommonParameters>]
+```
+
+### ByID
+```
+New-NetBoxDevice -Name <String> -DeviceTypeID <Int32> -DeviceRole <String> -Site <String> -Location <String>
+ -Rack <String> [-Position <String>] [-Height <String>] [-Hostname <String>] [-ParentDevice <String>]
+ [-Face <String>] [-Status <String>] [-AssetTag <String>] [-CustomFields <Hashtable>] [-Confirm <Boolean>]
+ [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -41,23 +50,38 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeviceType
-{{ Fill DeviceType Description }}
+### -DeviceTypeName
+Name of the Device type of the device
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByName
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceTypeID
+ID of the Device type of the device
+
+```yaml
+Type: Int32
+Parameter Sets: ByID
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -71,7 +95,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -86,7 +110,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -101,7 +125,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -116,7 +140,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -131,7 +155,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -146,7 +170,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -161,7 +185,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -176,7 +200,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -191,8 +215,8 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
-Default value: Front
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -206,7 +230,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 12
+Position: Named
 Default value: Active
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -221,7 +245,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 13
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -236,7 +260,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 14
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -251,7 +275,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 15
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

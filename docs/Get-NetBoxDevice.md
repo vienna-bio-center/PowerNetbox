@@ -14,7 +14,7 @@ Retrieves a device from NetBox
 
 ```
 Get-NetBoxDevice [-Name <String>] [-Model <String>] [-Manufacturer <String>] [-Id <Int32>] [-Slug <String>]
- [-MacAddress <String>] [-Site <String>] [-Location <String>] [-Rack <String>] [-DeviceType <String>]
+ [-MacAddress <String>] [-Site <String>] [-Location <String>] [-Rack <String>] [-DeviceType <String>] [-Exact]
  [<CommonParameters>]
 ```
 
@@ -177,6 +177,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Exact
+Search for exacte match instead of partial
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -364,6 +364,8 @@ function New-Site {
       Tags of the site
     .PARAMETER TagColor
       Tag color of the site
+    .PARAMETER Description
+      Descripion of the site
     .PARAMETER Confirm
       Confirm the creation of the site
     .PARAMETER Force
@@ -566,6 +568,8 @@ function Remove-Site {
        Deletes a site vbc and all related objects
     .PARAMETER Name
        Name of the site
+    .PARAMETER ID
+       ID of the site
     .PARAMETER Recurse
        Deletes all related objects as well
     .PARAMETER Confirm
@@ -879,6 +883,8 @@ function Remove-Location {
       Deletes the location High Density
     .PARAMETER Name
        Name of the location
+    .PARAMETER ID
+       ID of the location
     .PARAMETER Recurse
        Deletes all related objects as well
     .PARAMETER Confirm
@@ -1093,9 +1099,11 @@ function New-Rack {
     .PARAMETER LocationName
          Name of the Location of the rack
     .PARAMETER LocationID
-         ID of the Location of the rack
+         ID of the Location of the rack, Defaults to 4-post-frame
     .PARAMETER Status
          Status of the rack, Defaults to Active
+    .PARAMETER Type
+         Type of the rack, Defaults to Active
     .PARAMETER Width
          Width of the rack in inch, default is 19
     .PARAMETER Height
@@ -1261,6 +1269,8 @@ function Remove-Rack {
       Deletes rack "Y-14" in NetBox
    .PARAMETER Name
       Name of the rack
+   .PARAMETER ID
+      ID of the rack
     .PARAMETER Recurse
        Deletes all related objects as well
     .PARAMETER Confirm
@@ -1968,8 +1978,12 @@ function Get-DeviceType {
        ID of the device type
     .PARAMETER SubDeviceRole
        Search for a device type by sub device role
+    .PARAMETER PartNumber
+       Search for a device type by part number
     .PARAMETER Slug
        Search for a device type by slug
+    .PARAMETER Height
+       Search for a device type by height
     .PARAMETER Exact
        Search for exacte match instead of partial
     .INPUTS
@@ -2011,10 +2025,6 @@ function Get-DeviceType {
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $Height,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [String]
-      $Query,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Switch]
@@ -2348,8 +2358,8 @@ function Import-DeviceType {
    .EXAMPLE
       PS C:\> <example usage>
       Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .PARAMETER Path
+      Path to the yaml file to import
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -2591,9 +2601,9 @@ function New-Device {
        Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
     .PARAMETER Name
        Name of the device
-    .PARAMETER DevuceTypeName
+    .PARAMETER DeviceTypeName
        Name of the Device type of the device
-    .PARAMETER DevuceTypeID
+    .PARAMETER DeviceTypeID
        ID of the Device type of the device
     .PARAMETER Site
        Site of the device
@@ -3314,8 +3324,10 @@ function Get-InterfaceTemplate {
        Name of the interface template
    .PARAMETER ID
        ID of the interface template
-    .PARAMETER All
-       Returns all devices
+    .PARAMETER DeviceTypeName
+       Search for parent device type by name
+    .PARAMETER DeviceTypeID
+       Search for parent device type by ID
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -3330,16 +3342,16 @@ function Get-InterfaceTemplate {
       $Name,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $DeviceTypeName,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $DeviceTypeID,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
-      $Id
+      $DeviceTypeID
    )
 
    begin {
@@ -3510,6 +3522,23 @@ function New-InterfaceTemplate {
    }
 }
 function Get-PowerSupplyType {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
    param (
       $PowerSupplyConnector
    )
@@ -3537,8 +3566,10 @@ function Get-Interface {
        Name of the interface
     .PARAMETER ID
        ID of the interface
-    .PARAMETER Device
+    .PARAMETER DeviceName
        Name of the parent device
+    .PARAMETER DeviceID
+       ID of the parent device
     .PARAMETER ManagementOnly
        Is this interface only for management?
     .PARAMETER All
@@ -3737,8 +3768,10 @@ function Update-Interface {
    .EXAMPLE
       PS C:\> Update-NetBoxInterface -Id "1" -Name "NewInterface" -Type "10gbase-t" -MacAddress "00:00:00:00:00:00"
       Updates an interface with id "1" to have name "NewInterface" with type "10gbase-t" and MAC address "00:00:00:00:00:00"
-   .PARAMETER Name
-      Name of the interface
+    .PARAMETER DeviceName
+       Name of the parent device
+    .PARAMETER DeviceID
+       ID of the parent device
    .PARAMETER Device
       Name of the parent device
    .PARAMETER ID
@@ -3747,7 +3780,7 @@ function Update-Interface {
       Type of the interface
    .PARAMETER MacAddress
       MAC address of the interface
-   .PARAMETER ManagementOnly
+   .PARAMETER ManagmentOnly
       Is this interface only for management?
    .PARAMETER Confirm
       Confirm the chnages to the interface
@@ -3937,6 +3970,10 @@ function Get-PowerPortTemplate {
        Name of the power port template
     .PARAMETER ID
        ID of the power port template
+    .PARAMETER DeviceTypeName
+       Search for parent device type by name
+    .PARAMETER DeviceTypeID
+       Search for parent device type by ID
     .INPUTS
        Inputs (if any)
     .OUTPUTS
@@ -3951,16 +3988,16 @@ function Get-PowerPortTemplate {
       $Name,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $DeviceTypeName,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $DeviceTypeID,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
-      $Id
+      $DeviceTypeID
    )
 
    begin {
@@ -4012,9 +4049,9 @@ function New-PowerPortTemplate {
        Creates a new power port template with name "PSU1"
     .PARAMETER Name
        Name of the power port template
-    .PARAMETER DevuceTypeName
+    .PARAMETER DeviceTypeName
        Name of the Device type of the device
-    .PARAMETER DevuceTypeID
+    .PARAMETER DeviceTypeID
        ID of the Device type of the device
     .PARAMETER Type
       Type of the power port template
@@ -4177,7 +4214,7 @@ function Get-Cable {
    .EXAMPLE
       PS C:\> Get-Cable -Device "ServerA"
       Gets all cables for ServerA
-   .PARAMETER Name
+   .PARAMETER Label
       Name of the cable
    .PARAMETER ID
       ID of the cable
@@ -4260,14 +4297,22 @@ function New-Cable {
    .EXAMPLE
       PS C:\> New-NetBoxCable -InterfaceA "Gig-E 1" -DeviceA ServerA -InterfaceB "GigabitEthernet1/0/39" -DeviceB SwitchB -Label "Super important Cable" -Type cat6 -Color "aa1409" -Length 100 -LengthUnit m
       Creates a cable between ServerA, Gig-E 1 and SwitchB, GigabitEthernet1/0/39 with the label "Super important Cable" and the type cat6 and the color "aa1409" and the length 100m
-   .PARAMETER DeviceA
-      Endpoint Device A of the cable
-   .PARAMETER InterfaceA
-      Endpoint Interface A of the cable
-   .PARAMETER DeviceB
-      Endpoint Device B of the cable
-   .PARAMETER InterfaceB
-      Endpoint Interface B of the cable
+   .PARAMETER DeviceAName
+      Name of Endpoint Device A of the cable
+   .PARAMETER InterfaceAName
+      Name Endpoint Interface A of the cable
+   .PARAMETER DeviceAID
+      ID of Endpoint Device A of the cable
+   .PARAMETER InterfaceAID
+      ID Endpoint Interface A of the cable
+   .PARAMETER DeviceBName
+      Name of Endpoint Device B of the cable
+   .PARAMETER InterfaceBName
+      Name Endpoint Interface B of the cable
+   .PARAMETER DeviceBID
+      ID of Endpoint Device B of the cable
+   .PARAMETER InterfaceBID
+      ID Endpoint Interface B of the cable
    .PARAMETER Label
       Label of the cable
    .PARAMETER Type
@@ -4289,20 +4334,35 @@ function New-Cable {
    .NOTES
       General notes
    #>
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $false)]
-      $DeviceA,
-
-      [Parameter(Mandatory = $true)]
-      [String]
-      $InterfaceA,
+      $DeviceAName,
 
       [Parameter(Mandatory = $false)]
-      $DeviceB,
-
-      [Parameter(Mandatory = $true)]
       [String]
-      $InterfaceB,
+      $InterfaceAName,
+
+      [Parameter(Mandatory = $false)]
+      $DeviceAID,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InterfaceAID,
+
+      [Parameter(Mandatory = $false)]
+      $DeviceBName,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InterfaceBName,
+
+      [Parameter(Mandatory = $false)]
+      $DeviceBID,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InterfaceBID,
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -4345,12 +4405,47 @@ function New-Cable {
    }
 
    process {
+      # Gather devices and interfaces
+      if ($DeviceAName) {
+         $DeviceA = Get-Device -Name $DeviceAName -Exact
+      }
+      else {
+         $DeviceA = Get-Device -ID $DeviceAId
+      }
 
-      $StartPoint = Get-Interface -Device $DeviceA -Name $InterfaceA
+      if ($DeviceBName) {
+         $DeviceB = Get-Device -Name $DeviceBName -Exact
+      }
+      else {
+         $DeviceB = Get-Device -ID $DeviceBId
+      }
 
-      $EndPoint = Get-Interface -Device $DeviceB -Name $InterfaceB
+      if ($InterfaceAName) {
+         $StartPoint = Get-Interface -DeviceID $DeviceA.ID -Name $InterfaceAName
+      }
+      else {
+         $StartPoint = Get-Interface -DeviceID $DeviceA.ID -ID $InterfaceAID
+      }
 
-      if ($StartPoint -eq $EndPoint) {
+      if ($InterfaceBName) {
+         $EndPoint = Get-Interface -DeviceID $DeviceB.ID -Name $InterfaceBName
+      }
+      else {
+         $EndPoint = Get-Interface -DeviceID $DeviceB.ID -ID $InterfaceBID
+      }
+
+      if ($Startpoint -eq $null) {
+         Write-Error "InterfaceA $InterfaceA does not exist"
+         break
+      }
+
+      if ($Endpoint -eq $null) {
+         Write-Error "InterfaceB $InterfaceB does not exist"
+         break
+      }
+
+
+      if ($StartPoint.ID -eq $EndPoint.ID) {
          Write-Error "Cannot create a cable between the same interface"
          break
       }
@@ -4457,9 +4552,9 @@ function New-Cable {
 #    process {
 #       $Body = @{
 #          termination_a_type = "dcim.interface"
-#          termination_a_id   = $(Get-Interface -Device $DeviceA -Interface $InterfaceA).id
+#          termination_a_id   = $(Get-Interface -DeviceName $DeviceA -Interface $InterfaceA).id
 #          termination_b_type = "dcim.interface"
-#          termination_b_id   = $(Get-Interface -Device $DeviceB -Interface $InterfaceB).id
+#          termination_b_id   = $(Get-Interface -DeviceName $DeviceB -Interface $InterfaceB).id
 #          type               = $Type
 #          label              = $Label
 #          color              = $Color
@@ -4490,8 +4585,12 @@ function Remove-Cable {
    .EXAMPLE
       PS C:\> Remove-NetboxCable -Id 1
       Deletes cable with the id 1
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .PARAMETER Label
+      Label of the Cable
+   .PARAMETER ID
+      ID of the Cable
+   .PARAMETER Confirm
+      Confirm the deletion of the cable
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -4561,7 +4660,13 @@ function Get-DeviceBayTemplate {
       PS C:\> <example usage>
       Explanation of what the example does
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the device bay
+   .PARAMETER Id
+      Id of the device bay
+   .PARAMETER DeviceTypeName
+      Name of the device Type
+   .PARAMETER DeviceTypeID
+      ID of the device type
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -4576,16 +4681,18 @@ function Get-DeviceBayTemplate {
       $Name,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
       $DeviceTypeName,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $DeviceTypeID,
+      $DeviceTypeID
 
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
-      $Id
+
    )
    begin {
       Test-Config | Out-Null
@@ -4635,7 +4742,11 @@ function New-DeviceBayTemplate {
       PS C:\> <example usage>
       Explanation of what the example does
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      Name of the device bay
+    .PARAMETER DeviceTypeName
+       Search for parent device type by name
+    .PARAMETER DeviceTypeID
+       Search for parent device type by ID
    .INPUTS
       Inputs (if any)
    .OUTPUTS
@@ -4644,7 +4755,7 @@ function New-DeviceBayTemplate {
       General notes
    #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true)]
       [String]

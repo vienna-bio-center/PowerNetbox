@@ -12,11 +12,20 @@ Cretaes a new device type in NetBox
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-New-NetBoxDeviceType [-Manufacturer] <Object> [-Model] <String> [[-Slug] <String>] [[-Height] <String>]
- [[-FullDepth] <Boolean>] [[-PartNumber] <String>] [[-Interfaces] <Hashtable[]>] [[-SubDeviceRole] <String>]
- [[-InterfaceType] <String>] [[-PowerSupplyConnector] <String>] [[-PowerSupplies] <Hashtable[]>]
- [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxDeviceType -ManufacturerName <String> -Model <String> [-Slug <String>] [-Height <String>]
+ [-FullDepth <Boolean>] [-PartNumber <String>] [-Interfaces <Hashtable[]>] [-SubDeviceRole <String>]
+ [-InterfaceType <String>] [-PowerSupplyConnector <String>] [-PowerSupplies <Hashtable[]>]
+ [-DeviceBays <Hashtable[]>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
+```
+
+### ByID
+```
+New-NetBoxDeviceType -ManufacturerID <Int32> -Model <String> [-Slug <String>] [-Height <String>]
+ [-FullDepth <Boolean>] [-PartNumber <String>] [-Interfaces <Hashtable[]>] [-SubDeviceRole <String>]
+ [-InterfaceType <String>] [-PowerSupplyConnector <String>] [-PowerSupplies <Hashtable[]>]
+ [-DeviceBays <Hashtable[]>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,17 +41,32 @@ Creates device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco
 
 ## PARAMETERS
 
-### -Manufacturer
+### -ManufacturerName
 Name of the manufacturer
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases: Vendor
+Type: String
+Parameter Sets: ByName
+Aliases: VendorName
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ManufacturerID
+ID of the manufacturer
+
+```yaml
+Type: Int32
+Parameter Sets: ByID
+Aliases: VendorID
+
+Required: True
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -53,10 +77,10 @@ Model of the device type
 ```yaml
 Type: String
 Parameter Sets: (All)
-Aliases:
+Aliases: Name
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -71,7 +95,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -86,7 +110,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -102,7 +126,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -117,7 +141,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -132,7 +156,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,7 +171,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -162,7 +186,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -177,7 +201,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -192,7 +216,22 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceBays
+{{ Fill DeviceBays Description }}
+
+```yaml
+Type: Hashtable[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -207,7 +246,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 12
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

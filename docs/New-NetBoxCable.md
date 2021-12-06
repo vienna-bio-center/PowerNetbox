@@ -13,9 +13,10 @@ Creates a new cable in NetBox
 ## SYNTAX
 
 ```
-New-NetBoxCable [[-DeviceA] <Object>] [-InterfaceA] <String> [[-DeviceB] <Object>] [-InterfaceB] <String>
- [[-Label] <String>] [-Type] <String> [[-Color] <String>] [[-Status] <String>] [[-Length] <Int32>]
- [[-LengthUnit] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxCable [[-DeviceAName] <Object>] [[-InterfaceAName] <String>] [[-DeviceAID] <Object>]
+ [[-InterfaceAID] <String>] [[-DeviceBName] <Object>] [[-InterfaceBName] <String>] [[-DeviceBID] <Object>]
+ [[-InterfaceBID] <String>] [[-Label] <String>] [-Type] <String> [[-Color] <String>] [[-Status] <String>]
+ [[-Length] <Int32>] [[-LengthUnit] <String>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -31,8 +32,8 @@ Creates a cable between ServerA, Gig-E 1 and SwitchB, GigabitEthernet1/0/39 with
 
 ## PARAMETERS
 
-### -DeviceA
-Endpoint Device A of the cable
+### -DeviceAName
+Name of Endpoint Device A of the cable
 
 ```yaml
 Type: Object
@@ -46,23 +47,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InterfaceA
-Endpoint Interface A of the cable
+### -InterfaceAName
+Name Endpoint Interface A of the cable
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeviceB
-Endpoint Device B of the cable
+### -DeviceAID
+ID of Endpoint Device A of the cable
 
 ```yaml
 Type: Object
@@ -76,16 +77,76 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InterfaceB
-Endpoint Interface B of the cable
+### -InterfaceAID
+ID Endpoint Interface A of the cable
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceBName
+Name of Endpoint Device B of the cable
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InterfaceBName
+Name Endpoint Interface B of the cable
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceBID
+ID of Endpoint Device B of the cable
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InterfaceBID
+ID Endpoint Interface B of the cable
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 8
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -100,7 +161,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: 9
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -116,7 +177,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 6
+Position: 10
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -132,7 +193,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: 11
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -147,7 +208,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: 12
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -163,7 +224,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: 13
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -179,7 +240,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: 14
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -194,7 +255,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
+Position: 15
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

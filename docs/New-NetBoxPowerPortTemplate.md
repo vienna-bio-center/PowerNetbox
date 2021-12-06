@@ -12,9 +12,22 @@ Creates new port template in netbox
 
 ## SYNTAX
 
+### Byname (Default)
 ```
-New-NetBoxPowerPortTemplate [-DeviceType] <Object> [-Name] <String> [[-Label] <String>] [-Type] <String>
- [[-MaxiumDraw] <Int32>] [[-AllocatedDraw] <Int32>] [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxPowerPortTemplate -Name <String> [-Label <String>] -Type <String> [-MaxiumDraw <Int32>]
+ [-AllocatedDraw <Int32>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
+```
+
+### ByName
+```
+New-NetBoxPowerPortTemplate -DeviceTypeName <String> -Name <String> [-Label <String>] -Type <String>
+ [-MaxiumDraw <Int32>] [-AllocatedDraw <Int32>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
+```
+
+### ByID
+```
+New-NetBoxPowerPortTemplate -DeviceTypeID <Int32> -Name <String> [-Label <String>] -Type <String>
+ [-MaxiumDraw <Int32>] [-AllocatedDraw <Int32>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,17 +43,32 @@ Creates a new power port template with name "PSU1"
 
 ## PARAMETERS
 
-### -DeviceType
-Device type of the power port template
+### -DeviceTypeName
+Name of the Device type of the device
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByName
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceTypeID
+ID of the Device type of the device
+
+```yaml
+Type: Int32
+Parameter Sets: ByID
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -54,7 +82,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -69,7 +97,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -84,7 +112,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -99,7 +127,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -114,7 +142,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -129,7 +157,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

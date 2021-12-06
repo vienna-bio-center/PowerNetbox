@@ -13,7 +13,8 @@ Retrives a power port template from netbox
 ## SYNTAX
 
 ```
-Get-NetBoxPowerPortTemplate [-Name <String>] [-Id <Int32>] [<CommonParameters>]
+Get-NetBoxPowerPortTemplate [-Name <String>] [-Id <Int32>] [-DeviceTypeName <String>] [-DeviceTypeID <Int32>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -46,6 +47,36 @@ Accept wildcard characters: False
 
 ### -Id
 ID of the power port template
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceTypeName
+Search for parent device type by name
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceTypeID
+Search for parent device type by ID
 
 ```yaml
 Type: Int32

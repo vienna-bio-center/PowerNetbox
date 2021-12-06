@@ -12,10 +12,18 @@ Creates a new rack in NetBox
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-New-NetBoxRack [-Name] <String> [[-Slug] <String>] [-Site] <Object> [[-Location] <Object>] [[-Status] <String>]
- [[-Type] <String>] [[-Width] <Int32>] [[-Height] <Int32>] [[-CustomFields] <String>] [[-Description] <String>]
- [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxRack -Name <String> [-Slug <String>] -SiteName <String> [-LocationName <String>]
+ [-LocationID <Int32>] [-Status <String>] [-Type <String>] [-Width <Int32>] [-Height <Int32>]
+ [-CustomFields <String>] [-Description <String>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
+```
+
+### ByID
+```
+New-NetBoxRack -Name <String> [-Slug <String>] -SiteID <Int32> [-LocationName <String>] [-LocationID <Int32>]
+ [-Status <String>] [-Type <String>] [-Width <Int32>] [-Height <Int32>] [-CustomFields <String>]
+ [-Description <String>] [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -40,7 +48,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -55,38 +63,68 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Site
-Site of the rack
+### -SiteName
+Name of the Site of the rack
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByName
 Aliases:
 
 Required: True
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Location
-Location of the rack
+### -SiteID
+ID of the Site of the rack
 
 ```yaml
-Type: Object
+Type: Int32
+Parameter Sets: ByID
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LocationName
+Name of the Location of the rack
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LocationID
+ID of the Location of the rack, Defaults to 4-post-frame
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -100,14 +138,14 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: Active
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Type
-{{ Fill Type Description }}
+Type of the rack, Defaults to Active
 
 ```yaml
 Type: String
@@ -115,7 +153,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: 4-post-frame
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -130,7 +168,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: 19
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -145,7 +183,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: 42
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -160,7 +198,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -175,7 +213,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -190,7 +228,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 11
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False

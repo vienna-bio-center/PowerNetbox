@@ -5,26 +5,23 @@ online version:
 schema: 2.0.0
 ---
 
-# Remove-NetBoxRack
+# New-NetBoxDeviceBayTemplate
 
 ## SYNOPSIS
-Deletes a rack from NetBox
+Short description
 
 ## SYNTAX
 
 ### ByName (Default)
 ```
-Remove-NetBoxRack -Name <String> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
+New-NetBoxDeviceBayTemplate -Name <String> [-DeviceTypeName <String>] [-Label <String>] [-Description <String>]
+ [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ### ByID
 ```
-Remove-NetBoxRack -Id <Int32> [-Recurse] [-Confirm <Boolean>] [<CommonParameters>]
-```
-
-### ByInputObject
-```
-Remove-NetBoxRack [-Recurse] [-Confirm <Boolean>] [-InputObject <Object>] [<CommonParameters>]
+New-NetBoxDeviceBayTemplate -Name <String> [-DeviceTypeID <Int32>] [-Label <String>] [-Description <String>]
+ [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -34,18 +31,18 @@ Long description
 
 ### EXAMPLE 1
 ```
-Remove-NetBoxRack -Name "Y-14"
-Deletes rack "Y-14" in NetBox
+<example usage>
+Explanation of what the example does
 ```
 
 ## PARAMETERS
 
 ### -Name
-Name of the rack
+Name of the device bay
 
 ```yaml
 Type: String
-Parameter Sets: ByName
+Parameter Sets: (All)
 Aliases:
 
 Required: True
@@ -55,38 +52,68 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Id
-ID of the rack
+### -DeviceTypeName
+Search for parent device type by name
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceTypeID
+Search for parent device type by ID
 
 ```yaml
 Type: Int32
 Parameter Sets: ByID
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Recurse
-Deletes all related objects as well
+### -Label
+{{ Fill Label Description }}
 
 ```yaml
-Type: SwitchParameter
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Description
+{{ Fill Description Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Confirm
-Confirm the deletion of the rack
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
 Type: Boolean
@@ -100,18 +127,18 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -InputObject
-Rack object to delete
+### -Force
+{{ Fill Force Description }}
 
 ```yaml
-Type: Object
-Parameter Sets: ByInputObject
+Type: SwitchParameter
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
-Accept pipeline input: True (ByValue)
+Default value: False
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -120,7 +147,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### NetBox.Rack
+### Inputs (if any)
 ## OUTPUTS
 
 ### Output (if any)

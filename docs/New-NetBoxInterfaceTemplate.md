@@ -12,10 +12,25 @@ Creates a new interface template in NetBox
 
 ## SYNTAX
 
+### Byname (Default)
 ```
-New-NetBoxInterfaceTemplate [-Name] <String> [-DeviceType] <Object> [[-Label] <String>] [-Type] <String>
- [[-ManagmentOnly] <Boolean>] [-FindInterfaceType] [[-LinkSpeed] <String>] [[-InterfaceType] <String>]
- [[-Confirm] <Boolean>] [-Force] [<CommonParameters>]
+New-NetBoxInterfaceTemplate -Name <String> [-Label <String>] -Type <String> [-ManagmentOnly <Boolean>]
+ [-FindInterfaceType] [-LinkSpeed <String>] [-InterfaceType <String>] [-Confirm <Boolean>] [-Force]
+ [<CommonParameters>]
+```
+
+### ByName
+```
+New-NetBoxInterfaceTemplate -Name <String> -DeviceTypeName <String> [-Label <String>] -Type <String>
+ [-ManagmentOnly <Boolean>] [-FindInterfaceType] [-LinkSpeed <String>] [-InterfaceType <String>]
+ [-Confirm <Boolean>] [-Force] [<CommonParameters>]
+```
+
+### ById
+```
+New-NetBoxInterfaceTemplate -Name <String> -DeviceTypeID <Int32> [-Label <String>] -Type <String>
+ [-ManagmentOnly <Boolean>] [-FindInterfaceType] [-LinkSpeed <String>] [-InterfaceType <String>]
+ [-Confirm <Boolean>] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -40,23 +55,38 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeviceType
+### -DeviceTypeName
 Name of the device type
 
 ```yaml
-Type: Object
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByName
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeviceTypeID
+ID of the device type
+
+```yaml
+Type: Int32
+Parameter Sets: ById
+Aliases:
+
+Required: True
+Position: Named
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -70,7 +100,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -85,7 +115,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -100,7 +130,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -130,7 +160,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -145,7 +175,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -160,7 +190,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: True
 Accept pipeline input: False
 Accept wildcard characters: False
