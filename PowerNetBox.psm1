@@ -1255,9 +1255,165 @@ function New-Rack {
       else {
          return
       }
+   }
+}
+
+function Update-Rack {
+   <#
+    .SYNOPSIS
+       Updates a new rack in NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> New-NetBoxRack -Name "T-12" -Location "High density" -Site VBC
+       Creates rack "T-12" in location "High Density" in site VBC
+    .PARAMETER Name
+       Name of the rack
+    .PARAMETER SiteName
+       Name of the Site of the rack
+    .PARAMETER SiteID
+       ID of the Site of the rack
+    .PARAMETER LocationName
+       Name of the Location of the rack
+    .PARAMETER LocationID
+       ID of the Location of the rack, Defaults to 4-post-frame
+    .PARAMETER Status
+       Status of the rack, Defaults to Active
+    .PARAMETER Type
+       Type of the rack, Defaults to Active
+    .PARAMETER Width
+       Width of the rack in inch, default is 19
+    .PARAMETER Height
+       Height of the rack in U(Units), default is 42
+    .PARAMETER Description
+       Description of the rack
+    .PARAMETER CustomFields
+       Custom fields of the rack
+    .PARAMETER Confirm
+       Confirm the creation of the rack
+    .PARAMETER Force
+       Force the creation of the rack
+    .INPUTS
+       NetBox.Rack
+    .OUTPUTS
+       NetBox.Rack
+    .NOTES
+       General notes
+    #>
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
+   param (
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $SiteName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Int32]
+      $SiteID,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $LocationName,
+
+      [Parameter(Mandatory = $false)]
+      [Int32]
+      $LocationID,
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
+      [String]
+      $Status = "active",
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("2-post-frame", "4-post-frame", "4-post-cabinet", "wall-frame", "wall-cabinet")]
+      [String]
+      $Type = "4-post-frame",
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet(10, 19, 21, 23)]
+      [Int32]
+      $Width = 19,
+
+      [Parameter(Mandatory = $false)]
+      [Int32]
+      $Height = 42,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $CustomFields,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Description,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/racks/"
+   }
+
+   process {
+
+      $Rack = Get-Rack -Name $Name
+
+      if ($SiteName) {
+         $Site = Get-Site -Name $SiteName
+      }
+
+      if ($SiteID) {
+         $Site = Get-Site -Id $SiteID
+      }
+
+      if ($LocationName) {
+         $Location = Get-Location -Name $LocationName
+      }
+
+      if ($LocationID) {
+         $Location = Get-Location -ID $LocationID
+      }
+
+      $Body = @{
+         name        = $Name
+         site        = $Site.ID
+         location    = $Location.ID
+         status      = $Status
+         type        = $Type
+         width       = $Width
+         u_height    = $Height
+         description = $Description
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      if (-Not $Exists) {
+         $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+         $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
+         return $Rack
+      }
+      else {
+         return
+      }
 
    }
 }
+
 function Remove-Rack {
    <#
    .SYNOPSIS
@@ -2416,7 +2572,7 @@ function Import-DeviceType {
 
    $NewDeviceType = New-DeviceType @NewDeviceTypeParams -Confirm $false | Out-Null
 
-   if ($NewDeviceType -eq $null) {
+   if ($null -eq $NewDeviceType) {
       $NewDeviceType = Get-NetBoxDeviceType -Model $DeviceType.Model -Manufacturer $DeviceType.Manufacturer
    }
 
@@ -2769,9 +2925,8 @@ function New-Device {
       }
 
       if ($ParentDevice) {
-         $ParentDevice =
          $Body.parent_device = @{
-            name = (Get-Device -Name $ParentDevice).Name
+            name = $ParentDevice
          }
       }
 
@@ -2920,16 +3075,19 @@ function Update-Device {
       }
 
       $Body = @{
-         name        = $Name
-         device_type = $DeviceType
-         device_role = (Get-DeviceRole -Name $DeviceRole).ID
-         site        = (Get-Site -Name $Site).ID
-         location    = (Get-Location -Name $Location).ID
-         rack        = (Get-Rack -Name $Rack).ID
-         position    = $Position
-         face        = $Face
-         status      = $Status
-         asset_tag   = $AssetTag
+         name          = $Name
+         device_type   = $DeviceType
+         device_role   = (Get-DeviceRole -Name $DeviceRole).ID
+         site          = (Get-Site -Name $Site).ID
+         location      = (Get-Location -Name $Location).ID
+         rack          = (Get-Rack -Name $Rack).ID
+         position      = $Position
+         face          = $Face
+         status        = $Status
+         asset_tag     = $AssetTag
+         parent_device = @{
+            name = $ParentDevice
+         }
       }
 
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
@@ -2997,7 +3155,7 @@ function Remove-Device {
          $Name = $InputObject.name
       }
 
-      $Device = Get-Device -Model $Name
+      $Device = Get-Device -Name $Name
 
       $RelatedObjects = Get-RelatedObjects -Object $Device -ReferenceObjects Device
 
@@ -3733,7 +3891,7 @@ function New-Interface {
          $Device = Get-Device -Name $DeviceName
       }
 
-      if ($DeviceName) {
+      if ($DeviceID) {
          $Device = Get-Device -ID $DeviceID
       }
 
@@ -4434,12 +4592,12 @@ function New-Cable {
          $EndPoint = Get-Interface -DeviceID $DeviceB.ID -ID $InterfaceBID
       }
 
-      if ($Startpoint -eq $null) {
+      if ($null -eq $Startpoint) {
          Write-Error "InterfaceA $InterfaceA does not exist"
          break
       }
 
-      if ($Endpoint -eq $null) {
+      if ($null -eq $Endpoint) {
          Write-Error "InterfaceB $InterfaceB does not exist"
          break
       }
@@ -4823,5 +4981,296 @@ function New-DeviceBayTemplate {
       else {
          return
       }
+   }
+}
+
+function Get-DeviceBay {
+   <#
+   .SYNOPSIS
+      Get a specific device from netbox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> Get-NetBoxDeviceBay -Device "Chassis"
+      Get all device bays for device "Chassis"
+   .PARAMETER Name
+      Name of the devicebay
+   .PARAMETER Id
+      Id of the devicebay
+   .PARAMETER DeviceName
+      Name of the parent device
+   .PARAMETER DeviceID
+      Id of the parent device
+   .INPUTS
+      NetBox.DeviceBay
+   .OUTPUTS
+      NetBox.DeviceBay
+   .NOTES
+      General notes
+   #>
+
+   param (
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $DeviceName,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $DeviceID
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-bays/"
+   }
+
+   process {
+      $Query = "?"
+
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
+
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      if ($DeviceName) {
+         $Query = $Query + "device_id=$((Get-NetBoxDevice -Name $DeviceName).ID)&"
+      }
+
+      if ($DeviceID) {
+         $Query = $Query + "device_id=$((Get-NetBoxDevice -Id $DeviceID).ID)&"
+      }
+
+      $Query = $Query.TrimEnd("&")
+
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
+
+      Write-Verbose $($NetboxURL + $URL + $Query)
+
+      $DeviceBays = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$DeviceBay = $item
+         $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.DeviceBay")
+         $DeviceBays += $DeviceBay
+      }
+
+      return $DeviceBays
+   }
+}
+
+function New-DeviceBay {
+   <#
+   .SYNOPSIS
+      Creates an devicebay in netbox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> New-NetBoxDeviceBay -Device "Chassis" -Name "1"
+      Creates a devicebay with name "1" for device "Chassis"
+   .PARAMETER Name
+      Name of the devicebay
+   .PARAMETER DeviceName
+      Name of the parent device
+   .PARAMETER DeviceID
+      Id of the parent device
+   .PARAMETER InstalledDeviceName
+      Name of the installed / child device
+   .PARAMETER InstalledDeviceID
+      Id of the installed / child device
+   .INPUTS
+      NetBox.DeviceBay
+   .OUTPUTS
+      NetBox.DeviceBay
+   .NOTES
+      General notes
+   #>
+
+   param (
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $DeviceID,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Label,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InstalledDeviceName,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InstalledDeviceID,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-bays/"
+   }
+
+   process {
+      if ($DeviceName) {
+         $Device = Get-Device -Name $DeviceName
+      }
+
+      if ($DeviceID) {
+         $Device = Get-Device -ID $DeviceID
+      }
+
+      if ($InstalledDeviceName) {
+         $InstalledDevice = Get-Device -Name InstalledDeviceName
+      }
+
+      if ($InstalledDeviceID) {
+         $InstalledDevice = Get-Device -ID InstalledDeviceID
+      }
+
+      $Body = @{
+         device           = $Device.ID
+         name             = $Name
+         installed_device = $InstalledDevice.ID
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+      $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
+      return $DeviceBay
+   }
+}
+
+function Update-DeviceBay {
+   <#
+   .SYNOPSIS
+      Updates an devicebay in netbox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> Update-NetBoxDeviceBay -Device "Chassis" -Name "1"
+      Creates a devicebay with name "1" for device "Chassis"
+   .PARAMETER Name
+      Name of the devicebay
+   .PARAMETER DeviceName
+      Name of the parent device
+   .PARAMETER DeviceID
+      Id of the parent device
+   .PARAMETER InstalledDeviceName
+      Name of the installed / child device
+   .PARAMETER InstalledDeviceID
+      Id of the installed / child device
+   .INPUTS
+      NetBox.DeviceBay
+   .OUTPUTS
+      NetBox.DeviceBay
+   .NOTES
+      General notes
+   #>
+
+   param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $DeviceName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $DeviceID,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $Label,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InstalledDeviceName,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $InstalledDeviceID,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+   begin {
+      Test-Config | Out-Null
+      $URL = "/dcim/device-bays/"
+   }
+
+   process {
+      if ($DeviceName) {
+         $Device = Get-Device -Name $DeviceName
+      }
+
+      if ($DeviceID) {
+         $Device = Get-Device -ID $DeviceID
+      }
+
+      if ($InstalledDeviceName) {
+         $InstalledDevice = Get-Device -Name InstalledDeviceName
+      }
+
+      if ($InstalledDeviceID) {
+         $InstalledDevice = Get-Device -ID InstalledDeviceID
+      }
+
+      $Body = @{
+         device           = $Device.ID
+         name             = $Name
+         installed_device = $InstalledDevice.ID
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+      $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
+      return $DeviceBay
    }
 }

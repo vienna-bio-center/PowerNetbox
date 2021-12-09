@@ -75,6 +75,7 @@
         "Get-CustomField",
         "Get-Device",
         "Get-DeviceRole",
+        "Get-DeviceBay",
         "Get-DeviceBayTemplate",
         "Get-DeviceType",
         "Get-Interface",
@@ -93,6 +94,7 @@
         "New-CustomField",
         "New-Device",
         "New-DeviceRole",
+        "New-DeviceBay",
         "New-DeviceBayTemplate",
         "New-DeviceType",
         "New-Interface",
@@ -114,8 +116,10 @@
         "Remove-Rack",
         "Remove-Site",
         "Set-Config",
+        "Update-Device",
+        "Update-DeviceBay",
         "Update-Interface",
-        "Update-Interface",
+        "Update-Rack",
         "Update-Site"
     )
 
