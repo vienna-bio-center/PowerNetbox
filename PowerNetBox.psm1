@@ -5240,7 +5240,7 @@ function Update-DeviceBay {
 
    process {
       if ($DeviceName) {
-         $Device = Get-Device -Name $DeviceName
+         $Device = Get-Device -Name $DeviceName -Exact
       }
 
       if ($DeviceID) {
@@ -5248,17 +5248,25 @@ function Update-DeviceBay {
       }
 
       if ($InstalledDeviceName) {
-         $InstalledDevice = Get-Device -Name InstalledDeviceName
+         $InstalledDevice = Get-Device -Name $InstalledDeviceName -Exact
       }
 
       if ($InstalledDeviceID) {
-         $InstalledDevice = Get-Device -ID InstalledDeviceID
+         $InstalledDevice = Get-Device -ID $InstalledDeviceID
       }
+
+      $DeviceBay = Get-DeviceBay -Name $Name -DeviceId $Device.ID
 
       $Body = @{
          name             = (Get-Culture).Textinfo.ToTitleCase($Name)
-         device           = $Device.ID
-         installed_device = $InstalledDevice.ID
+         device           = @{
+            id   = $Device.ID
+            name = $Device.Name
+         }
+         installed_device = @{
+            name = $InstalledDevice.Name
+            id   = $InstalledDevice.ID
+         }
       }
 
       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
@@ -5269,7 +5277,7 @@ function Update-DeviceBay {
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+      $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceBay.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
       $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
       return $DeviceBay
    }
