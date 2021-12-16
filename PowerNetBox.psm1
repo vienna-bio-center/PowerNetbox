@@ -5036,7 +5036,7 @@ function Get-DeviceBay {
       $Query = "?"
 
       if ($Name) {
-         $Query = $Query + "name__ic=$($Name)&"
+         $Query = $Query + "name=$($Name)&"
       }
 
       if ($Id) {
