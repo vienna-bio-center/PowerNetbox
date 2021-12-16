@@ -846,7 +846,7 @@ function New-Location {
       }
 
       $Body = @{
-         name        = $Name
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug        = $Slug
          site        = $Site.ID
          parent      = $Parent
@@ -1228,7 +1228,7 @@ function New-Rack {
       }
 
       $Body = @{
-         name        = $Name
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug        = $Slug
          site        = $Site.ID
          location    = $Location.ID
@@ -1384,7 +1384,7 @@ function Update-Rack {
       }
 
       $Body = @{
-         name        = $Name
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          site        = $Site.ID
          location    = $Location.ID
          status      = $Status
@@ -1671,7 +1671,7 @@ function New-CustomField {
       }
 
       $Body = @{
-         name          = $Name
+         name          = (Get-Culture).Textinfo.ToTitleCase($Name)
          label         = $Label
          type          = $Type
          required      = $Required
@@ -2003,7 +2003,7 @@ function New-Manufacturer {
       }
 
       $Body = @{
-         name          = $Name
+         name          = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug          = $Slug
          custum_fields = $CustomFields
       }
@@ -2912,7 +2912,7 @@ function New-Device {
       }
 
       $Body = @{
-         name        = $Name
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type = $DeviceType.ID
          device_role = (Get-DeviceRole -Name $DeviceRole).ID
          site        = (Get-Site -Name $Site).ID
@@ -3075,7 +3075,7 @@ function Update-Device {
       }
 
       $Body = @{
-         name          = $Name
+         name          = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type   = $DeviceType
          device_role   = (Get-DeviceRole -Name $DeviceRole).ID
          site          = (Get-Site -Name $Site).ID
@@ -3352,7 +3352,7 @@ function New-DeviceRole {
       }
 
       $Body = @{
-         name        = $Name
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug        = $Slug
          color       = $Color
          vm_role     = $VMRole
@@ -3656,8 +3656,8 @@ function New-InterfaceTemplate {
       }
 
       $Body = @{
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type = $DeviceType.ID
-         name        = $Name
          type        = $Type
          mgmt_only   = $ManagmentOnly
       }
@@ -3896,8 +3896,8 @@ function New-Interface {
       }
 
       $Body = @{
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          device      = $Device.ID
-         name        = $Name
          type        = $Type
          mgmt_only   = $ManagmentOnly
          mac_address = $MacAddress
@@ -4011,8 +4011,8 @@ function Update-Interface {
       $Interface = Get-Interface -Name $Name -DeviceID $Device.ID
 
       $Body = @{
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          device      = $Device.ID
-         name        = $Name
          type        = $Type
          mgmt_only   = $ManagmentOnly
          mac_address = $MacAddress
@@ -4291,8 +4291,8 @@ function New-PowerPortTemplate {
       }
 
       $Body = @{
+         name           = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type    = $DeviceType.ID
-         name           = $Name
          type           = $Type
          maximum_draw   = $MaxiumDraw
          allocated_draw = $AllocatedDraw
@@ -4959,8 +4959,8 @@ function New-DeviceBayTemplate {
       }
 
       $Body = @{
+         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type = $DeviceType.ID
-         name        = $Name
          label       = $Label
          description = $Description
       }
@@ -5154,8 +5154,8 @@ function New-DeviceBay {
       }
 
       $Body = @{
+         name             = (Get-Culture).Textinfo.ToTitleCase($Name)
          device           = $Device.ID
-         name             = $Name
          installed_device = $InstalledDevice.ID
       }
 
@@ -5256,8 +5256,8 @@ function Update-DeviceBay {
       }
 
       $Body = @{
+         name             = (Get-Culture).Textinfo.ToTitleCase($Name)
          device           = $Device.ID
-         name             = $Name
          installed_device = $InstalledDevice.ID
       }
 
