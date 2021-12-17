@@ -2924,9 +2924,10 @@ function New-Device {
          asset_tag   = $AssetTag
       }
 
-      if ($ParentDevice) {
-         $Body.parent_device = @{
-            name = $ParentDevice
+      if ($CustomFields) {
+         $Body.custom_fields = @{}
+         foreach ($Key in $CustomFields.Keys) {
+            $Body.custom_fields.add($Key, $CustomFields[$Key])
          }
       }
 
@@ -5280,5 +5281,287 @@ function Update-DeviceBay {
       $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceBay.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
       $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
       return $DeviceBay
+   }
+}
+
+
+
+function Get-CustomLink {
+   <#
+    .SYNOPSIS
+       Retrievess a custom link from NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> Get-NetBoxCustomLink -Name "ServiceCatalogID"
+       Retrieves custom link "ServiceCatalogID" from NetBox
+    .PARAMETER Name
+       Name of the custom link
+    .PARAMETER ID
+       ID of the custom link
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       NetBox.CustomLink
+    .NOTES
+       General notes
+    #>
+
+   param (
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $Id
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/extras/custom-links/"
+   }
+
+   process {
+      $Query = "?"
+
+      if ($Name) {
+         $Query = $Query + "name__ic=$($Name)&"
+      }
+
+      if ($Id) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      $Query = $Query.TrimEnd("&")
+
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
+
+      $CustomLinks = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$CustomLink = $item
+         $CustomLink.PSObject.TypeNames.Insert(0, "NetBox.CustomLink")
+         $CustomLinks += $CustomLink
+      }
+
+      return $CustomLinks
+   }
+}
+
+
+function New-CustomLink {
+   <#
+    .SYNOPSIS
+       Creates a custom link in NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> New-NetBoxCustomLink -Name "ServiceCatalogID" -Type Integer -ContentTypes Device -Label "Service Catalog ID"
+       Creates custom link "ServiceCatalogID" from Type Integer for Contenttype device with the label "Service Catalog ID" in NetBox
+    .PARAMETER Name
+       Name of the custom link
+    .PARAMETER LinkText
+       Linktext of the custom link
+    .PARAMETER LinkURL
+         URL of the custom link
+    .PARAMETER ContentType
+       Content type of the custom link, e.g. "Device"
+    .PARAMETER Weight
+         Weight of the custom link
+    .PARAMETER GroupName
+       Name of teh group of the custom link, links with the same groupname are displayed as dropdown
+    .PARAMETER ButtonClass
+       Color of the link button
+    .PARAMETER NewWindow
+       Open link in new window, default true
+    .PARAMETER Confirm
+      Confirm the creation of the location
+    .PARAMETER Force
+      Forces creation of the custom link
+    .INPUTS
+       Inputs (if any)
+    .OUTPUTS
+       NetBox.CustomLink
+    .NOTES
+       General notes
+    #>
+
+   param (
+      [Parameter(Mandatory = $true)]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("Site", "Location", "Rack", "Device", "Device Role")]
+      [String]
+      $ContentType,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $LinkText,
+
+      [Parameter(Mandatory = $true)]
+      [String]
+      $LinkURL,
+
+      [Parameter(Mandatory = $false)]
+      [Int32]
+      $Weight,
+
+      [Parameter(Mandatory = $false)]
+      [String]
+      $GroupName,
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("outline-dark", "ghost-dark", "blue", "indigo", "purple", "pink", "red", "orange", "yellow", "green", "teal", "cyan", "secondary")]
+      [String]
+      $ButtonClass,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $NewWindow = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(Mandatory = $false)]
+      [Switch]
+      $Force
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/extras/custom-links/"
+   }
+
+   process {
+      if ($(Get-CustomLink -Name $Name )) {
+         Write-Warning "CustomLink $Name already exists"
+         $Exists = $true
+      }
+
+      $NetBoxContentType = "$((Get-ContentType -Name $ContentType).app_label).$((Get-ContentType -Name $ContentType).model)"
+
+      $Body = @{
+         name         = (Get-Culture).Textinfo.ToTitleCase($Name)
+         link_text    = $LinkText
+         link_url     = $LinkURL
+         wight        = $Weight
+         group_name   = $GroupName
+         button_class = $ButtonClass
+         new_window   = $NewWindow
+         content_type = $NetBoxContentType
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      if (-Not $Exists) {
+         $CustomLink = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $CustomLink.PSObject.TypeNames.Insert(0, "NetBox.CustomLink")
+         return $CustomLink
+      }
+      else {
+         return
+      }
+   }
+}
+
+function Remove-CustomLink {
+   <#
+    .SYNOPSIS
+       Deletes a custom link from NetBox
+    .DESCRIPTION
+       Long description
+    .EXAMPLE
+       PS C:\> Remove-NetBoxCustomLink -id 3
+       Deletes custom link with ID 3 from NetBox
+    .PARAMETER Name
+       Name of the custom link
+    .PARAMETER ID
+       ID of the custom link
+    .PARAMETER InputObject
+       CustomLink object to delete
+    .INPUTS
+       NetBox.CustomLink
+    .OUTPUTS
+       Output (if any)
+    .NOTES
+       General notes
+    #>
+
+   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [String]
+      $Name,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
+      [Int32]
+      $Id,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/extras/custom-links/"
+   }
+
+   process {
+      if (-not ($InputObject.psobject.TypeNames -contains "NetBox.CustomLink")) {
+         Write-Error "InputObject is not type NetBox.CustomLink"
+         break
+      }
+
+      if ($InputObject) {
+         $Name = $InputObject.name
+         $Id = $InputObject.Id
+      }
+
+      if ($Id) {
+         $CustomLink = Get-CustomLink -Id $Id
+      }
+      else {
+         $CustomLink = Get-CustomLink -Name $Name
+      }
+
+      $RelatedObjects = Get-RelatedObjects -Object $CustomLink -ReferenceObjects CustomLink
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $CustomLink
+      }
+
+      # Remove all related objects
+      if ($Recurse) {
+         foreach ($Object in $RelatedObjects) {
+            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
+         }
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomLink.id) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
+      }
    }
 }
