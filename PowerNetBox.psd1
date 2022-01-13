@@ -82,6 +82,7 @@
         "Get-Interface",
         "Get-InterfaceTemplate",
         "Get-InterfaceType",
+        "Get-IPAddress",
         "Get-Location",
         "Get-Manufacturer",
         "Get-NextPage",
@@ -101,6 +102,7 @@
         "New-DeviceType",
         "New-Interface",
         "New-InterfaceTemplate",
+        "New-IPAddress",
         "New-Location",
         "New-Manufacturer",
         "New-PowerPortTemplate",
@@ -113,6 +115,7 @@
         "Remove-DeviceRole",
         "Remove-DeviceType",
         "Remove-Interface",
+        "Remove-IPAddress",
         "Remove-Location",
         "Remove-Manufacturer",
         "Remove-PowerPortTemplate",
@@ -122,6 +125,7 @@
         "Update-Device",
         "Update-DeviceBay",
         "Update-Interface",
+        "Update-IPAddress",
         "Update-Rack",
         "Update-Site"
     )

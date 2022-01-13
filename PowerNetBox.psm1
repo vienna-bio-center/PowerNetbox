@@ -293,7 +293,7 @@ function Get-Site {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -311,7 +311,7 @@ function Get-Site {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -592,7 +592,7 @@ function Remove-Site {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -619,11 +619,11 @@ function Remove-Site {
 
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.Id
+         $ID = $InputObject.Id
       }
 
-      if ($Id) {
-         $Site = Get-Site -ID $Id
+      if ($ID) {
+         $Site = Get-Site -ID $ID
       }
       else {
          $Site = Get-Site -Name $Name
@@ -643,15 +643,15 @@ function Remove-Site {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Site.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Site.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
             Write-Error "Delete those objects first or run again using -recurse switch"
          }
          else {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
          }
 
       }
@@ -688,7 +688,7 @@ function Get-Location {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -907,7 +907,7 @@ function Remove-Location {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -934,11 +934,11 @@ function Remove-Location {
 
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.Id
+         $ID = $InputObject.Id
       }
 
       if ($ID) {
-         $Location = Get-Location -Id $Id
+         $Location = Get-Location -Id $ID
       }
       else {
          $Location = Get-Location -Name $Name
@@ -958,7 +958,7 @@ function Remove-Location {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Location.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Location.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -1008,7 +1008,7 @@ function Get-Rack {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -1043,7 +1043,7 @@ function Get-Rack {
          $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -1403,7 +1403,7 @@ function Update-Rack {
       }
 
       if (-Not $Exists) {
-         $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+         $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
          $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
          return $Rack
       }
@@ -1449,7 +1449,7 @@ function Remove-Rack {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -1476,11 +1476,11 @@ function Remove-Rack {
 
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.id
+         $ID = $InputObject.ID
       }
 
-      if ($Id) {
-         $Rack = Get-Rack -ID $Id
+      if ($ID) {
+         $Rack = Get-Rack -ID $ID
       }
       else {
          $Rack = Get-Rack -Name $Name
@@ -1499,7 +1499,7 @@ function Remove-Rack {
          }
       }
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -1542,7 +1542,7 @@ function Get-CustomField {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id
+      $ID
    )
 
    begin {
@@ -1557,7 +1557,7 @@ function Get-CustomField {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -1730,7 +1730,7 @@ function Remove-CustomField {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -1757,11 +1757,11 @@ function Remove-CustomField {
 
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.Id
+         $ID = $InputObject.Id
       }
 
-      if ($Id) {
-         $CustomField = Get-CustomField -Id $Id
+      if ($ID) {
+         $CustomField = Get-CustomField -Id $ID
       }
       else {
          $CustomField = Get-CustomField -Name $Name
@@ -1781,7 +1781,7 @@ function Remove-CustomField {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomField.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomField.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -1880,7 +1880,7 @@ function Get-Manufacturer {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -1899,7 +1899,7 @@ function Get-Manufacturer {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -2058,7 +2058,7 @@ function Remove-Manufacturer {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -2080,13 +2080,13 @@ function Remove-Manufacturer {
    process {
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.id
+         $ID = $InputObject.ID
       }
       if ($Name) {
          $Manufacturer = Get-Manufacturer -Name $Name
       }
-      if ($Id) {
-         $Manufacturer = Get-Manufacturer -Id $Id
+      if ($ID) {
+         $Manufacturer = Get-Manufacturer -Id $ID
       }
 
       $RelatedObjects = Get-RelatedObjects -Object $Manufacturer -ReferenceObjects Manufacturer
@@ -2103,7 +2103,7 @@ function Remove-Manufacturer {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Manufacturer.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Manufacturer.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -2164,7 +2164,7 @@ function Get-DeviceType {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -2208,7 +2208,7 @@ function Get-DeviceType {
          $Query = $Query + "manufacturer_id=$((Get-Manufacturer -Name $Manufacturer).ID)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -2491,7 +2491,7 @@ function Remove-DeviceType {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceType.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceType.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -2578,7 +2578,7 @@ function Import-DeviceType {
 
    foreach ($Interface in $DeviceType.interfaces) {
       Write-Verbose "Creating Interfaces"
-      New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagmentOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.id -Confirm $false | Out-Null
+      New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagmentOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
    }
 
    foreach ($PSU in $DeviceType."power-ports") {
@@ -2647,7 +2647,7 @@ function Get-Device {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -2703,7 +2703,7 @@ function Get-Device {
          $Query = $Query + "manufacturer=$($Manufacturer)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -2781,6 +2781,8 @@ function New-Device {
        Face of the device, front or back, default is front
     .PARAMETER Status
        Status of the device, defaults to "active"
+    .PARAMETER PrimaryIPv4
+       Primary IPv4 addresse of the device (NOT IMPLEMENTED)
     .PARAMETER AssetTag
        Asset tag or serial number of the device
     .PARAMETER CustomFields
@@ -2856,6 +2858,10 @@ function New-Device {
 
       [Parameter(Mandatory = $false)]
       [String]
+      $PrimaryIPv4,
+
+      [Parameter(Mandatory = $false)]
+      [String]
       $AssetTag,
 
       [Parameter(Mandatory = $false)]
@@ -2921,6 +2927,7 @@ function New-Device {
          position    = $Position
          face        = $Face
          status      = $Status
+         primary_ip4 = Get
          asset_tag   = $AssetTag
       }
 
@@ -3099,7 +3106,7 @@ function Update-Device {
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
    }
 }
 
@@ -3172,7 +3179,7 @@ function Remove-Device {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Device.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Device.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -3216,7 +3223,7 @@ function Get-DeviceRole {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -3235,7 +3242,7 @@ function Get-DeviceRole {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -3411,7 +3418,7 @@ function Remove-DeviceRole {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -3433,13 +3440,13 @@ function Remove-DeviceRole {
    process {
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.id
+         $ID = $InputObject.ID
       }
       if ($Name) {
          $DeviceRole = Get-DeviceRole -Name $Name
       }
-      if ($Id) {
-         $DeviceRole = Get-DeviceRole -Id $Id
+      if ($ID) {
+         $DeviceRole = Get-DeviceRole -Id $ID
       }
 
       $RelatedObjects = Get-RelatedObjects -Object $DeviceRole -ReferenceObjects DeviceRole
@@ -3456,7 +3463,7 @@ function Remove-DeviceRole {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceRole.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceRole.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -3502,7 +3509,7 @@ function Get-InterfaceTemplate {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -3532,7 +3539,7 @@ function Get-InterfaceTemplate {
          $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -3748,7 +3755,7 @@ function Get-Interface {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -3775,7 +3782,7 @@ function Get-Interface {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -3971,7 +3978,7 @@ function Update-Interface {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -4026,7 +4033,7 @@ function Update-Interface {
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
    }
 }
 
@@ -4102,7 +4109,7 @@ function Remove-Interface {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -4148,7 +4155,7 @@ function Get-PowerPortTemplate {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -4177,7 +4184,7 @@ function Get-PowerPortTemplate {
          $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -4396,7 +4403,7 @@ function Get-Cable {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -4419,7 +4426,7 @@ function Get-Cable {
          $Query = $Query + "Label__ic=$($Label)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -4615,9 +4622,9 @@ function New-Cable {
 
       $Body = @{
          termination_a_type = "dcim.interface"
-         termination_a_id   = $StartPoint.id
+         termination_a_id   = $StartPoint.ID
          termination_b_type = "dcim.interface"
-         termination_b_id   = $EndPoint.id
+         termination_b_id   = $EndPoint.ID
          type               = $Type
          label              = $Label
          color              = $Color
@@ -4711,9 +4718,9 @@ function New-Cable {
 #    process {
 #       $Body = @{
 #          termination_a_type = "dcim.interface"
-#          termination_a_id   = $(Get-Interface -DeviceName $DeviceA -Interface $InterfaceA).id
+#          termination_a_id   = $(Get-Interface -DeviceName $DeviceA -Interface $InterfaceA).ID
 #          termination_b_type = "dcim.interface"
-#          termination_b_id   = $(Get-Interface -DeviceName $DeviceB -Interface $InterfaceB).id
+#          termination_b_id   = $(Get-Interface -DeviceName $DeviceB -Interface $InterfaceB).ID
 #          type               = $Type
 #          label              = $Label
 #          color              = $Color
@@ -4795,7 +4802,7 @@ function Remove-Cable {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Cable.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Cable.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -4841,7 +4848,7 @@ function Get-DeviceBayTemplate {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -4871,7 +4878,7 @@ function Get-DeviceBayTemplate {
          $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -5017,7 +5024,7 @@ function Get-DeviceBay {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -5040,7 +5047,7 @@ function Get-DeviceBay {
          $Query = $Query + "name=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -5278,7 +5285,7 @@ function Update-DeviceBay {
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceBay.id) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+      $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceBay.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
       $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
       return $DeviceBay
    }
@@ -5314,7 +5321,7 @@ function Get-CustomLink {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
-      $Id
+      $ID
    )
 
    begin {
@@ -5329,7 +5336,7 @@ function Get-CustomLink {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Id) {
+      if ($ID) {
          $Query = $Query + "id=$($id)&"
       }
 
@@ -5505,7 +5512,7 @@ function Remove-CustomLink {
 
       [Parameter(Mandatory = $true, ParameterSetName = "ById")]
       [Int32]
-      $Id,
+      $ID,
 
       [Parameter(Mandatory = $false)]
       [Bool]
@@ -5528,11 +5535,11 @@ function Remove-CustomLink {
 
       if ($InputObject) {
          $Name = $InputObject.name
-         $Id = $InputObject.Id
+         $ID = $InputObject.Id
       }
 
-      if ($Id) {
-         $CustomLink = Get-CustomLink -Id $Id
+      if ($ID) {
+         $CustomLink = Get-CustomLink -Id $ID
       }
       else {
          $CustomLink = Get-CustomLink -Name $Name
@@ -5552,7 +5559,7 @@ function Remove-CustomLink {
       }
 
       try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomLink.id) + "/") @RestParams -Method Delete
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomLink.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
@@ -5565,3 +5572,446 @@ function Remove-CustomLink {
       }
    }
 }
+
+function Get-IPAddress {
+   <#
+   .SYNOPSIS
+      Gets an IP address from NetBox
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   param (
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Address,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("HostName")]
+      [String]
+      $DNSName,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $ID
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/ipam/ip-addresses/"
+   }
+
+   process {
+      $Query = "?"
+
+      if ($Address) {
+         $Query = $Query + "address=$($address)&"
+      }
+
+      if ($DNSName) {
+         $Query = $Query + "dns_name__ic=$($DNSName)&"
+      }
+
+      if ($ID) {
+         $Query = $Query + "id=$($id)&"
+      }
+
+      $Query = $Query.TrimEnd("&")
+
+      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
+
+      $IPs = New-Object collections.generic.list[object]
+
+      foreach ($Item in $Result) {
+         [PSCustomObject]$IP = $item
+         $IP.PSObject.TypeNames.Insert(0, "NetBox.IP")
+         $IPs += $IP
+      }
+
+      return $IPs
+   }
+
+}
+
+function New-IPAddress {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   param (
+      [Parameter(Mandatory = $True)]
+      [String]
+      $Address,
+
+      [Parameter(Mandatory = $True)]
+      [String]
+      $Subnet,
+
+      [Parameter(Mandatory = $false)]
+      [Alias("HostName")]
+      [String]
+      $DNSName,
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
+      [String]
+      $Status = "active"
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/ipam/ip-addresses/"
+   }
+
+   process {
+      if ($Address) {
+         if (Get-IPAddress -Address $Address) {
+            Write-Warning "IP Address $Address already exists"
+            $Exists = $true
+         }
+      }
+
+      $Body = @{
+         address  = "$Address/$Subnet"
+         status   = $Status
+         dns_name = $DNSName
+      }
+
+      if ($CustomFields) {
+         $Body.custom_fields = @{}
+         foreach ($Key in $CustomFields.Keys) {
+            $Body.custom_fields.add($Key, $CustomFields[$Key])
+         }
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+        ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      if (-Not $Exists) {
+         $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
+         return $Devive
+      }
+      else {
+         return
+      }
+   }
+}
+
+function Update-IPAddress {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   param (
+      [Parameter(Mandatory = $True)]
+      [String]
+      $Address,
+
+      [Parameter(Mandatory = $True)]
+      [String]
+      $Subnet,
+
+      [Parameter(Mandatory = $false)]
+      [Alias("HostName")]
+      [String]
+      $DNSName,
+
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("offline", "active", "planned", "staged", "failed", "inventory", "decommissioning")]
+      [String]
+      $Status = "active"
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/ipam/ip-addresses/"
+   }
+
+   process {
+      if ($Address) {
+         $IPAddress = Get-IPAddress -Address $Address
+      }
+
+      if ($ID) {
+         $IPAddress = Get-IPAddress -ID $ID
+      }
+
+      $Body = @{
+         address  = "$Address/$Subnet"
+         status   = $Status
+         dns_name = $DNSName
+      }
+
+      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+
+      if ($Confirm) {
+         $OutPutObject = [pscustomobject]$Body
+         Show-ConfirmDialog -Object $OutPutObject
+      }
+
+      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($IPAddress.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
+   }
+
+}
+
+function Remove-IPAddress {
+   <#
+   .SYNOPSIS
+      Short description
+   .DESCRIPTION
+      Long description
+   .EXAMPLE
+      PS C:\> <example usage>
+      Explanation of what the example does
+   .PARAMETER Name
+      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+   .INPUTS
+      Inputs (if any)
+   .OUTPUTS
+      Output (if any)
+   .NOTES
+      General notes
+   #>
+   param (
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Address,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("HostName")]
+      [String]
+      $DNSName,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Int32]
+      $ID,
+
+      [Parameter(Mandatory = $false)]
+      [Bool]
+      $Confirm = $true,
+
+      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
+      $InputObject
+   )
+
+   begin {
+      Test-Config | Out-Null
+      $URL = "/ipam/ip-addresses/"
+   }
+
+   process {
+      if ($Address) {
+         $IPAddress = Get-IPAddress -Address $Address
+      }
+
+      if ($ID) {
+         $IPAddress = Get-IPAddress -ID $ID
+      }
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $IPAddress
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($IPAddress.ID) + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
+         }
+      }
+
+   }
+}
+
+
+# function Get-IPRange {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+
+# }
+
+# function New-IPRange {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+#    FunctionName
+# }
+
+# function Remove-IPRange {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+
+# }
+
+# function Get-IPPrefix {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+
+# }
+
+# function New-IPPrefix {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+#    FunctionName
+# }
+
+# function Remove-IPPrefix {
+#    <#
+#    .SYNOPSIS
+#       Short description
+#    .DESCRIPTION
+#       Long description
+#    .EXAMPLE
+#       PS C:\> <example usage>
+#       Explanation of what the example does
+#    .PARAMETER Name
+#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+#    .INPUTS
+#       Inputs (if any)
+#    .OUTPUTS
+#       Output (if any)
+#    .NOTES
+#       General notes
+#    #>
+#    param (
+#       OptionalParameters
+#    )
+
+# }
