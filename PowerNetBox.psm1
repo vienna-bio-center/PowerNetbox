@@ -2530,65 +2530,70 @@ function Import-DeviceType {
       [Alias("YamlFile")]
       $Path
    )
-   $DeviceType = Get-Content $path | ConvertFrom-Yaml
 
-   Write-Verbose $($DeviceType | Format-Table | Out-String)
+   $Files = Get-ChildItem -Path $Path
 
-   Write-Verbose $($DeviceType.Interfaces | Format-Table | Out-String)
+   foreach ($DeviceFile in $Files) {
+      $DeviceType = Get-Content $DeviceFile.FullName | ConvertFrom-Yaml
 
-   New-Manufacturer -Name $DeviceType.Manufacturer -Confirm $false | Out-Null
+      Write-Verbose $($DeviceType | Format-Table | Out-String)
 
-   $NewDeviceTypeParams = @{
-      ManufacturerName = $DeviceType.Manufacturer
-      Model            = $DeviceType.Model
-      Confirm          = $false
-   }
+      Write-Verbose $($DeviceType.Interfaces | Format-Table | Out-String)
 
-   if ($DeviceType.u_height) {
-      $NewDeviceTypeParams["height"] = $DeviceType.u_height
-   }
+      New-Manufacturer -Name $DeviceType.Manufacturer -Confirm $false | Out-Null
 
-   if ($DeviceType.is_full_depth) {
-      $NewDeviceTypeParams["FullDepth"] = $DeviceType.is_full_depth
-   }
+      $NewDeviceTypeParams = @{
+         ManufacturerName = $DeviceType.Manufacturer
+         Model            = $DeviceType.Model
+         Confirm          = $false
+      }
 
-   if ($DeviceType.subdevice_role) {
-      $NewDeviceTypeParams["SubDeviceRole"] = $DeviceType.subdevice_role
-   }
+      if ($DeviceType.u_height) {
+         $NewDeviceTypeParams["height"] = $DeviceType.u_height
+      }
 
-   if ($DeviceType.part_number) {
-      $NewDeviceTypeParams["PartNumber"] = $DeviceType.part_number
-   }
+      if ($DeviceType.is_full_depth) {
+         $NewDeviceTypeParams["FullDepth"] = $DeviceType.is_full_depth
+      }
 
-   if ($DeviceType.slug) {
-      $NewDeviceTypeParams["Slug"] = $DeviceType.slug
-   }
+      if ($DeviceType.subdevice_role) {
+         $NewDeviceTypeParams["SubDeviceRole"] = $DeviceType.subdevice_role
+      }
 
-   if ($DeviceType."device-bays") {
-      $NewDeviceTypeParams["DeviceBays"] = $DeviceType."device-bays"
-   }
+      if ($DeviceType.part_number) {
+         $NewDeviceTypeParams["PartNumber"] = $DeviceType.part_number
+      }
 
-   Write-Verbose $($NewDeviceTypeParams | Format-Table | Out-String )
+      if ($DeviceType.slug) {
+         $NewDeviceTypeParams["Slug"] = $DeviceType.slug
+      }
 
-   $NewDeviceType = New-DeviceType @NewDeviceTypeParams -Confirm $false | Out-Null
+      if ($DeviceType."device-bays") {
+         $NewDeviceTypeParams["DeviceBays"] = $DeviceType."device-bays"
+      }
 
-   if ($null -eq $NewDeviceType) {
-      $NewDeviceType = Get-NetBoxDeviceType -Model $DeviceType.Model -Manufacturer $DeviceType.Manufacturer
-   }
+      Write-Verbose $($NewDeviceTypeParams | Format-Table | Out-String )
 
-   foreach ($Interface in $DeviceType.interfaces) {
-      Write-Verbose "Creating Interfaces"
-      New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagmentOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
-   }
+      $NewDeviceType = New-DeviceType @NewDeviceTypeParams -Confirm $false | Out-Null
 
-   foreach ($PSU in $DeviceType."power-ports") {
-      Write-Verbose "Creating PSUs"
-      New-PowerPortTemplate -Name $PSU.Name -Type $PSU.Type -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
-   }
+      if ($null -eq $NewDeviceType) {
+         $NewDeviceType = Get-NetBoxDeviceType -Model $DeviceType.Model -Manufacturer $DeviceType.Manufacturer
+      }
 
-   foreach ($DeviceBay in $DeviceType."device-bays") {
-      Write-Verbose "Creating Device Bays"
-      New-DeviceBayTemplate -Name $DeviceBay.Name -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+      foreach ($Interface in $DeviceType.interfaces) {
+         Write-Verbose "Creating Interfaces"
+         New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagmentOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+      }
+
+      foreach ($PSU in $DeviceType."power-ports") {
+         Write-Verbose "Creating PSUs"
+         New-PowerPortTemplate -Name $PSU.Name -Type $PSU.Type -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+      }
+
+      foreach ($DeviceBay in $DeviceType."device-bays") {
+         Write-Verbose "Creating Device Bays"
+         New-DeviceBayTemplate -Name $DeviceBay.Name -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+      }
    }
 }
 
