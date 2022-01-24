@@ -5721,9 +5721,9 @@ function New-IPAddress {
       }
 
       if (-Not $Exists) {
-         $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-         $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
-         return $Devive
+         $IPAddress = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $IPAddress.PSObject.TypeNames.Insert(0, "NetBox.Device")
+         return $IPAddress
       }
       else {
          return
