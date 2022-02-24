@@ -12,7 +12,7 @@
     RootModule           = '.\PowerNetBox.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.6.0'
+    ModuleVersion        = '1.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -160,7 +160,7 @@
             # LicenseUri = ''
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://bitbucket.vbc.ac.at/projects/VBCOPS/repos/ps-modules/browse/PowerNetBox?at=refs%2Fheads%2FPowerNetBox'
 
             # A URL to an icon representing this module.
             # IconUri = ''
