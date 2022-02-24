@@ -2932,7 +2932,7 @@ function New-Device {
          position    = $Position
          face        = $Face
          status      = $Status
-         primary_ip4 = Get
+         #primary_ip4 = Get
          asset_tag   = $AssetTag
       }
 
@@ -2952,9 +2952,9 @@ function New-Device {
       }
 
       if (-Not $Exists) {
-         $Devive = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-         $Devive.PSObject.TypeNames.Insert(0, "NetBox.Device")
-         return $Devive
+         $Device = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
+         return $Device
       }
       else {
          return
