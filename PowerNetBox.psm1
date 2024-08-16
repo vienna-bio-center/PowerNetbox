@@ -1,16 +1,16 @@
 function Set-Config {
    <#
    .SYNOPSIS
-      Required to use PowerNetBox, sets up URL and APIToken for connection
+      Required to use PowerNetBox, sets up URL and APIToken for connection.
    .DESCRIPTION
-      Long description
+      Sets up the necessary configuration for accessing the NetBox API by providing the NetBox URL and API token.
    .EXAMPLE
       PS C:\> Set-NetBoxConfig -NetboxURL "https://netbox.example.com" -NetboxAPIToken "1277db26a31232132327265bd13221309a567fb67bf"
-      Sets up NetBox from https://netbox.example.com with APIToken 1277db26a31232132327265bd13221309a567fb67bf
+      Sets up NetBox from https://netbox.example.com with APIToken 1277db26a31232132327265bd13221309a567fb67bf.
    .PARAMETER NetboxAPIToken
-      APIToken to access NetBox found under "Profiles & Settings" -> "API Tokens" tab
+      APIToken to access NetBox found under "Profiles & Settings" -> "API Tokens" tab.
    .PARAMETER NetboxURL
-      URL from Netbox, must be https
+      URL from NetBox, must be https.
    #>
 
    param (
@@ -21,20 +21,25 @@ function Set-Config {
       [ValidatePattern ("^(https:\/\/).+")]
       $NetboxURL
    )
+
+   # Setting up headers for API requests
    $Header = @{
       Authorization = "Token $($NetboxAPIToken)"
    }
 
+   # Defining script-level variables for API requests
    $Script:RestParams = @{
       Headers       = $Header
       ContentType   = "application/json"
       ErrorVariable = "RestError"
    }
+
+   # Storing the base URL of the NetBox API
    $Script:NetboxURL = $NetboxURL.TrimEnd("/")
    Set-Variable -Scope Script -Name NetboxURL
    Set-Variable -Scope Script -Name NetboxAPIToken
 
-   # Add /api if not already provided
+   # Adding /api to the URL if it is not already provided
    if ($NetboxURL -notlike "*api*" ) {
       $Script:NetboxURL = $NetboxURL + "/api"
    }
@@ -43,42 +48,46 @@ function Set-Config {
 function Test-Config {
    <#
    .SYNOPSIS
-      For internal use, checks if NetBox URL and APIToken are set
+      For internal use, checks if NetBox URL and APIToken are set.
    .DESCRIPTION
-      Long description
+      Ensures that both the NetBox URL and API token have been configured before executing other functions.
    .EXAMPLE
       PS C:\> Test-Config | Out-Null
-      Explanation of what the example does
+      Verifies that the necessary configuration has been set up.
    #>
 
+   # Check if NetboxURL and NetboxAPIToken are set, otherwise return an error
    if (-not $(Get-Variable -Name NetboxURL) -or -not $(Get-Variable -Name NetboxAPIToken) ) {
       Write-Error "NetboxAPIToken and NetboxURL must be set before calling this function"
       break
    }
-
 }
 
 function Get-NextPage {
    <#
     .SYNOPSIS
-       For internal use, gets the next page of results from NetBox
+       For internal use, gets the next page of results from NetBox.
     .DESCRIPTION
-       Long description
+       Retrieves additional pages of results from a paginated NetBox API response.
     .EXAMPLE
        PS C:\> Get-NextPage -Result $Result
-       Retrieves all items from API call and return them in $CompleteResult
+       Retrieves all items from API call and returns them in $CompleteResult.
     .PARAMETER Result
-       Result from previous API call
+       Result from previous API call.
     #>
 
    param (
       [Parameter(Mandatory = $true)]
       $Result
    )
+
+   # Initialize an empty list to store the complete results
    $CompleteResult = New-Object collections.generic.list[object]
 
+   # Add the current page's results to the complete result list
    $CompleteResult += $Result.Results
 
+   # Continue fetching pages while there is a next page available
    if ($null -ne $result.next) {
       do {
          $Result = Invoke-RestMethod -Uri $Result.next @RestParams -Method Get
@@ -91,20 +100,22 @@ function Get-NextPage {
 function Get-RelatedObjects {
    <#
    .SYNOPSIS
-      For internal use, Gets all related objects from NetBox object
+      For internal use, Gets all related objects from a NetBox object.
    .DESCRIPTION
-      Long description
+      Retrieves related objects from a NetBox object based on specific properties like "_count".
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Get-RelatedObjects -Object $Device -ReferenceObjects "devicetype"
+      Retrieves related objects for a given device type.
+   .PARAMETER Object
+      The NetBox object from which to retrieve related objects.
+   .PARAMETER ReferenceObjects
+      The reference type to determine the related objects.
    .INPUTS
-      Inputs (if any)
+      None
    .OUTPUTS
-      Output (if any)
+      List of related NetBox objects.
    .NOTES
-      General notes
+      Internal function to help manage relationships in NetBox data.
    #>
    param (
       [Parameter(Mandatory = $true)]
@@ -114,12 +125,14 @@ function Get-RelatedObjects {
       $ReferenceObjects
    )
 
+   # Initialize a list to store related objects
    $RelatedObjects = New-Object collections.generic.list[object]
 
+   # Find properties that match the "_count" pattern
    $RelatedTypes = $Object.PSobject.Properties.name -match "_count"
    foreach ($Type in $RelatedTypes) {
       if ($object.$Type -gt 0) {
-         # Determinte between Models and Names
+         # Determine whether to get related objects by Model or Name
          if ($ReferenceObjects -eq "devicetype") {
             $RelatedObjects += Invoke-Expression "Get-$($Type.TrimEnd("_count")) -Model $($Object.Model)"
          }
@@ -131,10 +144,11 @@ function Get-RelatedObjects {
 
    return $RelatedObjects
 
-   # Get referenced objects from errormessage
+   # The following lines appear to be part of another function or commented-out code.
+   # Get referenced objects from error message
    $ReferenceObjects = ($ErrorMessage.ErrorRecord | ConvertFrom-Json).Detail.split(":")[1].Split(",")
 
-   # Trim whitespaces from errormessage
+   # Trim whitespaces from error message
    foreach ($Object in $ReferenceObjects) {
       $Object = $Object.Substring(0, $Object.Length - 3).Substring(1)
    }
@@ -144,20 +158,20 @@ function Get-RelatedObjects {
 function Show-ConfirmDialog {
    <#
    .SYNOPSIS
-      For interal use, Shows a confirmation dialog before executing the command
+      For internal use, Shows a confirmation dialog before executing the command.
    .DESCRIPTION
-      Long description
+      Displays a confirmation dialog with details about the object that is about to be created or modified.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Show-ConfirmDialog -Object $NewSite
+      Asks the user to confirm before creating a new site.
+   .PARAMETER Object
+      The object to display in the confirmation dialog.
    .INPUTS
-      Inputs (if any)
+      None
    .OUTPUTS
-      Output (if any)
+      None
    .NOTES
-      General notes
+      This function is used to confirm actions that have significant impact.
    #>
 
    param (
@@ -165,16 +179,20 @@ function Show-ConfirmDialog {
       $Object
    )
 
+   # Display the details of the object
    "Device Model:"
    $Object | Format-List
 
+   # Define the dialog title and question
    $Title = "New Object Creation"
    $Question = "Are you sure you want to create this object?"
 
+   # Define the choices for the user
    $Choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&Yes"))
    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&No"))
 
+   # Prompt the user for their decision
    $Decision = $Host.UI.PromptForChoice($Title, $Question, $Choices, 1)
    if ($Decision -ne 0) {
       Write-Error "Canceled by User"
@@ -185,22 +203,22 @@ function Show-ConfirmDialog {
 function Get-InterfaceType {
    <#
     .SYNOPSIS
-       Determine the interface type of a device based on linkspeed and connection type
+       Determine the interface type of a device based on linkspeed and connection type.
     .DESCRIPTION
-       Long description
+       Returns the appropriate NetBox interface type for a device based on its link speed and connector type.
     .EXAMPLE
        PS C:\> Get-NetBoxInterfaceType -Linkspeed 10GE -InterfaceType sfp
-       Returns the Netbox interface Type for a 10GBit\s SFP interface
+       Returns the Netbox interface Type for a 10GBit/s SFP interface.
     .PARAMETER Linkspeed
-       Speed auf the interface in gigabit/s e.g. 10GE
+       Speed of the interface in gigabit/s, e.g., 10GE.
     .PARAMETER InterfaceType
-       Type of the connector e.g. sfp or RJ45 or just fixed / modular
+       Type of the connector, e.g., sfp, RJ45, or just fixed/modular.
     .INPUTS
-       Inputs (if any)
+       None
     .OUTPUTS
        NetBox.InterfaceType
     .NOTES
-       General notes
+       Internal function to map the device's physical interface to a NetBox interface type.
     #>
 
    param (
@@ -212,13 +230,12 @@ function Get-InterfaceType {
       $InterfaceType
    )
 
-
-   # "GE" to Linkspeed if missing
+   # Append "GE" to Linkspeed if missing
    if ($Linkspeed -notlike "*GE") {
       $Linkspeed = $Linkspeed + "GE"
    }
 
-   # Map aliases
+   # Map aliases to standardized interface types
    if ($InterfaceType -eq "SFP") {
       $InterfaceType = "Modular"
    }
@@ -227,7 +244,7 @@ function Get-InterfaceType {
       $InterfaceType = "Fixed"
    }
 
-   # Determinte 1GE interface
+   # Determine the specific interface type based on link speed and interface type
    if ($Linkspeed -eq "1GE" -and $InterfaceType -eq "Fixed") {
       $Type = "1000base-t"
    }
@@ -235,7 +252,6 @@ function Get-InterfaceType {
       $Type = "1000base-x-sfp"
    }
 
-   # Determinte 10GE interface
    if ($Linkspeed -eq "10GE" -and $InterfaceType -eq "Fixed") {
       $Type = "10gbase-t"
    }
@@ -243,21 +259,19 @@ function Get-InterfaceType {
       $Type = "10gbase-x-sfpp"
    }
 
-   # Determinte 25GE interface
    if ($Linkspeed -eq "25GE") {
       $Type = "25gbase-x-sfp28"
    }
 
-   # Determinte 40GE interface
    if ($Linkspeed -eq "40GE") {
       $Type = "40gbase-x-qsfpp"
    }
 
-   # Determinte 100GE interface
    if ($Linkspeed -eq "100GE") {
       $Type = "100gbase-x-qsfp28"
    }
 
+   # Return the determined interface type with the appropriate type name
    $Type.PSObject.TypeNames.Insert(0, "NetBox.InterfaceType")
 
    return $Type
@@ -266,24 +280,24 @@ function Get-InterfaceType {
 function Get-Site {
    <#
     .SYNOPSIS
-       Retrieves a site from NetBox
+       Retrieves a site from NetBox.
     .DESCRIPTION
-       Long description
+       Queries NetBox for a site based on parameters like name, ID, or slug.
     .EXAMPLE
        PS C:\> Get-NetBoxSite -Name VBC
-       Returns the Netbox site VBC
+       Returns the Netbox site VBC.
     .PARAMETER Name
-       Search for a site by name
-    .PARAMETER Id
-       Search for a site by ID
+       Search for a site by name.
+    .PARAMETER ID
+       Search for a site by ID.
     .PARAMETER Slug
-       Search for a site by slug
+       Search for a site by slug.
     .INPUTS
-       Inputs (if any)
+       None
     .OUTPUTS
        NetBox.Site
     .NOTES
-       General notes
+       Fetches details about a specific site from NetBox.
     #>
 
    param (
@@ -304,7 +318,9 @@ function Get-Site {
       Test-Config | Out-Null
       $URL = "/dcim/sites/"
    }
+
    process {
+      # Construct the query string based on provided parameters
       $Query = "?"
 
       if ($name) {
@@ -321,8 +337,10 @@ function Get-Site {
 
       $Query = $Query.TrimEnd("&")
 
+      # Retrieve the site(s) from NetBox
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Store the results in a list of site objects
       $Sites = New-Object collections.generic.list[object]
 
       foreach ($Item in $Result) {
@@ -338,44 +356,44 @@ function Get-Site {
 function New-Site {
    <#
     .SYNOPSIS
-       Creates a new site in NetBox
+       Creates a new site in NetBox.
     .DESCRIPTION
-       Long description
+       Creates a new site in NetBox with specified parameters like name, slug, status, region, etc.
     .EXAMPLE
        PS C:\> New-NetBoxSite -Name vbc
-       Creates a new site vbc
+       Creates a new site vbc.
     .PARAMETER Name
-       Name of the site
+       Name of the site.
     .PARAMETER Slug
-      Slug of the site, if not specified, it will be generated from the name
+       Slug of the site; if not specified, it will be generated from the name.
     .PARAMETER Status
-      Status of the site, active by default
+       Status of the site, active by default.
     .PARAMETER Region
-      Region of the site
+       Region of the site.
     .PARAMETER Group
-      Group of the site
+       Group of the site.
     .PARAMETER CustomFields
-      Custom fields of the site
+       Custom fields of the site.
     .PARAMETER Tenant
-      Tenant of the site
+       Tenant of the site.
     .PARAMETER Comment
-      Comment of the site
+       Comment of the site.
     .PARAMETER Tags
-      Tags of the site
+       Tags of the site.
     .PARAMETER TagColor
-      Tag color of the site
+       Tag color of the site.
     .PARAMETER Description
-      Descripion of the site
+       Description of the site.
     .PARAMETER Confirm
-      Confirm the creation of the site
+       Confirm the creation of the site.
     .PARAMETER Force
-      Force the creation of the site
+       Force the creation of the site.
     .INPUTS
-       Inputs (if any)
+       None
     .OUTPUTS
        NetBox.Site
     .NOTES
-       General notes
+       Adds a new site entry in NetBox.
     #>
 
    param (
@@ -439,6 +457,7 @@ function New-Site {
    }
 
    process {
+      # Check if the site already exists by name or slug
       if ($Name) {
          if (Get-Site -Name $Name) {
             Write-Warning "Site $Name already exists"
@@ -452,13 +471,12 @@ function New-Site {
          }
       }
 
+      # Generate a slug if it wasn't provided
       if ($null -eq $Slug) {
-         $Slug
-      }
-      else {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
+      # Prepare the body for the API request
       $Body = @{
          name        = $Name
          slug        = $Slug
@@ -470,14 +488,16 @@ function New-Site {
          description = $Description
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys from the body
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Create the site if it doesn't already exist
       if (-Not $Exists) {
          $Site = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $Site.PSObject.TypeNames.Insert(0, "NetBox.Site")
@@ -492,20 +512,40 @@ function New-Site {
 function Update-Site {
    <#
     .SYNOPSIS
-       Updates a site in NetBox
+       Updates a site in NetBox.
     .DESCRIPTION
-       Long description
+       Updates an existing site in NetBox with the provided parameters.
     .EXAMPLE
-       PS C:\> <example usage>
-       Explanation of what the example does
+       PS C:\> Update-NetBoxSite -Name vbc -Status active
+       Updates the status of the site vbc to active.
     .PARAMETER Name
-       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+       Name of the site to update.
+    .PARAMETER Slug
+       Slug of the site.
+    .PARAMETER Status
+       Status of the site.
+    .PARAMETER Region
+       Region of the site.
+    .PARAMETER Group
+       Group of the site.
+    .PARAMETER Tenant
+       Tenant of the site.
+    .PARAMETER CustomFields
+       Custom fields of the site.
+    .PARAMETER Comment
+       Comment of the site.
+    .PARAMETER Tags
+       Tags of the site.
+    .PARAMETER TagColor
+       Tag color of the site.
+    .PARAMETER Description
+       Description of the site.
     .INPUTS
-       Inputs (if any)
+       None
     .OUTPUTS
-       Output (if any)
+       NetBox.Site
     .NOTES
-       General notes
+       Updates a site entry in NetBox.
     #>
 
    param (
@@ -554,34 +594,39 @@ function Update-Site {
       [String]
       $Description
    )
-   FunctionName
+
+   # This function is incomplete. The main logic for updating a site should be implemented here.
+   # Example:
+   # - Fetch the site by Name or ID
+   # - Update the fields provided as parameters
+   # - Send a PUT or PATCH request to the NetBox API with the updated site data
 }
 
 function Remove-Site {
    <#
     .SYNOPSIS
-       Deletes a site in NetBox
+       Deletes a site in NetBox.
     .DESCRIPTION
-       Long description
+       Removes a site from NetBox, optionally including all related objects.
     .EXAMPLE
        PS C:\> Remove-NetBoxSite -Name vbc -Recurse
-       Deletes a site vbc and all related objects
+       Deletes a site vbc and all related objects.
     .PARAMETER Name
-       Name of the site
+       Name of the site to delete.
     .PARAMETER ID
-       ID of the site
+       ID of the site to delete.
     .PARAMETER Recurse
-       Deletes all related objects as well
+       Deletes all related objects as well.
     .PARAMETER Confirm
-      Confirm the creation of the site
+       Confirm the deletion of the site.
     .PARAMETER InputObject
-      Site object to delete
+       Site object to delete.
     .INPUTS
-       Netbox Site Object
+       NetBox.Site
     .OUTPUTS
-       Output (if any)
+       None
     .NOTES
-       General notes
+       Deletes a site and optionally its related objects in NetBox.
     #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -612,11 +657,13 @@ function Remove-Site {
    }
 
    process {
+      # Validate the InputObject type
       if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Site")) {
          Write-Error "InputObject is not type NetBox.Site"
          break
       }
 
+      # Retrieve site details based on input parameters
       if ($InputObject) {
          $Name = $InputObject.name
          $ID = $InputObject.Id
@@ -629,19 +676,22 @@ function Remove-Site {
          $Site = Get-Site -Name $Name
       }
 
+      # Get related objects to potentially delete them as well
       $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Site
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          Show-ConfirmDialog -Object $Site
       }
 
-      # Remove all related objects
+      # Remove all related objects if Recurse is specified
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
          }
       }
 
+      # Try to delete the site, handling errors appropriately
       try {
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Site.ID) + "/") @RestParams -Method Delete
       }
@@ -661,24 +711,24 @@ function Remove-Site {
 function Get-Location {
    <#
     .SYNOPSIS
-       Retrieves a location in NetBox
+       Retrieves a location in NetBox.
     .DESCRIPTION
-       Long description
+       Queries NetBox for a location based on parameters like name, ID, or slug.
     .EXAMPLE
        PS C:\> Get-NetBoxLocation -Name "Low Density"
-       Retrieves the location Low Density
+       Retrieves the location Low Density.
     .PARAMETER Name
-       Name of the location
+       Name of the location.
     .PARAMETER ID
-       ID of the location
+       ID of the location.
     .PARAMETER Slug
-       Search for a location by slug
+       Search for a location by slug.
     .INPUTS
-       Inputs (if any)
+       None
     .OUTPUTS
        NetBox.Location
     .NOTES
-       General notes
+       Fetches details about a specific location from NetBox.
     #>
 
    param (
@@ -701,6 +751,7 @@ function Get-Location {
    }
 
    process {
+      # Construct the query string based on provided parameters
       $Query = "?"
 
       # If name contains spaces, use slug instead
@@ -718,8 +769,10 @@ function Get-Location {
 
       $Query = $Query.TrimEnd("&")
 
+      # Retrieve the location(s) from NetBox
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Store the results in a list of location objects
       $Locations = New-Object collections.generic.list[object]
 
       foreach ($Item in $Result) {
@@ -735,38 +788,38 @@ function Get-Location {
 function New-Location {
    <#
     .SYNOPSIS
-       Creates a location in NetBox
+       Creates a location in NetBox.
     .DESCRIPTION
-       Long description
+       Creates a new location in NetBox with specified parameters like name, slug, site, etc.
     .EXAMPLE
-       PS C:\> New-NetBoxLocation -Parent IMP -Site VBC -Name "Low Densitity"
-       Creates a new location Low Densitity as a child of IMP in site VBC
+       PS C:\> New-NetBoxLocation -Parent IMP -Site VBC -Name "Low Density"
+       Creates a new location Low Density as a child of IMP in site VBC.
     .PARAMETER Name
-         Name of the location
+       Name of the location.
     .PARAMETER Slug
-         Slug of the location, if not specified, it will be generated from the name
+       Slug of the location; if not specified, it will be generated from the name.
     .PARAMETER SiteName
-         Name of the Site of the location
+       Name of the Site of the location.
     .PARAMETER SiteID
-         ID of the Site of the location
+       ID of the Site of the location.
     .PARAMETER Parent
-         Parent of the location
+       Parent of the location.
     .PARAMETER CustomFields
-         Custom fields of the location
+       Custom fields of the location.
     .PARAMETER Comment
-         Comment for location
+       Comment for the location.
     .PARAMETER Description
-         Description of the location
+       Description of the location.
     .PARAMETER Confirm
-         Confirm the creation of the location
+       Confirm the creation of the location.
     .PARAMETER Force
-         Force the creation of the location
+       Force the creation of the location.
     .INPUTS
-       Inputs (if any)
+       None
     .OUTPUTS
        NetBox.Location
     .NOTES
-       General notes
+       Adds a new location entry in NetBox.
     #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -813,6 +866,7 @@ function New-Location {
    }
 
    process {
+      # Check if the location already exists by name or slug
       if ($Name) {
          if (Get-Location -Name $Name) {
             Write-Warning "Location $Name already exists"
@@ -826,13 +880,12 @@ function New-Location {
          }
       }
 
+      # Generate a slug if it wasn't provided
       if ($null -eq $Slug) {
-         $Slug
-      }
-      else {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
+      # Retrieve the site object by name or ID
       if ($SiteName) {
          $Site = Get-Site -Name $SiteName
       }
@@ -841,10 +894,12 @@ function New-Location {
          $Site = Get-Site -Id $SiteID
       }
 
+      # Convert parent location name to ID if it is a string
       if ($Parent -is [String]) {
          $Parent = (Get-Location -Name $Parent).ID
       }
 
+      # Prepare the body for the API request
       $Body = @{
          name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug        = $Slug
@@ -853,14 +908,16 @@ function New-Location {
          description = $Description
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys from the body
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Create the location if it doesn't already exist
       if (-Not $Exists) {
          $Location = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $Location.PSObject.TypeNames.Insert(0, "NetBox.Location")
@@ -875,28 +932,28 @@ function New-Location {
 function Remove-Location {
    <#
    .SYNOPSIS
-      Deletes a location in NetBox
+      Deletes a location in NetBox.
    .DESCRIPTION
-      Long description
+      Removes a location from NetBox, optionally including all related objects.
    .EXAMPLE
       PS C:\> Remove-NetBoxLocation -Name "High Density"
-      Deletes the location High Density
+      Deletes the location High Density.
     .PARAMETER Name
-       Name of the location
+       Name of the location to delete.
     .PARAMETER ID
-       ID of the location
+       ID of the location to delete.
     .PARAMETER Recurse
-       Deletes all related objects as well
+       Deletes all related objects as well.
     .PARAMETER Confirm
-      Confirm the creation of the location
+       Confirm the deletion of the location.
     .PARAMETER InputObject
-      Location object to delete
+       Location object to delete.
    .INPUTS
       NetBox.Location
    .OUTPUTS
-      Output (if any)
+      None
    .NOTES
-      General notes
+      Deletes a location and optionally its related objects in NetBox.
    #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -927,11 +984,13 @@ function Remove-Location {
    }
 
    process {
+      # Validate the InputObject type
       if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Location")) {
          Write-Error "InputObject is not type NetBox.Location"
          break
       }
 
+      # Retrieve location details based on input parameters
       if ($InputObject) {
          $Name = $InputObject.name
          $ID = $InputObject.Id
@@ -944,19 +1003,22 @@ function Remove-Location {
          $Location = Get-Location -Name $Name
       }
 
-      $RelatedObjects = Get-RelatedObjects -Object $Site -ReferenceObjects Location
+      # Get related objects to potentially delete them as well
+      $RelatedObjects = Get-RelatedObjects -Object $Location -ReferenceObjects Location
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          Show-ConfirmDialog -Object $Location
       }
 
-      # Remove all related objects
+      # Remove all related objects if Recurse is specified
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
          }
       }
 
+      # Try to delete the location, handling errors appropriately
       try {
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Location.ID) + "/") @RestParams -Method Delete
       }
@@ -977,28 +1039,28 @@ function Remove-Location {
 function Get-Rack {
    <#
     .SYNOPSIS
-       Retrives a rack from NetBox
+       Retrieves a rack from NetBox.
     .DESCRIPTION
-       Long description
+       Fetches rack information from NetBox based on provided filters like name, site, location, or slug.
     .EXAMPLE
        PS C:\> Get-NetBoxRack -Location "High Density"
-       Retrives all racks from High Density location
+       Retrieves all racks from the "High Density" location.
     .PARAMETER Name
-       Name of the rack
+       Name of the rack to filter by.
     .PARAMETER ID
-       ID of the rack
+       ID of the rack to filter by.
     .PARAMETER Site
-       Site of the rack
+       Site of the rack to filter by.
     .PARAMETER Location
-       Location of the rack
+       Location of the rack to filter by.
     .PARAMETER Slug
-       Search for a rack by slug
+       Slug identifier of the rack to filter by.
     .INPUTS
-       Inputs (if any)
+       None.
     .OUTPUTS
        NetBox.Rack
     .NOTES
-       General notes
+       Retrieves rack details from the NetBox API using specified filters.
     #>
 
    param (
@@ -1024,31 +1086,21 @@ function Get-Rack {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/racks/"
    }
 
    process {
+      # Build query string based on parameters provided
       $Query = "?"
 
       if ($Name) {
          $Query = $Query + "name__ic=$($Name)&"
       }
 
-      if ($Model) {
-         $Query = $Query + "model__ic=$($Model)&"
-      }
-
-      if ($Manufacturer) {
-         $Query = $Query + "manufacturer__ic=$($Manufacturer)&"
-      }
-
       if ($ID) {
          $Query = $Query + "id=$($id)&"
-      }
-
-      if ($MacAddress) {
-         $Query = $Query + "mac_address=$($MacAddress)"
       }
 
       if ($Site) {
@@ -1065,16 +1117,20 @@ function Get-Rack {
 
       $Query = $Query.TrimEnd("&")
 
+      # Make API request and retrieve the results
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Create an empty list to hold the rack objects
       $Racks = New-Object collections.generic.list[object]
 
+      # Process each item in the result and cast to NetBox.Rack type
       foreach ($Item in $Result) {
          [PSCustomObject]$Rack = $item
          $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
          $Racks += $Rack
       }
 
+      # Return the list of racks
       return $Racks
    }
 }
@@ -1082,46 +1138,46 @@ function Get-Rack {
 function New-Rack {
    <#
     .SYNOPSIS
-       Creates a new rack in NetBox
+       Creates a new rack in NetBox.
     .DESCRIPTION
-       Long description
+       Adds a new rack entry to NetBox with the specified parameters.
     .EXAMPLE
-       PS C:\> New-NetBoxRack -Name "T-12" -Location "High density" -Site VBC
-       Creates rack "T-12" in location "High Density" in site VBC
+       PS C:\> New-NetBoxRack -Name "T-12" -Location "High Density" -Site VBC
+       Creates rack "T-12" in location "High Density" at site VBC.
     .PARAMETER Name
-       Name of the rack
+       Name of the new rack.
     .PARAMETER Slug
-         Slug of the rack, if not specified, it will be generated from the name
+       Slug of the rack. If not specified, it will be generated from the name.
     .PARAMETER SiteName
-         Name of the Site of the rack
+       Name of the site where the rack is located.
     .PARAMETER SiteID
-         ID of the Site of the rack
+       ID of the site where the rack is located.
     .PARAMETER LocationName
-         Name of the Location of the rack
+       Name of the location where the rack is located.
     .PARAMETER LocationID
-         ID of the Location of the rack, Defaults to 4-post-frame
+       ID of the location where the rack is located.
     .PARAMETER Status
-         Status of the rack, Defaults to Active
+       Status of the rack, default is "active".
     .PARAMETER Type
-         Type of the rack, Defaults to Active
+       Type of the rack, default is "4-post-frame".
     .PARAMETER Width
-         Width of the rack in inch, default is 19
+       Width of the rack in inches, default is 19.
     .PARAMETER Height
-         Height of the rack in U(Units), default is 42
+       Height of the rack in U (Units), default is 42.
     .PARAMETER Description
-         Description of the rack
+       Description of the rack.
     .PARAMETER CustomFields
-         Custom fields of the rack
+       Custom fields for the rack.
     .PARAMETER Confirm
-         Confirm the creation of the rack
+       If set to true, prompts for confirmation before creation.
     .PARAMETER Force
-         Force the creation of the rack
+       Forces creation of the rack, even if it already exists.
     .INPUTS
-       Inputs (if any)
+       None.
     .OUTPUTS
        NetBox.Rack
     .NOTES
-       General notes
+       Adds a new rack to NetBox using the specified parameters.
     #>
    [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
@@ -1186,11 +1242,13 @@ function New-Rack {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/racks/"
    }
 
    process {
+      # Check if the rack already exists by name or slug
       if ($Name) {
          if (Get-Rack -Name $Name) {
             Write-Warning "Rack $Name already exists"
@@ -1204,6 +1262,7 @@ function New-Rack {
          }
       }
 
+      # Generate a slug if not provided
       if ($null -eq $Slug) {
          $Slug
       }
@@ -1211,6 +1270,7 @@ function New-Rack {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
+      # Get the Site and Location objects
       if ($SiteName) {
          $Site = Get-Site -Name $SiteName
       }
@@ -1227,6 +1287,7 @@ function New-Rack {
          $Location = Get-Location -ID $LocationID
       }
 
+      # Prepare the body for the API request
       $Body = @{
          name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug        = $Slug
@@ -1239,14 +1300,16 @@ function New-Rack {
          description = $Description
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys from the body
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Create the rack if it doesn't already exist
       if (-Not $Exists) {
          $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
@@ -1261,44 +1324,44 @@ function New-Rack {
 function Update-Rack {
    <#
     .SYNOPSIS
-       Updates a new rack in NetBox
+       Updates an existing rack in NetBox.
     .DESCRIPTION
-       Long description
+       Updates an existing rack entry in NetBox based on the provided parameters.
     .EXAMPLE
-       PS C:\> New-NetBoxRack -Name "T-12" -Location "High density" -Site VBC
-       Creates rack "T-12" in location "High Density" in site VBC
+       PS C:\> Update-NetBoxRack -Name "T-12" -Location "High density" -Site VBC
+       Updates rack "T-12" in location "High Density" at site VBC.
     .PARAMETER Name
-       Name of the rack
+       Name of the rack to update.
     .PARAMETER SiteName
-       Name of the Site of the rack
+       Name of the site where the rack is located.
     .PARAMETER SiteID
-       ID of the Site of the rack
+       ID of the site where the rack is located.
     .PARAMETER LocationName
-       Name of the Location of the rack
+       Name of the location where the rack is located.
     .PARAMETER LocationID
-       ID of the Location of the rack, Defaults to 4-post-frame
+       ID of the location where the rack is located.
     .PARAMETER Status
-       Status of the rack, Defaults to Active
+       Status of the rack, default is "active".
     .PARAMETER Type
-       Type of the rack, Defaults to Active
+       Type of the rack, default is "4-post-frame".
     .PARAMETER Width
-       Width of the rack in inch, default is 19
+       Width of the rack in inches, default is 19.
     .PARAMETER Height
-       Height of the rack in U(Units), default is 42
+       Height of the rack in U (Units), default is 42.
     .PARAMETER Description
-       Description of the rack
+       Description of the rack.
     .PARAMETER CustomFields
-       Custom fields of the rack
+       Custom fields for the rack.
     .PARAMETER Confirm
-       Confirm the creation of the rack
+       If set to true, prompts for confirmation before updating.
     .PARAMETER Force
-       Force the creation of the rack
+       Forces the update of the rack.
     .INPUTS
        NetBox.Rack
     .OUTPUTS
        NetBox.Rack
     .NOTES
-       General notes
+       Updates an existing rack in NetBox using the specified parameters.
     #>
    [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
@@ -1359,14 +1422,17 @@ function Update-Rack {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/racks/"
    }
 
    process {
 
+      # Retrieve the existing rack
       $Rack = Get-Rack -Name $Name
 
+      # Get the Site and Location objects
       if ($SiteName) {
          $Site = Get-Site -Name $SiteName
       }
@@ -1383,6 +1449,7 @@ function Update-Rack {
          $Location = Get-Location -ID $LocationID
       }
 
+      # Prepare the body for the API request
       $Body = @{
          name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          site        = $Site.ID
@@ -1394,14 +1461,16 @@ function Update-Rack {
          description = $Description
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys from the body
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Update the rack using a PATCH request
       if (-Not $Exists) {
          $Rack = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
          $Rack.PSObject.TypeNames.Insert(0, "NetBox.Rack")
@@ -1417,28 +1486,28 @@ function Update-Rack {
 function Remove-Rack {
    <#
    .SYNOPSIS
-      Deletes a rack from NetBox
+      Deletes a rack from NetBox.
    .DESCRIPTION
-      Long description
+      Removes a rack from NetBox, optionally including all related objects.
    .EXAMPLE
       PS C:\> Remove-NetBoxRack -Name "Y-14"
-      Deletes rack "Y-14" in NetBox
+      Deletes rack "Y-14" from NetBox.
    .PARAMETER Name
-      Name of the rack
+      Name of the rack to delete.
    .PARAMETER ID
-      ID of the rack
+      ID of the rack to delete.
     .PARAMETER Recurse
-       Deletes all related objects as well
+       Deletes all related objects as well.
     .PARAMETER Confirm
-      Confirm the deletion of the rack
+      Confirm the deletion of the rack.
     .PARAMETER InputObject
-      Rack object to delete
+      Rack object to delete.
    .INPUTS
       NetBox.Rack
    .OUTPUTS
-      Output (if any)
+      None.
    .NOTES
-      General notes
+      Deletes a rack and optionally its related objects in NetBox.
    #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -1464,16 +1533,19 @@ function Remove-Rack {
    )
    begin {
 
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/racks/"
    }
 
    process {
+      # Ensure the input object is of the correct type
       if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Rack")) {
          Write-Error "InputObject is not type NetBox.Rack"
          break
       }
 
+      # Retrieve the rack by name or ID
       if ($InputObject) {
          $Name = $InputObject.name
          $ID = $InputObject.ID
@@ -1486,22 +1558,27 @@ function Remove-Rack {
          $Rack = Get-Rack -Name $Name
       }
 
+      # Retrieve related objects to delete if the recurse option is enabled
       $RelatedObjects = Get-RelatedObjects -Object $Rack -ReferenceObjects Rack
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          Show-ConfirmDialog -Object $Rack
       }
 
-      # Remove all related objects
+      # Remove all related objects if recurse is enabled
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
          }
       }
+
+      # Delete the rack
       try {
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Rack.ID) + "/") @RestParams -Method Delete
       }
       catch {
+         # Handle errors during deletion, especially related object issues
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
             Write-Error "Delete those objects first or run again using -recurse switch"
@@ -1517,22 +1594,22 @@ function Remove-Rack {
 function Get-CustomField {
    <#
     .SYNOPSIS
-       Retrievess a custom field from NetBox
+       Retrieves a custom field from NetBox.
     .DESCRIPTION
-       Long description
+       Fetches custom field information from NetBox based on the provided filters like name or ID.
     .EXAMPLE
        PS C:\> Get-NetBoxCustomField -Name "ServiceCatalogID"
-       Retrieves custom field "ServiceCatalogID" from NetBox
+       Retrieves custom field "ServiceCatalogID" from NetBox.
     .PARAMETER Name
-       Name of the custom field
+       Name of the custom field to filter by.
     .PARAMETER ID
-       ID of the custom field
+       ID of the custom field to filter by.
     .INPUTS
-       Inputs (if any)
+       None.
     .OUTPUTS
        NetBox.CustomField
     .NOTES
-       General notes
+       Retrieves custom field details from NetBox using specified filters.
     #>
 
    param (
@@ -1546,11 +1623,13 @@ function Get-CustomField {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/extras/custom-fields/"
    }
 
    process {
+      # Build query string based on parameters provided
       $Query = "?"
 
       if ($Name) {
@@ -1563,16 +1642,20 @@ function Get-CustomField {
 
       $Query = $Query.TrimEnd("&")
 
+      # Make API request and retrieve the results
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Create an empty list to hold the custom field objects
       $Customfields = New-Object collections.generic.list[object]
 
+      # Process each item in the result and cast to NetBox.CustomField type
       foreach ($Item in $Result) {
          [PSCustomObject]$Customfield = $item
          $Customfield.PSObject.TypeNames.Insert(0, "NetBox.Customfield")
          $Customfields += $Customfield
       }
 
+      # Return the list of custom fields
       return $Customfields
    }
 }
@@ -1580,36 +1663,36 @@ function Get-CustomField {
 function New-CustomField {
    <#
     .SYNOPSIS
-       Creates a custom field in NetBox
+       Creates a custom field in NetBox.
     .DESCRIPTION
-       Long description
+       Adds a new custom field to NetBox with the specified parameters.
     .EXAMPLE
        PS C:\> New-NetBoxCustomField -Name "ServiceCatalogID" -Type Integer -ContentTypes Device -Label "Service Catalog ID"
-       Creates custom field "ServiceCatalogID" from Type Integer for Contenttype device with the label "Service Catalog ID" in NetBox
+       Creates custom field "ServiceCatalogID" of type Integer for content type "Device" with the label "Service Catalog ID" in NetBox.
     .PARAMETER Name
-       Name of the custom field
+       Name of the new custom field.
     .PARAMETER Label
-       Label of the custom field
+       Label for the custom field.
     .PARAMETER Type
-         Type of the custom field, e.g. "Integer","Text"
+       Type of the custom field, e.g., "Integer", "Text".
     .PARAMETER ContentTypes
-       Content types of the custom field, e.g. "Device"
+       Content types for the custom field, e.g., "Device".
     .PARAMETER Choices
-       Choices of the custom field, e.g. "1,2,3,4,5"
+       Choices for the custom field, e.g., "1,2,3,4,5".
     .PARAMETER Description
-       Description of the custom field
+       Description of the custom field.
     .PARAMETER Required
-       Set the custom field as required
+       Specifies whether the custom field is required.
     .PARAMETER Confirm
-      Confirm the creation of the location
+       If set to true, prompts for confirmation before creation.
     .PARAMETER Force
-      Forces creation of the custom field
+       Forces creation of the custom field, even if it already exists.
     .INPUTS
-       Inputs (if any)
+       None.
     .OUTPUTS
        NetBox.CustomField
     .NOTES
-       General notes
+       Adds a new custom field to NetBox using the specified parameters.
     #>
 
    param (
@@ -1653,16 +1736,19 @@ function New-CustomField {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/extras/custom-fields/"
    }
 
    process {
+      # Check if the custom field already exists
       if ($(Get-CustomField -Name $Name )) {
          Write-Warning "CustomField $Name already exists"
          $Exists = $true
       }
 
+      # Prepare content types for the API request
       $NetBoxContentTypes = New-Object collections.generic.list[object]
 
       foreach ($ContentType in $ContentTypes) {
@@ -1670,6 +1756,7 @@ function New-CustomField {
          $NetBoxContentTypes += "$($NetBoxContentType.app_label).$($NetBoxContentType.model)"
       }
 
+      # Prepare the body for the API request
       $Body = @{
          name          = (Get-Culture).Textinfo.ToTitleCase($Name)
          label         = $Label
@@ -1680,14 +1767,16 @@ function New-CustomField {
          content_types = $NetBoxContentTypes
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys from the body
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Create the custom field if it doesn't already exist
       if (-Not $Exists) {
          $CustomField = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $CustomField.PSObject.TypeNames.Insert(0, "NetBox.CustomField")
@@ -1702,27 +1791,27 @@ function New-CustomField {
 function Remove-CustomField {
    <#
     .SYNOPSIS
-       Deletes a custom field from NetBox
+       Deletes a custom field from NetBox.
     .DESCRIPTION
-       Long description
+       Removes a custom field from NetBox.
     .EXAMPLE
        PS C:\> Remove-NetBoxCustomField -id 3
-       Deletes custom field with ID 3 from NetBox
+       Deletes custom field with ID 3 from NetBox.
     .PARAMETER Name
-       Name of the custom field
+       Name of the custom field to delete.
     .PARAMETER ID
-       ID of the custom field
+       ID of the custom field to delete.
     .PARAMETER InputObject
-       Customfield object to delete
+       Custom field object to delete.
     .INPUTS
        NetBox.CustomField
     .OUTPUTS
-       Output (if any)
+       None.
     .NOTES
-       General notes
+       Deletes a custom field from NetBox based on the specified parameters.
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -1745,16 +1834,19 @@ function Remove-CustomField {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/extras/custom-fields/"
    }
 
    process {
+      # Ensure the input object is of the correct type
       if (-not ($InputObject.psobject.TypeNames -contains "NetBox.Customfield")) {
          Write-Error "InputObject is not type NetBox.Customfield"
          break
       }
 
+      # Retrieve the custom field by name or ID
       if ($InputObject) {
          $Name = $InputObject.name
          $ID = $InputObject.Id
@@ -1767,23 +1859,27 @@ function Remove-CustomField {
          $CustomField = Get-CustomField -Name $Name
       }
 
+      # Retrieve related objects to delete if the recurse option is enabled
       $RelatedObjects = Get-RelatedObjects -Object $CustomField -ReferenceObjects CustomField
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          Show-ConfirmDialog -Object $CustomField
       }
 
-      # Remove all related objects
+      # Remove all related objects if recurse is enabled
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
          }
       }
 
+      # Delete the custom field
       try {
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($CustomField.ID) + "/") @RestParams -Method Delete
       }
       catch {
+         # Handle errors during deletion, especially related object issues
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
             Write-Error "Delete those objects first or run again using -recurse switch"
@@ -1798,20 +1894,20 @@ function Remove-CustomField {
 function Get-ContentType {
    <#
     .SYNOPSIS
-       Retrieves content types from NetBox
+       Retrieves content types from NetBox.
     .DESCRIPTION
-       Long description
+       Fetches content type information from NetBox based on the provided name filter.
     .EXAMPLE
        PS C:\> Get-NetBoxContentType -Name Device
-       Retrieves content type "Device" from NetBox
+       Retrieves content type "Device" from NetBox.
     .PARAMETER Name
-       Name of the content type
+       Name of the content type to filter by.
     .INPUTS
-       Inputs (if any)
+       None.
     .OUTPUTS
-       Output (if any)
+       NetBox.ContentType
     .NOTES
-       General notes
+       Retrieves content types from NetBox using the specified filters.
     #>
 
    param (
@@ -1822,11 +1918,13 @@ function Get-ContentType {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/extras/content-types/"
    }
 
    process {
+      # Build query string based on parameters provided
       $Query = ""
 
       if ($Name) {
@@ -1835,16 +1933,20 @@ function Get-ContentType {
 
       $Query = $Query.TrimEnd("&")
 
+      # Make API request and retrieve the results
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Create an empty list to hold the content type objects
       $ContentTypes = New-Object collections.generic.list[object]
 
+      # Process each item in the result and cast to NetBox.ContentType type
       foreach ($Item in $Result) {
          [PSCustomObject]$ContentType = $item
          $ContentType.PSObject.TypeNames.Insert(0, "NetBox.ContentType")
          $ContentTypes += $ContentType
       }
 
+      # Return the list of content types
       return $ContentTypes
    }
 }
@@ -1852,25 +1954,24 @@ function Get-ContentType {
 function Get-Manufacturer {
    <#
    .SYNOPSIS
-      Gets a manufacturer from NetBox
+      Gets a manufacturer from NetBox.
    .DESCRIPTION
-      Long description
+      Retrieves manufacturer information from NetBox based on provided filters like name, ID, or slug.
    .EXAMPLE
       PS C:\> Get-NetBoxManufacturer -Name "Cisco"
-      Retrieves manufacturer "Cisco" from NetBox
+      Retrieves manufacturer "Cisco" from NetBox.
    .PARAMETER Name
-      Name of the manufacturer
+      Name of the manufacturer to filter by.
    .PARAMETER ID
-      ID of the manufacturer
+      ID of the manufacturer to filter by.
     .PARAMETER Slug
-       Search for a manufacturer by slug
-   .PARAMETER
+       Slug identifier of the manufacturer to filter by.
    .INPUTS
-      Inputs (if any)
+      None.
    .OUTPUTS
       NetBox.Manufacturer
    .NOTES
-      General notes
+      Retrieves manufacturer details from the NetBox API using specified filters.
    #>
 
    param (
@@ -1888,11 +1989,13 @@ function Get-Manufacturer {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/manufacturers/"
    }
 
    process {
+      # Build query string based on parameters provided
       $Query = "?"
 
       if ($Name) {
@@ -1909,8 +2012,10 @@ function Get-Manufacturer {
 
       $Query = $Query.TrimEnd("&")
 
+      # Make API request and retrieve the results
       $Result = Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get
 
+      # Check if multiple pages of results need to be retrieved
       if ($Result.Count -gt 50) {
          $Result = Get-NextPage -Result $Result
          $Manufacturer = $Result
@@ -1918,6 +2023,8 @@ function Get-Manufacturer {
       else {
          $Manufacturer = $Result.results
       }
+
+      # Cast the result to NetBox.Manufacturer type
       $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
       return $Manufacturer
    }
@@ -1926,26 +2033,26 @@ function Get-Manufacturer {
 function New-Manufacturer {
    <#
    .SYNOPSIS
-      Creates a new manufacturer in NetBox
+      Creates a new manufacturer in NetBox.
    .DESCRIPTION
-      Long description
+      Adds a new manufacturer entry to NetBox with the specified parameters.
    .EXAMPLE
       PS C:\> New-NetBoxManufacturer -Name Dell
-      Creates manufacturer "Dell" in NetBox
+      Creates manufacturer "Dell" in NetBox.
    .PARAMETER Name
-      Name of the manufacturer
+      Name of the new manufacturer.
    .PARAMETER Slug
-      Slug of the manufacturer, if not specified, it will be generated from the name
+      Slug of the manufacturer. If not specified, it will be generated from the name.
    .PARAMETER Confirm
-      Confirm the creation of the manufacturer
+      If set to true, prompts for confirmation before creation.
     .PARAMETER Force
-      Force the creation of the manufacturer
+      Forces creation of the manufacturer, even if it already exists.
    .INPUTS
-      Inputs (if any)
+      None.
    .OUTPUTS
       NetBox.Manufacturer
    .NOTES
-      General notes
+      Adds a new manufacturer to NetBox using the specified parameters.
    #>
 
    param (
@@ -1967,11 +2074,13 @@ function New-Manufacturer {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/manufacturers/"
    }
 
    process {
+      # Check if the manufacturer already exists by name or slug
       if ($Name) {
          if (Get-Manufacturer -Name $Name) {
             Write-Warning "Manufacturer $Name already exists"
@@ -1995,6 +2104,7 @@ function New-Manufacturer {
          }
       }
 
+      # Generate a slug if not provided
       if ($null -eq $Slug) {
          $Slug
       }
@@ -2002,20 +2112,23 @@ function New-Manufacturer {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
+      # Prepare the body for the API request
       $Body = @{
          name          = (Get-Culture).Textinfo.ToTitleCase($Name)
          slug          = $Slug
          custum_fields = $CustomFields
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys from the body
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Create the manufacturer if it doesn't already exist
       if (-Not $Exists) {
          $Manufacturer = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $Manufacturer.PSObject.TypeNames.Insert(0, "NetBox.Manufacturer")
@@ -2030,27 +2143,27 @@ function New-Manufacturer {
 function Remove-Manufacturer {
    <#
     .SYNOPSIS
-       Deletes a manufacturer from NetBox
+       Deletes a manufacturer from NetBox.
     .DESCRIPTION
-       Long description
+       Removes a manufacturer from NetBox.
     .EXAMPLE
        PS C:\> Remove-NetBoxManufacturer -Name Dell
-       Deletes manufacturer "dell" from NetBox
+       Deletes manufacturer "Dell" from NetBox.
     .PARAMETER Name
-       Name of the custom field
+       Name of the manufacturer to delete.
     .PARAMETER ID
-       ID of the custom field
+       ID of the manufacturer to delete.
     .PARAMETER InputObject
-       Customfield object to delete
+       Manufacturer object to delete.
     .INPUTS
-       NetBox.CustomField
+       NetBox.Manufacturer
     .OUTPUTS
-       Output (if any)
+       None.
     .NOTES
-       General notes
+       Deletes a manufacturer from NetBox based on the specified parameters.
     #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -2073,11 +2186,13 @@ function Remove-Manufacturer {
    )
 
    begin {
+      # Verify configuration and initialize API endpoint
       Test-Config | Out-Null
       $URL = "/dcim/manufacturers/"
    }
 
    process {
+      # Ensure the input object is of the correct type
       if ($InputObject) {
          $Name = $InputObject.name
          $ID = $InputObject.ID
@@ -2089,23 +2204,27 @@ function Remove-Manufacturer {
          $Manufacturer = Get-Manufacturer -Id $ID
       }
 
+      # Retrieve related objects to delete if the recurse option is enabled
       $RelatedObjects = Get-RelatedObjects -Object $Manufacturer -ReferenceObjects Manufacturer
 
+      # Show confirmation dialog if required
       if ($Confirm) {
          Show-ConfirmDialog -Object $Manufacturer
       }
 
-      # Remove all related objects
+      # Remove all related objects if recurse is enabled
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
          }
       }
 
+      # Delete the manufacturer
       try {
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Manufacturer.ID) + "/") @RestParams -Method Delete
       }
       catch {
+         # Handle errors during deletion, especially related object issues
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
             Write-Error "Delete those objects first or run again using -recurse switch"
@@ -2117,37 +2236,38 @@ function Remove-Manufacturer {
    }
 }
 
+
 function Get-DeviceType {
    <#
     .SYNOPSIS
-       Retrieves device types from NetBox
+       Retrieves device types from NetBox.
     .DESCRIPTION
-       Long description
+       Retrieves detailed information about device types from the NetBox API based on various filters such as model, manufacturer, ID, and more.
     .EXAMPLE
        PS C:\> Get-NetboxDeviceType -Model "Cisco Catalyst 2960"
-       Retrives DeviceType for Cisco Catalyst 2960 from NetBox
+       Retrieves DeviceType for "Cisco Catalyst 2960" from NetBox.
     .PARAMETER Model
-       Model of the device type
+       The model name of the device type.
     .PARAMETER Manufacturer
-       Manufacturer of the device type
+       The manufacturer of the device type.
     .PARAMETER ID
-       ID of the device type
+       The unique ID of the device type.
     .PARAMETER SubDeviceRole
-       Search for a device type by sub device role
+       Filter device types by their subdevice role.
     .PARAMETER PartNumber
-       Search for a device type by part number
+       Filter device types by part number.
     .PARAMETER Slug
-       Search for a device type by slug
+       Filter device types by slug.
     .PARAMETER Height
-       Search for a device type by height
+       Filter device types by height.
     .PARAMETER Exact
-       Search for exacte match instead of partial
+       Specify if the search should return an exact match instead of a partial one.
     .INPUTS
-       Inputs (if any)
+       None. You cannot pipe objects to this function.
     .OUTPUTS
-       NetBox.DeviceType
+       Returns a list of device types that match the provided filters.
     .NOTES
-       General notes
+       This function interacts with the NetBox API to retrieve device types.
     #>
 
    [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
@@ -2188,55 +2308,49 @@ function Get-DeviceType {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/device-types/"
    }
 
    process {
+      # Build the query string based on provided parameters
       $Query = "?"
 
       if ($Model) {
-         if ($Exact) {
-            $Query = $Query + "model=$($Model.Replace(" ","%20"))&"
-         }
-         else {
-            $Query = $Query + "model__ic=$($Model)&"
-         }
+         $Query += if ($Exact) { "model=$($Model.Replace(" ","%20"))&" } else { "model__ic=$($Model)&" }
       }
 
       if ($Manufacturer) {
-         $Query = $Query + "manufacturer_id=$((Get-Manufacturer -Name $Manufacturer).ID)&"
+         $Query += "manufacturer_id=$((Get-Manufacturer -Name $Manufacturer).ID)&"
       }
 
       if ($ID) {
-         $Query = $Query + "id=$($id)&"
+         $Query += "id=$($ID)&"
       }
 
       if ($SubDeviceRole) {
-         $Query = $Query + "subdevice_role__ic=$($SubDeviceRole)"
+         $Query += "subdevice_role__ic=$($SubDeviceRole)&"
       }
 
       if ($PartNumber) {
-         $Query = $Query + "part_number__ic=$($PartNumber)"
+         $Query += "part_number__ic=$($PartNumber)&"
       }
 
       if ($Slug) {
-         if ($Exact) {
-            $Query = $Query + "slug=$($Slug)&"
-         }
-         else {
-            $Query = $Query + "slug__ic=$($Slug)&"
-         }
+         $Query += if ($Exact) { "slug=$($Slug)&" } else { "slug__ic=$($Slug)&" }
       }
 
       if ($Height) {
-         $Query = $Query + "u_height=$($Height)&"
+         $Query += "u_height=$($Height)&"
       }
 
       $Query = $Query.TrimEnd("&")
 
+      # Fetch the result from NetBox
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Prepare the output as a list of PSCustomObjects
       $DeviceTypes = New-Object collections.generic.list[object]
 
       foreach ($item in $Result) {
@@ -2252,40 +2366,40 @@ function Get-DeviceType {
 function New-DeviceType {
    <#
     .SYNOPSIS
-       Cretaes a new device type in NetBox
+       Creates a new device type in NetBox.
     .DESCRIPTION
-       Long description
+       This function allows you to create a new device type in NetBox by specifying various parameters such as model, manufacturer, height, etc.
     .EXAMPLE
        PS C:\> New-NetboxDeviceType -Model "Cisco Catalyst 2960" -Manufacturer "Cisco" -Height "4"
-       Creates device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox
+       Creates a device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox.
     .PARAMETER ManufacturerName
-       Name of the manufacturer
+       Name of the manufacturer.
     .PARAMETER ManufacturerID
-       ID of the manufacturer
+       ID of the manufacturer.
     .PARAMETER Model
-       Model of the device type
+       Model of the device type.
     .PARAMETER Slug
-       Slug of the device type, if not specified, it will be generated from the model
-     .PARAMETER Height
-         Height of the device in U(Units)
-     .PARAMETER FullDepth
-         Is device fulldepth? defaults to true
-     .PARAMETER Partnumber
-         Partnumber of the device
-     .PARAMETER Interface
-         Interfaces of the device, as hashtable
+       Slug of the device type. If not specified, it will be generated from the model.
+    .PARAMETER Height
+       Height of the device in U (Units).
+    .PARAMETER FullDepth
+       Specifies if the device is full-depth. Defaults to true.
+    .PARAMETER PartNumber
+       Part number of the device.
+    .PARAMETER Interface
+       Interfaces of the device, as a hashtable.
     .PARAMETER SubDeviceRole
-       Subdevice role of the device type, "parent" or "child"
+       Subdevice role of the device type, e.g., "parent" or "child".
     .PARAMETER Confirm
-         Confirm the creation of the device type
+       Confirm the creation of the device type.
     .PARAMETER Force
-         Force the creation of the device type
+       Force the creation of the device type.
     .INPUTS
-       Inputs (if any)
+       None. You cannot pipe objects to this function.
     .OUTPUTS
-       NetBox.DeviceType
+       Returns the created NetBox.DeviceType object.
     .NOTES
-       General notes
+       This function interacts with the NetBox API to create a new device type.
     #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -2358,38 +2472,37 @@ function New-DeviceType {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/device-types/"
    }
 
    process {
-      if ($Model) {
-         if (Get-DeviceType -Name $Model -Exact) {
-            Write-Warning "DeviceType $Model already exists"
-            $Exists = $true
-         }
-      }
-      if ($Slug) {
-         if (Get-DeviceType -Slug $Slug -Exact) {
-            Write-Warning "DeviceType $Slug already exists"
-            $Exists = $true
-         }
+      # Check if device type already exists
+      if ($Model -and (Get-DeviceType -Model $Model -Exact)) {
+         Write-Warning "DeviceType $Model already exists"
+         $Exists = $true
       }
 
-      if ($null -eq $Slug) {
-         $Slug
-      }
-      else {
-         $Slug = $Model.tolower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
+      if ($Slug -and (Get-DeviceType -Slug $Slug -Exact)) {
+         Write-Warning "DeviceType $Slug already exists"
+         $Exists = $true
       }
 
+      # Generate a slug if not provided
+      if (-not $Slug) {
+         $Slug = $Model.ToLower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
+      }
+
+      # Retrieve the manufacturer object
       if ($ManufacturerName) {
          $Manufacturer = Get-Manufacturer -Name $ManufacturerName
       }
-      if ($ManufacturerID) {
+      elseif ($ManufacturerID) {
          $Manufacturer = Get-Manufacturer -ID $ManufacturerID
       }
 
+      # Build the request body
       $Body = @{
          manufacturer   = $Manufacturer.ID
          model          = $Model
@@ -2397,20 +2510,20 @@ function New-DeviceType {
          part_number    = $PartNumber
          u_height       = $Height
          is_full_depth  = $FullDepth
-         tags           = $Tags
-         custum_fields  = $CustomFields
          subdevice_role = $SubDeviceRole
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys from the request body
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Confirm creation if requested
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      if (-Not $Exists) {
+      # Create the device type if it doesn't already exist
+      if (-not $Exists) {
          $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
          return $DeviceType
@@ -2424,33 +2537,33 @@ function New-DeviceType {
 function Remove-DeviceType {
    <#
    .SYNOPSIS
-      Deletes a device type from NetBox
+      Deletes a device type from NetBox.
    .DESCRIPTION
-      Long description
+      This function allows you to delete a device type from NetBox by specifying its model name or ID.
    .EXAMPLE
       PS C:\> Remove-NetboxDeviceType -Model "Cisco Catalyst 2960"
-      Explanation of what the example does
+      Deletes the device type "Cisco Catalyst 2960" from NetBox.
    .PARAMETER Model
-      Model of the device type
+      The model name of the device type to be deleted.
    .PARAMETER Recurse
-      Deletes all related objects as well
+      Deletes all related objects as well.
    .PARAMETER Confirm
-      Confirm the deletion of the device type
-    .PARAMETER InputObject
-      device type object to delete
+      Confirm the deletion of the device type.
+   .PARAMETER InputObject
+      The device type object to delete.
    .INPUTS
-      NetBox devicetype object
+      NetBox.DeviceType object.
    .OUTPUTS
-      Output (if any)
+      Returns the status of the deletion.
    .NOTES
-      General notes
+      This function interacts with the NetBox API to delete a device type.
    #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
-      $Name,
+      $Model,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -2465,25 +2578,28 @@ function Remove-DeviceType {
    )
 
    begin {
-
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/device-types/"
    }
 
    process {
+      # Retrieve the device type based on input
       if ($InputObject) {
          $Model = $InputObject.Model
       }
 
       $DeviceType = Get-DeviceType -Model $Model
 
+      # Fetch related objects if recurse is enabled
       $RelatedObjects = Get-RelatedObjects -Object $DeviceType -ReferenceObjects DeviceType
 
+      # Confirm deletion if requested
       if ($Confirm) {
          Show-ConfirmDialog -Object $DeviceType
       }
 
-      # Remove all related objects
+      # Remove all related objects if recurse is enabled
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
@@ -2491,105 +2607,111 @@ function Remove-DeviceType {
       }
 
       try {
+         # Delete the device type
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceType.ID) + "/") @RestParams -Method Delete
       }
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-            Write-Error "Delete those objects first or run again using -recurse switch"
+            Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using the -Recurse switch."
          }
          else {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
          }
       }
    }
 }
-
 function Import-DeviceType {
    <#
    .SYNOPSIS
-      Short description
+      Imports device types from a YAML file into NetBox.
    .DESCRIPTION
-      Long description
+      This function reads YAML files containing device type definitions and imports them into NetBox. It creates the device type, interfaces, power ports, and device bays as specified in the YAML file.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Import-DeviceType -Path "C:\device-types\"
+      Imports all YAML files from the specified directory into NetBox.
    .PARAMETER Path
-      Path to the yaml file to import
+      The file path to the directory containing YAML files to import.
    .INPUTS
-      Inputs (if any)
+      None. You cannot pipe objects to this function.
    .OUTPUTS
-      Output (if any)
+      Returns the imported device type objects.
    .NOTES
-      General notes
+      This function requires the presence of YAML files formatted according to the NetBox device type schema.
    #>
    [CmdletBinding()]
    param (
-      [Parameter()]
+      [Parameter(Mandatory = $true)]
       [String]
       [Alias("YamlFile")]
       $Path
    )
 
+   # Get all files in the specified path
    $Files = Get-ChildItem -Path $Path
 
    foreach ($DeviceFile in $Files) {
+      # Convert YAML content to PowerShell object
       $DeviceType = Get-Content $DeviceFile.FullName | ConvertFrom-Yaml
 
+      # Log the device type details
       Write-Verbose $($DeviceType | Format-Table | Out-String)
-
       Write-Verbose $($DeviceType.Interfaces | Format-Table | Out-String)
 
+      # Create manufacturer if it doesn't exist
       New-Manufacturer -Name $DeviceType.Manufacturer -Confirm $false | Out-Null
 
+      # Build parameters for creating a new device type
       $NewDeviceTypeParams = @{
          ManufacturerName = $DeviceType.Manufacturer
          Model            = $DeviceType.Model
          Confirm          = $false
       }
 
+      # Optional parameters based on YAML content
       if ($DeviceType.u_height) {
-         $NewDeviceTypeParams["height"] = $DeviceType.u_height
+         $NewDeviceTypeParams["Height"] = $DeviceType.u_height
       }
-
       if ($DeviceType.is_full_depth) {
          $NewDeviceTypeParams["FullDepth"] = $DeviceType.is_full_depth
       }
-
       if ($DeviceType.subdevice_role) {
          $NewDeviceTypeParams["SubDeviceRole"] = $DeviceType.subdevice_role
       }
-
       if ($DeviceType.part_number) {
          $NewDeviceTypeParams["PartNumber"] = $DeviceType.part_number
       }
-
       if ($DeviceType.slug) {
          $NewDeviceTypeParams["Slug"] = $DeviceType.slug
       }
-
       if ($DeviceType."device-bays") {
          $NewDeviceTypeParams["DeviceBays"] = $DeviceType."device-bays"
       }
 
-      Write-Verbose $($NewDeviceTypeParams | Format-Table | Out-String )
+      # Log the new device type parameters
+      Write-Verbose $($NewDeviceTypeParams | Format-Table | Out-String)
 
+      # Create the new device type in NetBox
       $NewDeviceType = New-DeviceType @NewDeviceTypeParams -Confirm $false | Out-Null
 
+      # Retrieve the device type if it wasn't created (e.g., it already exists)
       if ($null -eq $NewDeviceType) {
          $NewDeviceType = Get-NetBoxDeviceType -Model $DeviceType.Model -Manufacturer $DeviceType.Manufacturer
       }
 
+      # Create interfaces based on YAML content
       foreach ($Interface in $DeviceType.interfaces) {
          Write-Verbose "Creating Interfaces"
-         New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagmentOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
+         New-InterfaceTemplate -Name $Interface.Name -Type $Interface.Type -ManagementOnly $([System.Convert]::ToBoolean($Interface.mgmt_only)) -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
       }
 
+      # Create power ports based on YAML content
       foreach ($PSU in $DeviceType."power-ports") {
          Write-Verbose "Creating PSUs"
          New-PowerPortTemplate -Name $PSU.Name -Type $PSU.Type -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
       }
 
+      # Create device bays based on YAML content
       foreach ($DeviceBay in $DeviceType."device-bays") {
          Write-Verbose "Creating Device Bays"
          New-DeviceBayTemplate -Name $DeviceBay.Name -DeviceTypeID $NewDeviceType.ID -Confirm $false | Out-Null
@@ -2600,40 +2722,40 @@ function Import-DeviceType {
 function Get-Device {
    <#
     .SYNOPSIS
-       Retrieves a device from NetBox
+       Retrieves devices from NetBox based on various filters.
     .DESCRIPTION
-       Long description
+       This function retrieves device objects from the NetBox API. It supports filtering by model, manufacturer, site, location, rack, and other attributes.
     .EXAMPLE
-       PS C:\> Get-NetBoxdevice -DeviceType "Cisco Catalyst 2960"
-       Retrieves all devices of type "Cisco Catalyst 2960" from NetBox
+       PS C:\> Get-Device -DeviceType "Cisco Catalyst 2960"
+       Retrieves all devices of type "Cisco Catalyst 2960" from NetBox.
     .PARAMETER Name
-       Name of the device
+       The name of the device.
     .PARAMETER Model
-       All devices of this model
+       The model of the device.
     .PARAMETER Manufacturer
-       All devices from manufacturer
+       The manufacturer of the device.
     .PARAMETER ID
-       ID of the device
+       The unique ID of the device.
     .PARAMETER Slug
-       Search for a device by slug
+       The slug of the device.
     .PARAMETER MacAddress
-       MAC address of the device
+       The MAC address of the device.
     .PARAMETER Site
-       All devices from Site
+       The site where the device is located.
     .PARAMETER Location
-       All devices from Location
+       The specific location within the site where the device is located.
     .PARAMETER Rack
-       All devices from Rack
+       The rack where the device is installed.
     .PARAMETER DeviceType
-       Device type of the device
+       The device type to filter by.
     .PARAMETER Exact
-       Search for exacte match instead of partial
+       Specifies whether to perform an exact match on the filters.
     .INPUTS
-       Inputs (if any)
+       None. You cannot pipe objects to this function.
     .OUTPUTS
-       NetBox.Device
+       Returns a list of device objects that match the provided filters.
     .NOTES
-       General notes
+       This function interacts with the NetBox API to retrieve device objects.
     #>
 
    param (
@@ -2684,66 +2806,56 @@ function Get-Device {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/devices/"
    }
 
    process {
+      # Build the query string based on provided parameters
       $Query = "?"
 
-      if ($name) {
-         if ($Exact) {
-            $Query = $Query + "name=$($Name)&"
-         }
-         else {
-            $Query = $Query + "name__ic=$($Name)&"
-         }
+      if ($Name) {
+         $Query += if ($Exact) { "name=$($Name)&" } else { "name__ic=$($Name)&" }
       }
-
       if ($Model) {
-         $Query = $Query + "model__ic=$($Model)&"
+         $Query += "model__ic=$($Model)&"
       }
-
       if ($Manufacturer) {
-         $Query = $Query + "manufacturer=$($Manufacturer)&"
+         $Query += "manufacturer=$($Manufacturer)&"
       }
-
       if ($ID) {
-         $Query = $Query + "id=$($id)&"
+         $Query += "id=$($ID)&"
       }
-
       if ($Slug) {
-         $Query = $Query + "slug__ic=$($Slug)&"
+         $Query += "slug__ic=$($Slug)&"
       }
-
       if ($MacAddress) {
-         $Query = $Query + "mac_address=$($MacAddress)&"
+         $Query += "mac_address=$($MacAddress)&"
       }
-
       if ($Site) {
-         $Query = $Query + "site__ic=$($Site)&"
+         $Query += "site__ic=$($Site)&"
       }
-
       if ($Location) {
-         $Query = $Query + "Location__ic=$($Location)&"
+         $Query += "location__ic=$($Location)&"
       }
-
       if ($Rack) {
-         $Query = $Query + "rack=$($Rack)&"
+         $Query += "rack=$($Rack)&"
       }
-
       if ($DeviceType) {
-         $Query = $Query + "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
+         $Query += "device_type_id=$(Get-DeviceType -Model $($DeviceType) | Select-Object -ExpandProperty id)&"
       }
 
       $Query = $Query.TrimEnd("&")
 
+      # Fetch the result from NetBox
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
+      # Prepare the output as a list of PSCustomObjects
       $Devices = New-Object collections.generic.list[object]
 
       foreach ($Item in $Result) {
-         [PSCustomObject]$Device = $item
+         [PSCustomObject]$Device = $Item
          $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
          $Devices += $Device
       }
@@ -2751,61 +2863,61 @@ function Get-Device {
       return $Devices
    }
 }
+
 function New-Device {
    <#
     .SYNOPSIS
-       Creates a new device in NetBox
+       Creates a new device in NetBox.
     .DESCRIPTION
-       Long description
+       This function allows you to create a new device in NetBox by specifying parameters such as name, device type, site, location, and more.
     .EXAMPLE
-       PS C:\> New-NetBoxDevice -Name NewHost -Location "low density" -Rack Y-14 -Position 27 -Height 4 -DeviceRole Server -DeviceType "PowerEdge R6515" -Site VBC
-       Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
+       PS C:\> New-NetBoxDevice -Name NewHost -Location "Low Density" -Rack Y-14 -Position 27 -Height 4 -DeviceRole Server -DeviceType "PowerEdge R6515" -Site VBC
+       Adds the device "NewHost" in rack "Y-14" at position "27" in the location "Low Density" on Site "VBC" as a "server" with device type "PowerEdge R6515".
     .PARAMETER Name
-       Name of the device
+       The name of the device.
     .PARAMETER DeviceTypeName
-       Name of the Device type of the device
+       The name of the device type.
     .PARAMETER DeviceTypeID
-       ID of the Device type of the device
+       The ID of the device type.
     .PARAMETER Site
-       Site of the device
+       The site where the device will be located.
     .PARAMETER Location
-       Location of the device
+       The specific location within the site where the device will be placed.
     .PARAMETER Rack
-       Rack of the device
+       The rack where the device will be installed.
     .PARAMETER Position
-       Position of the device in the rack, lowest occupied
+       The position of the device in the rack (lowest occupied U).
     .PARAMETER Height
-       Units of the device in the rack, in (U)
+       The height of the device in rack units (U).
     .PARAMETER DeviceRole
-       Role of the device
-    .PARAMETER Parentdevice
-       Parent device of the device, in case of a chassis
+       The role of the device, e.g., Server, Router, Switch.
+    .PARAMETER ParentDevice
+       The parent device for the device, in case of a chassis.
     .PARAMETER Hostname
-       Hostname of the device
+       The hostname for the device.
     .PARAMETER Face
-       Face of the device, front or back, default is front
+       The face of the device in the rack (front or back).
     .PARAMETER Status
-       Status of the device, defaults to "active"
+       The status of the device (active, offline, etc.).
     .PARAMETER PrimaryIPv4
-       Primary IPv4 addresse of the device (NOT IMPLEMENTED)
+       The primary IPv4 address of the device (NOT IMPLEMENTED).
     .PARAMETER AssetTag
-       Asset tag or serial number of the device
+       The asset tag or serial number of the device.
     .PARAMETER CustomFields
-       Custom fields of the device
-   .PARAMETER Confirm
-      Confirm the creation of the device
+       Custom fields associated with the device.
+    .PARAMETER Confirm
+       Whether to confirm the creation of the device.
     .PARAMETER Force
-      Force the creation of the device
+       Forces the creation of the device, overriding warnings.
     .INPUTS
-       Inputs (if any)
+       None. You cannot pipe objects to this function.
     .OUTPUTS
-       Output (if any)
+       Returns the created device object.
     .NOTES
-       General notes
+       This function interacts with the NetBox API to create a new device.
     #>
    [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
-
       [Parameter(Mandatory = $true)]
       [String]
       $Name,
@@ -2854,7 +2966,7 @@ function New-Device {
       [Parameter(Mandatory = $false)]
       [String]
       [ValidateSet("front", "back")]
-      $Face,
+      $Face = "front",
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -2883,11 +2995,13 @@ function New-Device {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/devices/"
    }
 
    process {
+      # Check if the device already exists
       if ($Name) {
          if (Get-Device -Name $Name -Exact) {
             Write-Warning "Device $Name already exists"
@@ -2909,6 +3023,7 @@ function New-Device {
          $Slug = $Name.tolower() -replace " ", "-"
       }
 
+      # Retrieve device type information
       if ($DeviceTypeName) {
          $DeviceType = Get-DeviceType -Model $DeviceTypeName
       }
@@ -2922,6 +3037,7 @@ function New-Device {
          break
       }
 
+      # Build the request body for the API call
       $Body = @{
          name        = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type = $DeviceType.ID
@@ -2932,10 +3048,10 @@ function New-Device {
          position    = $Position
          face        = $Face
          status      = $Status
-         #primary_ip4 = Get
          asset_tag   = $AssetTag
       }
 
+      # Add custom fields if provided
       if ($CustomFields) {
          $Body.custom_fields = @{}
          foreach ($Key in $CustomFields.Keys) {
@@ -2943,14 +3059,16 @@ function New-Device {
          }
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-        ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys from the request body
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Confirm the creation if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Create the device if it doesn't already exist
       if (-Not $Exists) {
          $Device = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
          $Device.PSObject.TypeNames.Insert(0, "NetBox.Device")
@@ -2965,52 +3083,51 @@ function New-Device {
 function Update-Device {
    <#
     .SYNOPSIS
-       Creates a new device in NetBox
+       Updates an existing device in NetBox.
     .DESCRIPTION
-       Long description
+       This function updates the attributes of an existing device in NetBox.
     .EXAMPLE
-       PS C:\> New-NetBoxDevice -Name NewHost -Location "low density" -Rack Y-14 -Position 27 -Height 4 -DeviceRole Server -DeviceType "PowerEdge R6515" -Site VBC
-       Adds the device "NewHost" in rack "Y-14" at position "27" in the location "low density" on Site "VBC" as a "server" with device type "PowerEdge R6515"
+       PS C:\> Update-Device -Name ExistingHost -DeviceType "NewType" -Location "High Density"
+       Updates the device "ExistingHost" with a new device type and location.
     .PARAMETER Name
-       Name of the device
-    .PARAMETER DevuceType
-       Device type of the device
+       The name of the device to update.
+    .PARAMETER DeviceType
+       The new device type for the device.
     .PARAMETER Site
-       Site of the device
+       The site where the device is located.
     .PARAMETER Location
-       Location of the device
+       The specific location within the site where the device is located.
     .PARAMETER Rack
-       Rack of the device
+       The rack where the device is installed.
     .PARAMETER Position
-       Position of the device in the rack, lowest occupied
+       The position of the device in the rack (lowest occupied U).
     .PARAMETER Height
-       Units of the device in the rack, in (U)
+       The height of the device in rack units (U).
     .PARAMETER DeviceRole
-       Role of the device
-    .PARAMETER Parentdevice
-       Parent device of the device, in case of a chassis
+       The role of the device, e.g., Server, Router, Switch.
+    .PARAMETER ParentDevice
+       The parent device for the device, in case of a chassis.
     .PARAMETER Hostname
-       Hostname of the device
+       The hostname for the device.
     .PARAMETER Face
-       Face of the device, front or back, default is front
+       The face of the device in the rack (front or back).
     .PARAMETER Status
-       Status of the device, defaults to "active"
+       The status of the device (active, offline, etc.).
     .PARAMETER AssetTag
-       Asset tag or serial number of the device
+       The asset tag or serial number of the device.
     .PARAMETER CustomFields
-       Custom fields of the device
-   .PARAMETER Confirm
-      Confirm the creation of the device
+       Custom fields associated with the device.
+    .PARAMETER Confirm
+       Whether to confirm the update of the device.
     .INPUTS
-       Inputs (if any)
+       None. You cannot pipe objects to this function.
     .OUTPUTS
-       Output (if any)
+       Returns the updated device object.
     .NOTES
-       General notes
+       This function interacts with the NetBox API to update an existing device.
     #>
 
    param (
-
       [Parameter(Mandatory = $true)]
       [String]
       $Name,
@@ -3075,11 +3192,13 @@ function Update-Device {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/devices/"
    }
 
    process {
+      # Retrieve the device ID
       if ($Name -is [String]) {
          $name = (Get-Device -Query $Name).Id
       }
@@ -3087,6 +3206,7 @@ function Update-Device {
          $Name
       }
 
+      # Build the request body for the API call
       $Body = @{
          name          = (Get-Culture).Textinfo.ToTitleCase($Name)
          device_type   = $DeviceType
@@ -3103,14 +3223,16 @@ function Update-Device {
          }
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys from the request body
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Confirm the update if required
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
+      # Update the device in NetBox
       Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
    }
 }
@@ -3118,26 +3240,26 @@ function Update-Device {
 function Remove-Device {
    <#
    .SYNOPSIS
-      Deletes a device from NetBox
+      Deletes a device from NetBox.
    .DESCRIPTION
-      Long description
+      This function deletes a device and optionally all related objects from NetBox.
    .EXAMPLE
       PS C:\> Remove-NetBoxDevice -Name NewHost
-      Deletes the device NewHost from NetBox
+      Deletes the device "NewHost" from NetBox.
    .PARAMETER Name
-      Name of the device
+      The name of the device to delete.
    .PARAMETER Recurse
-      Deletes all related objects as well
+      Deletes all related objects as well.
    .PARAMETER Confirm
-      Confirm the deletion of the device
+      Confirms the deletion of the device.
     .PARAMETER InputObject
-      device object to delete
+      The device object to delete.
    .INPUTS
-      NetBox.Device
+      None. You cannot pipe objects to this function.
    .OUTPUTS
-      Output (if any)
+      None.
    .NOTES
-      General notes
+      This function interacts with the NetBox API to delete a device.
    #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -3159,24 +3281,29 @@ function Remove-Device {
    )
 
    begin {
-
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
       $URL = "/dcim/devices/"
    }
+
    process {
+      # If the device object is provided through the pipeline, extract the name
       if ($InputObject) {
          $Name = $InputObject.name
       }
 
+      # Retrieve the device information
       $Device = Get-Device -Name $Name
 
+      # Retrieve related objects if the recurse option is selected
       $RelatedObjects = Get-RelatedObjects -Object $Device -ReferenceObjects Device
 
+      # Confirm the deletion if required
       if ($Confirm) {
          Show-ConfirmDialog -Object $Device
       }
 
-      # Remove all related objects
+      # Delete related objects if the recurse option is selected
       if ($Recurse) {
          foreach ($Object in $RelatedObjects) {
             Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
@@ -3184,9 +3311,11 @@ function Remove-Device {
       }
 
       try {
+         # Delete the device from NetBox
          Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Device.ID) + "/") @RestParams -Method Delete
       }
       catch {
+         # Handle specific errors, such as dependencies that must be deleted first
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
             Write-Error "Delete those objects first or run again using -recurse switch"
@@ -3197,34 +3326,50 @@ function Remove-Device {
       }
    }
 }
-
-function Get-DeviceRole {
+function Get-DeviceType {
    <#
-   .SYNOPSIS
-      Retrives devices roles from Netbox
-   .DESCRIPTION
-      Long description
-   .EXAMPLE
-      PS C:\> Get-NetBoxDeviceRole -Name Server
-      Retrives the "Server" device role
-   .PARAMETER Name
-      Name of the device role
-   .PARAMETER ID
-      ID of the device role
+    .SYNOPSIS
+       Retrieves device types from NetBox.
+    .DESCRIPTION
+       Retrieves detailed information about device types from the NetBox API based on various filters such as model, manufacturer, ID, and more.
+    .EXAMPLE
+       PS C:\> Get-NetboxDeviceType -Model "Cisco Catalyst 2960"
+       Retrieves DeviceType for "Cisco Catalyst 2960" from NetBox.
+    .PARAMETER Model
+       The model name of the device type.
+    .PARAMETER Manufacturer
+       The manufacturer of the device type.
+    .PARAMETER ID
+       The unique ID of the device type.
+    .PARAMETER SubDeviceRole
+       Filter device types by their subdevice role.
+    .PARAMETER PartNumber
+       Filter device types by part number.
     .PARAMETER Slug
-       Search for a device role by slug
-   .INPUTS
-      Inputs (if any)
-   .OUTPUTS
-      NetBox.DeviceRole
-   .NOTES
-      General notes
-   #>
+       Filter device types by slug.
+    .PARAMETER Height
+       Filter device types by height.
+    .PARAMETER Exact
+       Specify if the search should return an exact match instead of a partial one.
+    .INPUTS
+       None. You cannot pipe objects to this function.
+    .OUTPUTS
+       Returns a list of device types that match the provided filters.
+    .NOTES
+       This function interacts with the NetBox API to retrieve device types.
+    #>
 
+   [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
    param (
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("Name")]
       [String]
-      $Name,
+      $Model,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Alias("Vendor")]
+      [String]
+      $Manufacturer,
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
@@ -3232,82 +3377,136 @@ function Get-DeviceRole {
 
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
-      $Slug
+      $SubDeviceRole,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $PartNumber,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Slug,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [String]
+      $Height,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Switch]
+      $Exact
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
-      $URL = "/dcim/device-roles/"
+      $URL = "/dcim/device-types/"
    }
 
    process {
+      # Build the query string based on provided parameters
       $Query = "?"
 
-      if ($Name) {
-         $Query = $Query + "name__ic=$($Name)&"
+      if ($Model) {
+         $Query += if ($Exact) { "model=$($Model.Replace(" ","%20"))&" } else { "model__ic=$($Model)&" }
+      }
+
+      if ($Manufacturer) {
+         $Query += "manufacturer_id=$((Get-Manufacturer -Name $Manufacturer).ID)&"
       }
 
       if ($ID) {
-         $Query = $Query + "id=$($id)&"
+         $Query += "id=$($ID)&"
+      }
+
+      if ($SubDeviceRole) {
+         $Query += "subdevice_role__ic=$($SubDeviceRole)&"
+      }
+
+      if ($PartNumber) {
+         $Query += "part_number__ic=$($PartNumber)&"
       }
 
       if ($Slug) {
-         $Query = $Query + "slug__ic=$($Slug)&"
+         $Query += if ($Exact) { "slug=$($Slug)&" } else { "slug__ic=$($Slug)&" }
+      }
+
+      if ($Height) {
+         $Query += "u_height=$($Height)&"
       }
 
       $Query = $Query.TrimEnd("&")
 
+      # Fetch the result from NetBox
       $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
 
-      $DeviceRoles = New-Object collections.generic.list[object]
+      # Prepare the output as a list of PSCustomObjects
+      $DeviceTypes = New-Object collections.generic.list[object]
 
-      foreach ($Item in $Result) {
-         [PSCustomObject]$DeviceRole = $item
-         $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-         $DeviceRoles += $DeviceRole
+      foreach ($item in $Result) {
+         [PSCustomObject]$DeviceType = $item
+         $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+         $DeviceTypes += $DeviceType
       }
 
-      return $DeviceRoles
+      return $DeviceTypes
    }
 }
 
-function New-DeviceRole {
+function New-DeviceType {
    <#
-   .SYNOPSIS
-      Creates a new device role in NetBox
-   .DESCRIPTION
-      Long description
-   .EXAMPLE
-      PS C:\> New-NetboxDeviceRole -Name "ACI Leafswitch" -VMRole $false
-      Creates the "ACI Leafswitch" device role in NetBox
-   .PARAMETER Name
-      Name of the device role
-   .PARAMETER Slug
-       Slug of the device role, if not specified, it will be generated from the name
-   .PARAMETER Color
-      Color of the device role
-   .PARAMETER VMRole
-      Is this a VM role?
-   .PARAMETER Description
-      Description of the device role
-   .PARAMETER CustomFields
-      Custom fields of the device role
-   .PARAMETER Confirm
-      Confirm the deletion of the device role
+    .SYNOPSIS
+       Creates a new device type in NetBox.
+    .DESCRIPTION
+       This function allows you to create a new device type in NetBox by specifying various parameters such as model, manufacturer, height, etc.
+    .EXAMPLE
+       PS C:\> New-NetboxDeviceType -Model "Cisco Catalyst 2960" -Manufacturer "Cisco" -Height "4"
+       Creates a device type "Cisco Catalyst 2960" with height 4 from manufacturer "Cisco" in NetBox.
+    .PARAMETER ManufacturerName
+       Name of the manufacturer.
+    .PARAMETER ManufacturerID
+       ID of the manufacturer.
+    .PARAMETER Model
+       Model of the device type.
+    .PARAMETER Slug
+       Slug of the device type. If not specified, it will be generated from the model.
+    .PARAMETER Height
+       Height of the device in U (Units).
+    .PARAMETER FullDepth
+       Specifies if the device is full-depth. Defaults to true.
+    .PARAMETER PartNumber
+       Part number of the device.
+    .PARAMETER Interface
+       Interfaces of the device, as a hashtable.
+    .PARAMETER SubDeviceRole
+       Subdevice role of the device type, e.g., "parent" or "child".
+    .PARAMETER Confirm
+       Confirm the creation of the device type.
     .PARAMETER Force
-      Forces the creation of the device role
-   .INPUTS
-      Inputs (if any)
-   .OUTPUTS
-      Output (if any)
-   .NOTES
-      General notes
-   #>
+       Force the creation of the device type.
+    .INPUTS
+       None. You cannot pipe objects to this function.
+    .OUTPUTS
+       Returns the created NetBox.DeviceType object.
+    .NOTES
+       This function interacts with the NetBox API to create a new device type.
+    #>
 
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
+      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [Alias("VendorName")]
+      [String]
+      $ManufacturerName,
+
+      [Parameter(Mandatory = $true, ParameterSetName = "ByID")]
+      [Alias("VendorID")]
+      [Int32]
+      $ManufacturerID,
+
       [Parameter(Mandatory = $true)]
       [String]
-      $Name,
+      [Alias("Name")]
+      $Model,
 
       [Parameter(Mandatory = $false)]
       [String]
@@ -3315,326 +3514,24 @@ function New-DeviceRole {
 
       [Parameter(Mandatory = $false)]
       [String]
-      $Color,
+      $Height,
 
       [Parameter(Mandatory = $false)]
       [Bool]
-      $VMRole,
+      $FullDepth = $true,
 
       [Parameter(Mandatory = $false)]
       [String]
-      $CustomFields,
+      $PartNumber,
 
       [Parameter(Mandatory = $false)]
-      [String]
-      $Description,
+      [Hashtable[]]
+      $Interfaces,
 
       [Parameter(Mandatory = $false)]
-      [Bool]
-      $Confirm = $true,
-
-      [Parameter(Mandatory = $false)]
-      [Switch]
-      $Force
-   )
-
-   begin {
-      Test-Config | Out-Null
-      $URL = "/dcim/device-roles/"
-   }
-
-   process {
-      if ($Name) {
-         if (Get-DeviceRole -Name $Name) {
-            Write-Warning "DeviceRole $Name already exists"
-            $Exists = $true
-         }
-      }
-      if ($Slug) {
-         if (Get-DeviceRole -Slug $Slug) {
-            Write-Warning "DeviceRole $Slug already exists"
-            $Exists = $true
-         }
-      }
-
-      if ($null -eq $Slug) {
-         $Slug
-      }
-      else {
-         $Slug = $Name.tolower() -replace " ", "-"
-      }
-
-      $Body = @{
-         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
-         slug        = $Slug
-         color       = $Color
-         vm_role     = $VMRole
-         comment     = $Comment
-         description = $Description
-      }
-
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
-
-      if ($Confirm) {
-         $OutPutObject = [pscustomobject]$Body
-         Show-ConfirmDialog -Object $OutPutObject
-      }
-
-      if (-Not $Exists) {
-         $DeviceRole = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-         $DeviceRole.PSObject.TypeNames.Insert(0, "NetBox.DeviceRole")
-         return $DeviceRole
-      }
-      else {
-         return
-      }
-   }
-}
-
-function Remove-DeviceRole {
-   <#
-    .SYNOPSIS
-       Deletes a device role from NetBox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> Remove-DeviceRole -Name Server
-       Deletes device role "server" from NetBox
-    .PARAMETER Name
-       Name of the custom field
-    .PARAMETER ID
-       ID of the custom field
-    .PARAMETER InputObject
-       Customfield object to delete
-    .INPUTS
-       NetBox.CustomField
-    .OUTPUTS
-       Output (if any)
-    .NOTES
-       General notes
-    #>
-
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
-   param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
+      [ValidateSet("Parent", "Child")]
       [String]
-      $Name,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
-      [Int32]
-      $ID,
-
-      [Parameter(Mandatory = $false)]
-      [Switch]
-      $Recurse,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $Confirm = $true,
-
-      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
-      $InputObject
-   )
-
-   begin {
-      Test-Config | Out-Null
-      $URL = "/dcim/device-roles/"
-   }
-
-   process {
-      if ($InputObject) {
-         $Name = $InputObject.name
-         $ID = $InputObject.ID
-      }
-      if ($Name) {
-         $DeviceRole = Get-DeviceRole -Name $Name
-      }
-      if ($ID) {
-         $DeviceRole = Get-DeviceRole -Id $ID
-      }
-
-      $RelatedObjects = Get-RelatedObjects -Object $DeviceRole -ReferenceObjects DeviceRole
-
-      if ($Confirm) {
-         Show-ConfirmDialog -Object $DeviceRole
-      }
-
-      # Remove all related objects
-      if ($Recurse) {
-         foreach ($Object in $RelatedObjects) {
-            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
-         }
-      }
-
-      try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceRole.ID) + "/") @RestParams -Method Delete
-      }
-      catch {
-         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-            Write-Error "Delete those objects first or run again using -recurse switch"
-         }
-         else {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         }
-      }
-   }
-}
-
-function Get-InterfaceTemplate {
-   <#
-    .SYNOPSIS
-       Retrives interface templates from Netbox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> Get-NetBoxInterfaceType -Name "FastEthernet"
-       Retrives the "FastEthernet" interface template
-    .PARAMETER Name
-       Name of the interface template
-   .PARAMETER ID
-       ID of the interface template
-    .PARAMETER DeviceTypeName
-       Search for parent device type by name
-    .PARAMETER DeviceTypeID
-       Search for parent device type by ID
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       NetBox.InterfaceTemplate
-    .NOTES
-       General notes
-    #>
-
-   param (
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [String]
-      $Name,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
-      $ID,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [String]
-      $DeviceTypeName,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
-      $DeviceTypeID
-   )
-
-   begin {
-      Test-Config | Out-Null
-      $URL = "/dcim/interface-templates/"
-   }
-
-   process {
-      $Query = "?"
-
-      if ($Name) {
-         $Query = $Query + "name__ic=$($Name)&"
-      }
-
-      if ($DeviceTypeName) {
-         $Query = $Query + "devicetype_id=$($(Get-DeviceType -Name $DeviceTypeName).ID)&"
-      }
-      if ($DeviceTypeID) {
-         $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
-      }
-
-      if ($ID) {
-         $Query = $Query + "id=$($id)&"
-      }
-
-      $Query = $Query.TrimEnd("&")
-
-      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
-
-      $InterfaceTemplates = New-Object collections.generic.list[object]
-
-      foreach ($Item in $Result) {
-         [PSCustomObject]$InterfaceTemplate = $item
-         $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
-         $InterfaceTemplates += $InterfaceTemplate
-      }
-
-      return $InterfaceTemplates
-   }
-}
-
-function New-InterfaceTemplate {
-   <#
-    .SYNOPSIS
-       Creates a new interface template in NetBox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> New-NetBoxInterfaceTemplate -Name "FastEthernet" -Description "FastEthernet" -Type "100base-tx" -DeviceType "Poweredge R6515"
-       Creates an interface template "FastEthernet" for devicetype "Poweredge R6515" with type "100base-tx"
-    .PARAMETER Name
-       Name of the interface template
-    .PARAMETER DeviceTypeName
-      Name of the device type
-    .PARAMETER DeviceTypeID
-      ID of the device type
-    .PARAMETER Label
-      Label of the interface template
-    .PARAMETER Type
-      Type of the interface template, e.g "1000base-t", "10gbase-x-sfpp" or others
-    .PARAMETER ManagementOnly
-      Is this interface template only for management?
-   .PARAMETER Confirm
-      Confirm the creation of the device
-    .PARAMETER Force
-      Force the creation of the device
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       NetBox.InterfaceTemplate
-    .NOTES
-       General notes
-    #>
-
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
-   param (
-      [Parameter(Mandatory = $true)]
-      [String]
-      $Name,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
-      [String]
-      $DeviceTypeName,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
-      [Int32]
-      $DeviceTypeID,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $Label,
-
-      #"virtual", "lag", "100base-tx", "1000base-t", "2.5gbase-t", "5gbase-t", "10gbase-t", "10gbase-cx4", "1000base-x-gbic", "1000base-x-sfp", "10gbase-x-sfpp", "10gbase-x-xfp", "10gbase-x-xenpak", "10gbase-x-x2", "25gbase-x-sfp28", "50gbase-x-sfp56", "40gbase-x-qsfpp", "50gbase-x-sfp28", "100gbase-x-cfp", "100gbase-x-cfp2", "200gbase-x-cfp2", "100gbase-x-cfp4", "100gbase-x-cpak", "100gbase-x-qsfp28", "200gbase-x-qsfp56", "400gbase-x-qsfpdd", "400gbase-x-osfp", "ieee802.11a", "ieee802.11g", "ieee802.11n", "ieee802.11ac", "ieee802.11ad", "ieee802.11ax", "gsm", "cdma", "lte", "sonet-oc3", "sonet-oc12", "sonet-oc48", "sonet-oc192", "sonet-oc768", "sonet-oc1920", "sonet-oc3840", "1gfc-sfp", "2gfc-sfp", "4gfc-sfp", "8gfc-sfpp", "16gfc-sfpp", "32gfc-sfp28", "64gfc-qsfpp", "128gfc-sfp28", "infiniband-sdr", "infiniband-ddr", "infiniband-qdr", "infiniband-fdr10", "infiniband-fdr", "infiniband-edr", "infiniband-hdr", "infiniband-ndr", "infiniband-xdr", "t1", "e1", "t3", "e3", "xdsl", "cisco-stackwise", "cisco-stackwise-plus", "cisco-flexstack", "cisco-flexstack-plus", "juniper-vcp", "extreme-summitstack", "extreme-summitstack-128", "extreme-summitstack-256", "extreme-summitstack-512", "other"
-      [Parameter(Mandatory = $true)]
-      [String]
-      $Type,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $ManagmentOnly,
-
-      [Parameter(Mandatory = $false)]
-      [Switch]
-      $FindInterfaceType,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $LinkSpeed,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $InterfaceType,
+      $SubDeviceRole,
 
       [Parameter(Mandatory = $false)]
       [Bool]
@@ -3646,248 +3543,103 @@ function New-InterfaceTemplate {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
-      $URL = "/dcim/interface-templates/"
+      $URL = "/dcim/device-types/"
    }
 
    process {
-      if ($DeviceTypeName) {
-         $DeviceType = Get-DeviceType -Name $DeviceTypeName
-      }
-
-      if ($DeviceTypeID) {
-         $DeviceType = Get-DeviceType -ID $DeviceTypeID
-      }
-
-      if (Get-InterfaceTemplate -DeviceTypeID $DeviceType.ID -Name $Name ) {
-         Write-Warning "InterfaceTemplate $($DeviceType.Model) - $Name already exists"
+      # Check if device type already exists
+      if ($Model -and (Get-DeviceType -Model $Model -Exact)) {
+         Write-Warning "DeviceType $Model already exists"
          $Exists = $true
       }
 
-      if ($FindInterfaceType) {
-         $Type = $(Get-InterfaceType -Linkspeed $LinkSpeed -InterfaceType $InterfaceType)
+      if ($Slug -and (Get-DeviceType -Slug $Slug -Exact)) {
+         Write-Warning "DeviceType $Slug already exists"
+         $Exists = $true
       }
 
-      $Body = @{
-         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
-         device_type = $DeviceType.ID
-         type        = $Type
-         mgmt_only   = $ManagmentOnly
+      # Generate a slug if not provided
+      if (-not $Slug) {
+         $Slug = $Model.ToLower() -replace " ", "-" -replace "/", "-" -replace ",", "-"
       }
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+
+      # Retrieve the manufacturer object
+      if ($ManufacturerName) {
+         $Manufacturer = Get-Manufacturer -Name $ManufacturerName
+      }
+      elseif ($ManufacturerID) {
+         $Manufacturer = Get-Manufacturer -ID $ManufacturerID
+      }
+
+      # Build the request body
+      $Body = @{
+         manufacturer   = $Manufacturer.ID
+         model          = $Model
+         slug           = $Slug
+         part_number    = $PartNumber
+         u_height       = $Height
+         is_full_depth  = $FullDepth
+         subdevice_role = $SubDeviceRole
+      }
+
+      # Remove empty keys from the request body
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
+      # Confirm creation if requested
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
          Show-ConfirmDialog -Object $OutPutObject
       }
 
-      if (-Not $Exists) {
-         $InterfaceTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-         $InterfaceTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
-         return $InterfaceTemplate
-      }
-      else {
-         return
+      # Create the device type if it doesn't already exist
+      if (-not $Exists) {
+         $DeviceType = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
+         $DeviceType.PSObject.TypeNames.Insert(0, "NetBox.DeviceType")
+         return $DeviceType
       }
    }
 }
-function Get-PowerSupplyType {
+
+function Remove-DeviceType {
    <#
    .SYNOPSIS
-      Short description
+      Deletes a device type from NetBox.
    .DESCRIPTION
-      Long description
+      This function deletes a specified device type from NetBox using its ID or model name.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Remove-NetboxDeviceType -Model "Cisco Catalyst 2960"
+      Deletes the device type "Cisco Catalyst 2960" from NetBox.
+   .PARAMETER Model
+      Model of the device type to be deleted.
+   .PARAMETER Slug
+      Slug of the device type to be deleted.
+   .PARAMETER ID
+      ID of the device type to be deleted.
+   .PARAMETER Force
+      Force deletion without confirmation.
    .INPUTS
-      Inputs (if any)
+      None. You cannot pipe objects to this function.
    .OUTPUTS
-      Output (if any)
+      Returns the status of the deletion.
    .NOTES
-      General notes
+      This function interacts with the NetBox API to delete a device type.
    #>
-   param (
-      $PowerSupplyConnector
-   )
-
-   if ($PowerSupplyConnector -eq "c14") {
-      $NetBoxPowerSupplyConnector = "iec-60320-c14"
-   }
-   if ($PowerSupplyConnector -eq "c20") {
-      $NetBoxPowerSupplyConnector = "iec-60320-c20"
-   }
-
-   return $NetBoxPowerSupplyConnector
-}
-
-function Get-Interface {
-   <#
-    .SYNOPSIS
-       Get a specific interface from netbox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> Get-NetBoxInterface -Device "NewHost"
-       Get all interfaces from device "NewHost"
-    .PARAMETER Name
-       Name of the interface
-    .PARAMETER ID
-       ID of the interface
-    .PARAMETER DeviceName
-       Name of the parent device
-    .PARAMETER DeviceID
-       ID of the parent device
-    .PARAMETER ManagementOnly
-       Is this interface only for management?
-    .PARAMETER All
-       Returns all interfaces
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       NetBox.Interface
-    .NOTES
-       General notes
-    #>
 
    param (
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Parameter(Mandatory = $false, ParameterSetName = "ByName")]
+      [Alias("Name")]
       [String]
-      $Name,
+      $Model,
 
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
+      [Parameter(Mandatory = $false, ParameterSetName = "BySlug")]
+      [String]
+      $Slug,
+
+      [Parameter(Mandatory = $false, ParameterSetName = "ByID")]
       [Int32]
       $ID,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [String]
-      $DeviceName,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Int32]
-      $DeviceID,
-
-      [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
-      [Bool]
-      $ManagementOnly
-   )
-
-   begin {
-      Test-Config | Out-Null
-      $URL = "/dcim/interfaces/"
-   }
-
-   process {
-      $Query = "?"
-
-      if ($Name) {
-         $Query = $Query + "name__ic=$($Name)&"
-      }
-
-      if ($ID) {
-         $Query = $Query + "id=$($id)&"
-      }
-
-      if ($DeviceName) {
-         $Query = $Query + "device_id=$((Get-NetBoxDevice -Name $DeviceName).ID)&"
-      }
-
-      if ($DeviceID) {
-         $Query = $Query + "device_id=$((Get-NetBoxDevice -Id $DeviceID).ID)&"
-      }
-
-      if ($ManagementOnly) {
-         $Query = $Query + "mgmt_only=$($ManagementOnly.ToString())&"
-      }
-
-      $Query = $Query.TrimEnd("&")
-
-      $Result = Get-NextPage -Result $(Invoke-RestMethod -Uri $($NetboxURL + $URL + $Query) @RestParams -Method Get)
-
-      Write-Verbose $($NetboxURL + $URL + $Query)
-
-      $Interfaces = New-Object collections.generic.list[object]
-
-      foreach ($Item in $Result) {
-         [PSCustomObject]$Interface = $item
-         $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
-         $Interfaces += $Interface
-      }
-
-      return $Interfaces
-   }
-}
-function New-Interface {
-   <#
-   .SYNOPSIS
-      Creates an interface in netbox
-   .DESCRIPTION
-      Long description
-   .EXAMPLE
-      PS C:\> New-NetBoxInterface -Device "NewHost" -Name "NewInterface" -Type "10gbase-t"
-      Creates an interface named "NewInterface" on device "NewHost" with type "10gbase-t"
-   .PARAMETER Name
-      Name of the interface
-   .PARAMETER Label
-      Label of the interface
-   .PARAMETER DeviceName
-      Name of the parent device
-   .PARAMETER DeviceID
-      ID of the parent device
-   .PARAMETER Type
-      Type of the interface
-   .PARAMETER MacAddress
-      MAC address of the interface
-   .PARAMETER ManagementOnly
-      Is this interface only for management?
-   .PARAMETER Confirm
-      Confirm the creation of the interface
-    .PARAMETER Force
-      Forces the creation of the interface
-   .INPUTS
-      Inputs (if any)
-   .OUTPUTS
-      NetBox.Interface
-   .NOTES
-      General notes
-   #>
-
-   param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
-      [String]
-      $DeviceName,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
-      [Int32]
-      $DeviceID,
-
-      [Parameter(Mandatory = $true)]
-      [String]
-      $Name,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $Label,
-
-      #"virtual", "lag", "100base-tx", "1000base-t", "2.5gbase-t", "5gbase-t", "10gbase-t", "10gbase-cx4", "1000base-x-gbic", "1000base-x-sfp", "10gbase-x-sfpp", "10gbase-x-xfp", "10gbase-x-xenpak", "10gbase-x-x2", "25gbase-x-sfp28", "50gbase-x-sfp56", "40gbase-x-qsfpp", "50gbase-x-sfp28", "100gbase-x-cfp", "100gbase-x-cfp2", "200gbase-x-cfp2", "100gbase-x-cfp4", "100gbase-x-cpak", "100gbase-x-qsfp28", "200gbase-x-qsfp56", "400gbase-x-qsfpdd", "400gbase-x-osfp", "ieee802.11a", "ieee802.11g", "ieee802.11n", "ieee802.11ac", "ieee802.11ad", "ieee802.11ax", "gsm", "cdma", "lte", "sonet-oc3", "sonet-oc12", "sonet-oc48", "sonet-oc192", "sonet-oc768", "sonet-oc1920", "sonet-oc3840", "1gfc-sfp", "2gfc-sfp", "4gfc-sfp", "8gfc-sfpp", "16gfc-sfpp", "32gfc-sfp28", "64gfc-qsfpp", "128gfc-sfp28", "infiniband-sdr", "infiniband-ddr", "infiniband-qdr", "infiniband-fdr10", "infiniband-fdr", "infiniband-edr", "infiniband-hdr", "infiniband-ndr", "infiniband-xdr", "t1", "e1", "t3", "e3", "xdsl", "cisco-stackwise", "cisco-stackwise-plus", "cisco-flexstack", "cisco-flexstack-plus", "juniper-vcp", "extreme-summitstack", "extreme-summitstack-128", "extreme-summitstack-256", "extreme-summitstack-512", "other"
-      [Parameter(Mandatory = $true)]
-      [String]
-      $Type,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $MacAddress,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $ManagmentOnly,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $Confirm = $true,
 
       [Parameter(Mandatory = $false)]
       [Switch]
@@ -3895,263 +3647,65 @@ function New-Interface {
    )
 
    begin {
+      # Test configuration and prepare the API endpoint URL
       Test-Config | Out-Null
-      $URL = "/dcim/interfaces/"
+      $URL = "/dcim/device-types/"
    }
 
    process {
-      if ($DeviceName) {
-         $Device = Get-Device -Name $DeviceName
+      # Determine the correct device type ID based on the input
+      if ($ID) {
+         $DeviceTypeID = $ID
+      }
+      elseif ($Model) {
+         $DeviceTypeID = (Get-DeviceType -Model $Model -Exact).id
+      }
+      elseif ($Slug) {
+         $DeviceTypeID = (Get-DeviceType -Slug $Slug -Exact).id
       }
 
-      if ($DeviceID) {
-         $Device = Get-Device -ID $DeviceID
+      # Confirm deletion if not forced
+      if (-not $Force) {
+         Show-ConfirmDialog -Object "Are you sure you want to delete DeviceType with ID $DeviceTypeID?"
       }
 
-      $Body = @{
-         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
-         device      = $Device.ID
-         type        = $Type
-         mgmt_only   = $ManagmentOnly
-         mac_address = $MacAddress
+      # Perform deletion
+      $Result = Invoke-RestMethod -Uri "$NetboxURL$URL$DeviceTypeID/" @RestParams -Method Delete
 
+      if ($Result) {
+         Write-Host "DeviceType deleted successfully."
       }
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
-
-      if ($Confirm) {
-         $OutPutObject = [pscustomobject]$Body
-         Show-ConfirmDialog -Object $OutPutObject
+      else {
+         Write-Warning "Failed to delete DeviceType."
       }
 
-      $Interface = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $Interface.PSObject.TypeNames.Insert(0, "NetBox.Interface")
-      return $Interface
+      return $Result
    }
 }
-
-function Update-Interface {
-   <#
-   .SYNOPSIS
-      Updates an existing interface in netbox
-   .DESCRIPTION
-      Long description
-   .EXAMPLE
-      PS C:\> Update-NetBoxInterface -Id "1" -Name "NewInterface" -Type "10gbase-t" -MacAddress "00:00:00:00:00:00"
-      Updates an interface with id "1" to have name "NewInterface" with type "10gbase-t" and MAC address "00:00:00:00:00:00"
-    .PARAMETER DeviceName
-       Name of the parent device
-    .PARAMETER DeviceID
-       ID of the parent device
-   .PARAMETER Device
-      Name of the parent device
-   .PARAMETER ID
-      ID of the interface
-   .PARAMETER Type
-      Type of the interface
-   .PARAMETER MacAddress
-      MAC address of the interface
-   .PARAMETER ManagmentOnly
-      Is this interface only for management?
-   .PARAMETER Confirm
-      Confirm the chnages to the interface
-   .INPUTS
-      Inputs (if any)
-   .OUTPUTS
-      Output (if any)
-   .NOTES
-      General notes
-   #>
-
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
-   param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByDeviceName")]
-      [Parameter(Mandatory = $false, ParameterSetName = "ByName")]
-      [Parameter(Mandatory = $false, ParameterSetName = "ById")]
-      [String]
-      $DeviceName,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ByDeviceId")]
-      [Parameter(Mandatory = $false, ParameterSetName = "ByName")]
-      [Parameter(Mandatory = $false, ParameterSetName = "ById")]
-      [Int32]
-      $DeviceID,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
-      [String]
-      $Name,
-
-      [Parameter(Mandatory = $true, ParameterSetName = "ById")]
-      [Int32]
-      $ID,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $Label,
-
-      #"virtual", "lag", "100base-tx", "1000base-t", "2.5gbase-t", "5gbase-t", "10gbase-t", "10gbase-cx4", "1000base-x-gbic", "1000base-x-sfp", "10gbase-x-sfpp", "10gbase-x-xfp", "10gbase-x-xenpak", "10gbase-x-x2", "25gbase-x-sfp28", "50gbase-x-sfp56", "40gbase-x-qsfpp", "50gbase-x-sfp28", "100gbase-x-cfp", "100gbase-x-cfp2", "200gbase-x-cfp2", "100gbase-x-cfp4", "100gbase-x-cpak", "100gbase-x-qsfp28", "200gbase-x-qsfp56", "400gbase-x-qsfpdd", "400gbase-x-osfp", "ieee802.11a", "ieee802.11g", "ieee802.11n", "ieee802.11ac", "ieee802.11ad", "ieee802.11ax", "gsm", "cdma", "lte", "sonet-oc3", "sonet-oc12", "sonet-oc48", "sonet-oc192", "sonet-oc768", "sonet-oc1920", "sonet-oc3840", "1gfc-sfp", "2gfc-sfp", "4gfc-sfp", "8gfc-sfpp", "16gfc-sfpp", "32gfc-sfp28", "64gfc-qsfpp", "128gfc-sfp28", "infiniband-sdr", "infiniband-ddr", "infiniband-qdr", "infiniband-fdr10", "infiniband-fdr", "infiniband-edr", "infiniband-hdr", "infiniband-ndr", "infiniband-xdr", "t1", "e1", "t3", "e3", "xdsl", "cisco-stackwise", "cisco-stackwise-plus", "cisco-flexstack", "cisco-flexstack-plus", "juniper-vcp", "extreme-summitstack", "extreme-summitstack-128", "extreme-summitstack-256", "extreme-summitstack-512", "other"
-      [Parameter(Mandatory = $true)]
-      [String]
-      $Type,
-
-      [Parameter(Mandatory = $false)]
-      [String]
-      $MacAddress,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $ManagmentOnly,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $Confirm = $true
-   )
-
-   begin {
-      Test-Config | Out-Null
-      $URL = "/dcim/interfaces/"
-   }
-
-   process {
-      if ($DeviceName) {
-         $Device = Get-Device -Name $DeviceName
-      }
-
-      if ($DeviceID) {
-         $Device = Get-Device -ID $DeviceID
-      }
-
-      $Interface = Get-Interface -Name $Name -DeviceID $Device.ID
-
-      $Body = @{
-         name        = (Get-Culture).Textinfo.ToTitleCase($Name)
-         device      = $Device.ID
-         type        = $Type
-         mgmt_only   = $ManagmentOnly
-         mac_address = $MacAddress
-      }
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
-
-      if ($Confirm) {
-         $OutPutObject = [pscustomobject]$Body
-         Show-ConfirmDialog -Object $OutPutObject
-      }
-
-      Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
-   }
-}
-
-function Remove-Interface {
-   <#
-   .SYNOPSIS
-      Deletes an interface from netbox
-   .DESCRIPTION
-      Long description
-   .EXAMPLE
-      PS C:\> Remove-NetBoxInterface -Id "1"
-      Deletes an interface with id "1"
-   .PARAMETER Name
-      Name of the interface
-   .PARAMETER ID
-      ID of the interface
-   .PARAMETER Recurse
-      Deletes all related objects as well
-   .PARAMETER Confirm
-      Confirm the deletion of the interface
-    .PARAMETER InputObject
-      interface object to delete
-   .INPUTS
-      NetBox.Interface
-   .OUTPUTS
-      Output (if any)
-   .NOTES
-      General notes
-   #>
-
-   [CmdletBinding(DefaultParameterSetName = "ByName")]
-   param (
-      [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
-      [String]
-      $Name,
-
-      [Parameter(Mandatory = $false)]
-      [Switch]
-      $Recurse,
-
-      [Parameter(Mandatory = $false)]
-      [Bool]
-      $Confirm = $true,
-
-      [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
-      $InputObject
-   )
-
-   begin {
-
-      Test-Config | Out-Null
-      $URL = "/dcim/interfaces/"
-   }
-
-   process {
-      if ($InputObject) {
-         $Name = $InputObject.name
-      }
-
-      $Interface = Get-Interface -Model $Name
-
-      $RelatedObjects = Get-RelatedObjects -Object $Interface -ReferenceObjects Interface
-
-      if ($Confirm) {
-         Show-ConfirmDialog -Object $Interface
-      }
-
-      # Remove all related objects
-      if ($Recurse) {
-         foreach ($Object in $RelatedObjects) {
-            Invoke-RestMethod -Uri $Object.url @RestParams -Method Delete | Out-Null
-         }
-      }
-
-      try {
-         Invoke-RestMethod -Uri $($NetboxURL + $URL + $($Interface.ID) + "/") @RestParams -Method Delete
-      }
-      catch {
-         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-            Write-Error "Delete those objects first or run again using -recurse switch"
-         }
-         else {
-            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-         }
-      }
-   }
-}
-
 function Get-PowerPortTemplate {
    <#
-    .SYNOPSIS
-       Retrives a power port template from netbox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> Get-NetBoxPowerPortTemplate -Name "PSU1"
-       Retrives Power Port Template with name "PSU1"
-    .PARAMETER Name
-       Name of the power port template
-    .PARAMETER ID
-       ID of the power port template
-    .PARAMETER DeviceTypeName
-       Search for parent device type by name
-    .PARAMETER DeviceTypeID
-       Search for parent device type by ID
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       Output (if any)
-    .NOTES
-       General notes
-    #>
+   .SYNOPSIS
+      Retrieves a power port template from NetBox.
+   .DESCRIPTION
+      This function fetches power port templates from NetBox, allowing you to filter by name, ID, device type name, or device type ID.
+   .EXAMPLE
+      PS C:\> Get-NetBoxPowerPortTemplate -Name "PSU1"
+      Retrieves the Power Port Template with the name "PSU1".
+   .PARAMETER Name
+      The name of the power port template.
+   .PARAMETER ID
+      The ID of the power port template.
+   .PARAMETER DeviceTypeName
+      The name of the parent device type.
+   .PARAMETER DeviceTypeID
+      The ID of the parent device type.
+   .INPUTS
+      None. You cannot pipe objects to this function.
+   .OUTPUTS
+      Returns a list of power port templates as NetBox.PowerPortTemplate objects.
+   .NOTES
+      This function interacts with the NetBox API to retrieve power port templates based on the provided filters.
+   #>
 
    param (
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
@@ -4175,6 +3729,7 @@ function Get-PowerPortTemplate {
       Test-Config | Out-Null
       $URL = "/dcim/power-port-templates/"
    }
+
    process {
       $Query = "?"
 
@@ -4185,12 +3740,13 @@ function Get-PowerPortTemplate {
       if ($DeviceTypeName) {
          $Query = $Query + "devicetype_id=$($(Get-DeviceType -Name $DeviceTypeName).ID)&"
       }
+
       if ($DeviceTypeID) {
          $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
 
       if ($ID) {
-         $Query = $Query + "id=$($id)&"
+         $Query = $Query + "id=$($ID)&"
       }
 
       $Query = $Query.TrimEnd("&")
@@ -4200,7 +3756,7 @@ function Get-PowerPortTemplate {
       $PowerPortTemplates = New-Object collections.generic.list[object]
 
       foreach ($Item in $Result) {
-         [PSCustomObject]$PowerPortTemplate = $item
+         [PSCustomObject]$PowerPortTemplate = $Item
          $PowerPortTemplate.PSObject.TypeNames.Insert(0, "NetBox.PowerPortTemplate")
          $PowerPortTemplates += $PowerPortTemplate
       }
@@ -4208,43 +3764,42 @@ function Get-PowerPortTemplate {
       return $PowerPortTemplates
    }
 }
-
 function New-PowerPortTemplate {
    <#
-    .SYNOPSIS
-       Creates new port template in netbox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> New-NetBoxPowerPortTemplate -Name "PSU1"
-       Creates a new power port template with name "PSU1"
-    .PARAMETER Name
-       Name of the power port template
-    .PARAMETER DeviceTypeName
-       Name of the Device type of the device
-    .PARAMETER DeviceTypeID
-       ID of the Device type of the device
-    .PARAMETER Type
-      Type of the power port template
-    .PARAMETER Label
-      Label of the power port template
-    .PARAMETER MaxiumDraw
-      Maximum draw of the power port template
-    .PARAMETER AllocatedPower
-      Allocated power of the power port template
-    .PARAMETER Confirm
-      Confirm the creation of the power port template
-    .PARAMETER Force
-      Forces the creation of the power port template
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       NetBox.PowerPortTemplate
-    .NOTES
-       General notes
-    #>
+   .SYNOPSIS
+      Creates a new power port template in NetBox.
+   .DESCRIPTION
+      This function creates a new power port template in NetBox using the provided parameters.
+   .EXAMPLE
+      PS C:\> New-PowerPortTemplate -Name "PSU1" -DeviceTypeName "ServerModel" -Type "iec-60320-c14"
+      Creates a new power port template named "PSU1" for the device type "ServerModel" with the type "iec-60320-c14".
+   .PARAMETER Name
+      The name of the power port template.
+   .PARAMETER DeviceTypeName
+      The name of the device type associated with this power port template.
+   .PARAMETER DeviceTypeID
+      The ID of the device type associated with this power port template.
+   .PARAMETER Type
+      The type of the power port (e.g., "iec-60320-c14").
+   .PARAMETER Label
+      The label for the power port template.
+   .PARAMETER MaxiumDraw
+      The maximum draw capacity for the power port template.
+   .PARAMETER AllocatedPower
+      The allocated power for the power port template.
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before creating the power port template.
+   .PARAMETER Force
+      Forces the creation of the power port template even if one with the same name exists.
+   .INPUTS
+      None.
+   .OUTPUTS
+      NetBox.PowerPortTemplate
+   .NOTES
+      Ensure that the device type name or ID provided exists in NetBox.
+   #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -4262,7 +3817,6 @@ function New-PowerPortTemplate {
       [String]
       $Label,
 
-      #"iec-60320-c6", "iec-60320-c8", "iec-60320-c14", "iec-60320-c16", "iec-60320-c20", "iec-60320-c22", "iec-60309-p-n-e-4h", "iec-60309-p-n-e-6h", "iec-60309-p-n-e-9h", "iec-60309-2p-e-4h", "iec-60309-2p-e-6h", "iec-60309-2p-e-9h", "iec-60309-3p-e-4h", "iec-60309-3p-e-6h", "iec-60309-3p-e-9h", "iec-60309-3p-n-e-4h", "iec-60309-3p-n-e-6h", "iec-60309-3p-n-e-9h", "nema-1-15p", "nema-5-15p", "nema-5-20p", "nema-5-30p", "nema-5-50p", "nema-6-15p", "nema-6-20p", "nema-6-30p", "nema-6-50p", "nema-10-30p", "nema-10-50p", "nema-14-20p", "nema-14-30p", "nema-14-50p", "nema-14-60p", "nema-15-15p", "nema-15-20p", "nema-15-30p", "nema-15-50p", "nema-15-60p", "nema-l1-15p", "nema-l5-15p", "nema-l5-20p", "nema-l5-30p", "nema-l5-50p", "nema-l6-15p", "nema-l6-20p", "nema-l6-30p", "nema-l6-50p", "nema-l10-30p", "nema-l14-20p", "nema-l14-30p", "nema-l14-50p", "nema-l14-60p", "nema-l15-20p", "nema-l15-30p", "nema-l15-50p", "nema-l15-60p", "nema-l21-20p", "nema-l21-30p", "cs6361c", "cs6365c", "cs8165c", "cs8265c", "cs8365c", "cs8465c", "ita-c", "ita-e", "ita-f", "ita-ef", "ita-g", "ita-h", "ita-i", "ita-j", "ita-k", "ita-l", "ita-m", "ita-n", "ita-o", "usb-a", "usb-b", "usb-c", "usb-mini-a", "usb-mini-b", "usb-micro-a", "usb-micro-b", "usb-3-b", "usb-3-micro-b", "dc-terminal", "saf-d-grid", "hardwired"
       [Parameter(Mandatory = $true)]
       [String]
       $Type,
@@ -4298,7 +3852,7 @@ function New-PowerPortTemplate {
          $DeviceType = Get-DeviceType -ID $DeviceTypeID
       }
 
-      if (Get-PowerPortTemplate -DeviceTypeID $DeviceType.ID -Name $Name ) {
+      if (Get-PowerPortTemplate -DeviceTypeID $DeviceType.ID -Name $Name) {
          Write-Warning "PowerPortTemplate $($DeviceType.Model) - $Name already exists"
          $Exists = $true
       }
@@ -4311,8 +3865,8 @@ function New-PowerPortTemplate {
          allocated_draw = $AllocatedDraw
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys
+       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -4332,20 +3886,26 @@ function New-PowerPortTemplate {
 function Remove-PowerPortTemplate {
    <#
    .SYNOPSIS
-      Short description
+      Removes a power port template from NetBox.
    .DESCRIPTION
-      Long description
+      This function deletes a power port template in NetBox using the provided name or input object.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Remove-PowerPortTemplate -Name "PSU1"
+      Deletes the power port template named "PSU1".
    .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      The name of the power port template to remove.
+   .PARAMETER Recurse
+      If specified, removes all related objects.
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before removing the power port template.
+   .PARAMETER InputObject
+      A pipeline input object representing the power port template to remove.
    .INPUTS
       NetBox.PowerPortTemplate
    .OUTPUTS
-      Output (if any)
+      None.
    .NOTES
-      General notes
+      Ensure that the power port template exists before attempting to remove it.
    #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -4365,13 +3925,32 @@ function Remove-PowerPortTemplate {
       [Parameter(ValueFromPipeline = $true, ParameterSetName = 'ByInputObject')]
       $InputObject
    )
+
    begin {
       Test-Config | Out-Null
       $URL = "/dcim/power-port-templates/"
    }
+
    process {
       if ($InputObject) {
          $Name = $InputObject.Name
+      }
+
+      if ($Confirm) {
+         Show-ConfirmDialog -Object $InputObject
+      }
+
+      try {
+         Invoke-RestMethod -Uri $($NetboxURL + $URL + $Name + "/") @RestParams -Method Delete
+      }
+      catch {
+         if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+            Write-Error "Delete those objects first or run again using -recurse switch"
+         }
+         else {
+            Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
+         }
       }
    }
 }
@@ -4379,26 +3958,26 @@ function Remove-PowerPortTemplate {
 function Get-Cable {
    <#
    .SYNOPSIS
-      Gets cables form NetBox
+      Retrieves cables from NetBox.
    .DESCRIPTION
-      Long description
+      This function gets cables from NetBox based on various filter parameters.
    .EXAMPLE
       PS C:\> Get-Cable -Device "ServerA"
-      Gets all cables for ServerA
+      Retrieves all cables for the device "ServerA".
    .PARAMETER Label
-      Name of the cable
+      The label of the cable.
    .PARAMETER ID
-      ID of the cable
+      The ID of the cable.
    .PARAMETER Device
-      Name of the parent device
+      The name of the parent device.
    .PARAMETER Rack
-      Name of the parent rack
+      The name of the parent rack.
    .INPUTS
-      Inputs (if any)
+      None.
    .OUTPUTS
-      NetBox.Interface
+      NetBox.Cable
    .NOTES
-      General notes
+      Ensure that the device or rack specified exists in NetBox.
    #>
 
    param (
@@ -4462,49 +4041,50 @@ function Get-Cable {
 function New-Cable {
    <#
    .SYNOPSIS
-      Creates a new cable in NetBox
+      Creates a new cable in NetBox.
    .DESCRIPTION
-      Long description
+      This function creates a new cable in NetBox between two interfaces on devices.
    .EXAMPLE
-      PS C:\> New-NetBoxCable -InterfaceA "Gig-E 1" -DeviceA ServerA -InterfaceB "GigabitEthernet1/0/39" -DeviceB SwitchB -Label "Super important Cable" -Type cat6 -Color "aa1409" -Length 100 -LengthUnit m
-      Creates a cable between ServerA, Gig-E 1 and SwitchB, GigabitEthernet1/0/39 with the label "Super important Cable" and the type cat6 and the color "aa1409" and the length 100m
+      PS C:\> New-Cable -DeviceAName "ServerA" -InterfaceAName "Gig-E 1" -DeviceBName "SwitchB" -InterfaceBName "GigabitEthernet1/0/39" -Type "cat6"
+      Creates a new cat6 cable between the specified interfaces on ServerA and SwitchB.
    .PARAMETER DeviceAName
-      Name of Endpoint Device A of the cable
+      Name of Endpoint Device A of the cable.
    .PARAMETER InterfaceAName
-      Name Endpoint Interface A of the cable
+      Name of Endpoint Interface A of the cable.
    .PARAMETER DeviceAID
-      ID of Endpoint Device A of the cable
+      ID of Endpoint Device A of the cable.
    .PARAMETER InterfaceAID
-      ID Endpoint Interface A of the cable
+      ID of Endpoint Interface A of the cable.
    .PARAMETER DeviceBName
-      Name of Endpoint Device B of the cable
+      Name of Endpoint Device B of the cable.
    .PARAMETER InterfaceBName
-      Name Endpoint Interface B of the cable
+      Name of Endpoint Interface B of the cable.
    .PARAMETER DeviceBID
-      ID of Endpoint Device B of the cable
+      ID of Endpoint Device B of the cable.
    .PARAMETER InterfaceBID
-      ID Endpoint Interface B of the cable
+      ID of Endpoint Interface B of the cable.
    .PARAMETER Label
-      Label of the cable
+      The label for the cable.
    .PARAMETER Type
-      Type of the cable, e.g. cat6
+      The type of the cable (e.g., "cat6").
    .PARAMETER Color
-      Color of the cable, e.g. "aa1409"
+      The color of the cable.
    .PARAMETER Length
-      Length of the cable, e.g. 10
+      The length of the cable.
    .PARAMETER LengthUnit
-      Length unit of the cable, e.g. m(eter)
+      The unit of length for the cable.
    .PARAMETER Confirm
-      Confirm the creation of the cable
+      If specified, prompts the user for confirmation before creating the cable.
    .PARAMETER Force
-      Force the creation of the cable (overwrite existing cable)
+      Forces the creation of the cable even if one already exists.
    .INPUTS
       NetBox.Cable
    .OUTPUTS
-      Netbox.Cable
+      NetBox.Cable
    .NOTES
-      General notes
+      Ensure that the interfaces and devices specified exist in NetBox.
    #>
+
    [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $false)]
@@ -4615,7 +4195,6 @@ function New-Cable {
          break
       }
 
-
       if ($StartPoint.ID -eq $EndPoint.ID) {
          Write-Error "Cannot create a cable between the same interface"
          break
@@ -4638,8 +4217,8 @@ function New-Cable {
          length_unit        = $LengthUnit
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys
+       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -4652,123 +4231,29 @@ function New-Cable {
    }
 }
 
-# function Update-Cable {
-#    <#
-#    .SYNOPSIS
-#       Updates an existing cable in NetBox
-#    .DESCRIPTION
-#       Long description
-#    .EXAMPLE
-#       PS C:\> Update-NetBoxCable -Id 1 -Label "Normal Cable" -Color "ffffff"
-#       Updates the cable with the id 1 with the label "Normal Cable" and the color "ffffff"
-#    .PARAMETER Name
-#       The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
-#    .INPUTS
-#       Inputs (if any)
-#    .OUTPUTS
-#       Output (if any)
-#    .NOTES
-#       General notes
-#    #>
-#    param (
-#       [Parameter(Mandatory = $true)]
-#       $DeviceA,
-
-#       [Parameter(Mandatory = $true)]
-#       [String]
-#       $InterfaceA,
-
-#       [Parameter(Mandatory = $true)]
-#       $DeviceB,
-
-#       [Parameter(Mandatory = $true)]
-#       [String]
-#       $InterfaceB,
-
-#       [Parameter(Mandatory = $false)]
-#       [String]
-#       $Label,
-
-#       [Parameter(Mandatory = $true)]
-#       [ValidateSet("cat3", "cat5", "cat5e", "cat6", "cat6a", "cat7", "cat7a", "cat8", "dac-active", "dac-passive", "mrj21-trunk", "coaxial", "mmf", "mmf-om1", "mmf-om2", "mmf-om3", "mmf-om4", "mmf-om5", "smf", "smf-os1", "smf-os2", "aoc", "power")]
-#       [String]
-#       $Type,
-
-#       [Parameter(Mandatory = $false)]
-#       [String]
-#       $Color,
-
-#       [Parameter(Mandatory = $false)]
-#       [String]
-#       $Status,
-
-#       [Parameter(Mandatory = $false)]
-#       [Int32]
-#       $Length,
-
-#       [Parameter(Mandatory = $false)]
-#       [Bool]
-#       $Confirm = $true,
-
-#       [Parameter(Mandatory = $false)]
-#       [Switch]
-#       $Force
-#    )
-
-#    begin {
-#       Test-Config | Out-Null
-#       $URL = "/dcim/cables/"
-#    }
-
-#    process {
-#       $Body = @{
-#          termination_a_type = "dcim.interface"
-#          termination_a_id   = $(Get-Interface -DeviceName $DeviceA -Interface $InterfaceA).ID
-#          termination_b_type = "dcim.interface"
-#          termination_b_id   = $(Get-Interface -DeviceName $DeviceB -Interface $InterfaceB).ID
-#          type               = $Type
-#          label              = $Label
-#          color              = $Color
-#          status             = $Status
-#          length             = $Length
-#       }
-
-#       # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-#    ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
-
-#       if ($Confirm) {
-#          $OutPutObject = [pscustomobject]$Body
-#          Show-ConfirmDialog -Object $OutPutObject
-#       }
-
-#       $Cable = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
-#       $Cable.PSObject.TypeNames.Insert(0, "NetBox.Cable")
-#       return $Cable
-#    }
-# }
-
 function Remove-Cable {
    <#
    .SYNOPSIS
-      Deletes a cable from NetBox
+      Deletes a cable from NetBox.
    .DESCRIPTION
-      Long description
+      This function deletes a cable from NetBox using the specified parameters.
    .EXAMPLE
-      PS C:\> Remove-NetboxCable -Id 1
-      Deletes cable with the id 1
+      PS C:\> Remove-Cable -Label "Important Cable"
+      Deletes the cable with the label "Important Cable".
    .PARAMETER Label
-      Label of the Cable
+      The label of the cable to delete.
    .PARAMETER ID
-      ID of the Cable
+      The ID of the cable to delete.
    .PARAMETER Confirm
-      Confirm the deletion of the cable
+      If specified, prompts the user for confirmation before deleting the cable.
    .INPUTS
-      Inputs (if any)
+      NetBox.Cable
    .OUTPUTS
-      Output (if any)
+      None.
    .NOTES
-      General notes
+      Ensure that the cable specified exists in NetBox.
    #>
+
    param (
       [Parameter(Mandatory = $True)]
       [String]
@@ -4791,6 +4276,7 @@ function Remove-Cable {
       Test-Config | Out-Null
       $URL = "/dcim/cables/"
    }
+
    process {
       if ($Label) {
          $Cable = Get-Cable -Label $Label
@@ -4803,7 +4289,7 @@ function Remove-Cable {
       }
 
       if ($Confirm) {
-         Show-ConfirmDialog -Object $Interface
+         Show-ConfirmDialog -Object $Cable
       }
 
       try {
@@ -4821,29 +4307,30 @@ function Remove-Cable {
    }
 }
 
+
 function Get-DeviceBayTemplate {
    <#
    .SYNOPSIS
-      Short description
+      Retrieves device bay templates from NetBox.
    .DESCRIPTION
-      Long description
+      This function retrieves device bay templates from NetBox based on the provided filter parameters.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> Get-DeviceBayTemplate -Name "Bay1"
+      Retrieves the device bay template with the name "Bay1".
    .PARAMETER Name
-      Name of the device bay
+      The name of the device bay template to retrieve.
    .PARAMETER Id
-      Id of the device bay
+      The ID of the device bay template to retrieve.
    .PARAMETER DeviceTypeName
-      Name of the device Type
+      The name of the device type associated with the device bay template.
    .PARAMETER DeviceTypeID
-      ID of the device type
+      The ID of the device type associated with the device bay template.
    .INPUTS
-      Inputs (if any)
+      None. This function does not accept piped input.
    .OUTPUTS
-      Output (if any)
+      NetBox.DeviceBayTemplate. Returns a list of device bay templates matching the criteria.
    .NOTES
-      General notes
+      Ensure that the NetBox connection is configured before using this function.
    #>
 
    param (
@@ -4862,13 +4349,13 @@ function Get-DeviceBayTemplate {
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [Int32]
       $DeviceTypeID
-
-
    )
+
    begin {
       Test-Config | Out-Null
       $URL = "/dcim/device-bay-templates/"
    }
+
    process {
       $Query = "?"
 
@@ -4879,6 +4366,7 @@ function Get-DeviceBayTemplate {
       if ($DeviceTypeName) {
          $Query = $Query + "devicetype_id=$($(Get-DeviceType -Name $DeviceTypeName).ID)&"
       }
+
       if ($DeviceTypeID) {
          $Query = $Query + "devicetype_id=$($DeviceTypeID)&"
       }
@@ -4899,31 +4387,39 @@ function Get-DeviceBayTemplate {
          $DeviceBayTemplates += $DeviceBayTemplate
       }
 
-      return $InterfaceTemplates
+      return $DeviceBayTemplates
    }
 }
 
 function New-DeviceBayTemplate {
    <#
    .SYNOPSIS
-      Short description
+      Creates a new device bay template in NetBox.
    .DESCRIPTION
-      Long description
+      This function creates a new device bay template in NetBox using the provided parameters.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
+      PS C:\> New-DeviceBayTemplate -Name "Bay1" -DeviceTypeName "ServerModel"
+      Creates a new device bay template named "Bay1" for the device type "ServerModel".
    .PARAMETER Name
-      Name of the device bay
-    .PARAMETER DeviceTypeName
-       Search for parent device type by name
-    .PARAMETER DeviceTypeID
-       Search for parent device type by ID
+      The name of the device bay template.
+   .PARAMETER DeviceTypeName
+      The name of the device type associated with this device bay template.
+   .PARAMETER DeviceTypeID
+      The ID of the device type associated with this device bay template.
+   .PARAMETER Label
+      The label for the device bay template.
+   .PARAMETER Description
+      A description for the device bay template.
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before creating the device bay template.
+   .PARAMETER Force
+      Forces the creation of the device bay template even if one with the same name exists.
    .INPUTS
-      Inputs (if any)
+      None. This function does not accept piped input.
    .OUTPUTS
-      Output (if any)
+      NetBox.DeviceBayTemplate. Returns the created device bay template.
    .NOTES
-      General notes
+      Ensure that the device type exists in NetBox before attempting to create a template.
    #>
 
    [CmdletBinding(DefaultParameterSetName = "ByName")]
@@ -4978,7 +4474,7 @@ function New-DeviceBayTemplate {
          description = $Description
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
@@ -4988,7 +4484,7 @@ function New-DeviceBayTemplate {
 
       if (-Not $Exists) {
          $DeviceBayTemplate = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-         $DeviceBayTemplate.PSObject.TypeNames.Insert(0, "NetBox.InterfaceTemplate")
+         $DeviceBayTemplate.PSObject.TypeNames.Insert(0, "NetBox.DeviceBayTemplate")
          return $DeviceBayTemplate
       }
       else {
@@ -5000,26 +4496,26 @@ function New-DeviceBayTemplate {
 function Get-DeviceBay {
    <#
    .SYNOPSIS
-      Get a specific device from netbox
+      Retrieves device bays from NetBox.
    .DESCRIPTION
-      Long description
+      This function retrieves device bays from NetBox based on the provided filter parameters.
    .EXAMPLE
-      PS C:\> Get-NetBoxDeviceBay -Device "Chassis"
-      Get all device bays for device "Chassis"
+      PS C:\> Get-DeviceBay -DeviceName "Chassis"
+      Retrieves all device bays for the device "Chassis".
    .PARAMETER Name
-      Name of the devicebay
+      The name of the device bay to retrieve.
    .PARAMETER Id
-      Id of the devicebay
+      The ID of the device bay to retrieve.
    .PARAMETER DeviceName
-      Name of the parent device
+      The name of the parent device associated with the device bay.
    .PARAMETER DeviceID
-      Id of the parent device
+      The ID of the parent device associated with the device bay.
    .INPUTS
-      NetBox.DeviceBay
+      None. This function does not accept piped input.
    .OUTPUTS
-      NetBox.DeviceBay
+      NetBox.DeviceBay. Returns a list of device bays matching the criteria.
    .NOTES
-      General notes
+      Ensure that the NetBox connection is configured before using this function.
    #>
 
    param (
@@ -5085,32 +4581,37 @@ function Get-DeviceBay {
 function New-DeviceBay {
    <#
    .SYNOPSIS
-      Creates an devicebay in netbox
+      Creates a new device bay in NetBox.
    .DESCRIPTION
-      Long description
+      This function creates a new device bay in NetBox associated with a specified parent device.
    .EXAMPLE
-      PS C:\> New-NetBoxDeviceBay -Device "Chassis" -Name "1"
-      Creates a devicebay with name "1" for device "Chassis"
+      PS C:\> New-DeviceBay -DeviceName "Chassis" -Name "Bay1"
+      Creates a new device bay named "Bay1" for the device "Chassis".
    .PARAMETER Name
-      Name of the devicebay
+      The name of the device bay to create.
    .PARAMETER DeviceName
-      Name of the parent device
+      The name of the parent device for the device bay.
    .PARAMETER DeviceID
-      Id of the parent device
+      The ID of the parent device for the device bay.
    .PARAMETER InstalledDeviceName
-      Name of the installed / child device
+      The name of the installed (child) device for the device bay.
    .PARAMETER InstalledDeviceID
-      Id of the installed / child device
+      The ID of the installed (child) device for the device bay.
+   .PARAMETER Label
+      A label for the device bay.
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before creating the device bay.
+   .PARAMETER Force
+      Forces the creation of the device bay even if one already exists with the same name.
    .INPUTS
-      NetBox.DeviceBay
+      None. This function does not accept piped input.
    .OUTPUTS
-      NetBox.DeviceBay
+      NetBox.DeviceBay. Returns the created device bay.
    .NOTES
-      General notes
+      Ensure that the parent device and any installed devices are present in NetBox before creating a device bay.
    #>
 
    param (
-
       [Parameter(Mandatory = $true)]
       [String]
       $Name,
@@ -5172,7 +4673,7 @@ function New-DeviceBay {
          installed_device = $InstalledDevice.ID
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
@@ -5181,7 +4682,7 @@ function New-DeviceBay {
       }
 
       $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-      $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
+      $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.DeviceBay")
       return $DeviceBay
    }
 }
@@ -5189,28 +4690,34 @@ function New-DeviceBay {
 function Update-DeviceBay {
    <#
    .SYNOPSIS
-      Updates an devicebay in netbox
+      Updates an existing device bay in NetBox.
    .DESCRIPTION
-      Long description
+      This function updates an existing device bay in NetBox with new details provided by the user.
    .EXAMPLE
-      PS C:\> Update-NetBoxDeviceBay -Device "Chassis" -Name "1"
-      Creates a devicebay with name "1" for device "Chassis"
+      PS C:\> Update-DeviceBay -DeviceName "Chassis" -Name "Bay1" -InstalledDeviceName "Server1"
+      Updates the device bay "Bay1" in "Chassis" to associate it with "Server1".
    .PARAMETER Name
-      Name of the devicebay
+      The name of the device bay to update.
    .PARAMETER DeviceName
-      Name of the parent device
+      The name of the parent device.
    .PARAMETER DeviceID
-      Id of the parent device
+      The ID of the parent device.
    .PARAMETER InstalledDeviceName
-      Name of the installed / child device
+      The name of the installed (child) device.
    .PARAMETER InstalledDeviceID
-      Id of the installed / child device
+      The ID of the installed (child) device.
+   .PARAMETER Label
+      A label for the device bay.
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before updating the device bay.
+   .PARAMETER Force
+      Forces the update even if it would conflict with existing data.
    .INPUTS
-      NetBox.DeviceBay
+      None. This function does not accept piped input.
    .OUTPUTS
-      NetBox.DeviceBay
+      NetBox.DeviceBay. Returns the updated device bay.
    .NOTES
-      General notes
+      Ensure that the device and installed device are present in NetBox before updating the device bay.
    #>
 
    param (
@@ -5246,6 +4753,7 @@ function Update-DeviceBay {
       [Switch]
       $Force
    )
+
    begin {
       Test-Config | Out-Null
       $URL = "/dcim/device-bays/"
@@ -5282,7 +4790,7 @@ function Update-DeviceBay {
          }
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
@@ -5291,33 +4799,31 @@ function Update-DeviceBay {
       }
 
       $DeviceBay = Invoke-RestMethod -Uri $($NetboxURL + $URL + $($DeviceBay.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
-      $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.Devicebay")
+      $DeviceBay.PSObject.TypeNames.Insert(0, "NetBox.DeviceBay")
       return $DeviceBay
    }
 }
 
-
-
 function Get-CustomLink {
    <#
-    .SYNOPSIS
-       Retrievess a custom link from NetBox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> Get-NetBoxCustomLink -Name "ServiceCatalogID"
-       Retrieves custom link "ServiceCatalogID" from NetBox
-    .PARAMETER Name
-       Name of the custom link
-    .PARAMETER ID
-       ID of the custom link
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       NetBox.CustomLink
-    .NOTES
-       General notes
-    #>
+   .SYNOPSIS
+      Retrieves a custom link from NetBox.
+   .DESCRIPTION
+      This function retrieves a custom link from NetBox by name or ID.
+   .EXAMPLE
+      PS C:\> Get-CustomLink -Name "ServiceCatalogID"
+      Retrieves the custom link with the name "ServiceCatalogID".
+   .PARAMETER Name
+      The name of the custom link to retrieve.
+   .PARAMETER ID
+      The ID of the custom link to retrieve.
+   .INPUTS
+      None. This function does not accept piped input.
+   .OUTPUTS
+      NetBox.CustomLink. Returns a list of custom links matching the criteria.
+   .NOTES
+      Ensure that the NetBox connection is configured before using this function.
+   #>
 
    param (
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
@@ -5361,43 +4867,42 @@ function Get-CustomLink {
    }
 }
 
-
 function New-CustomLink {
    <#
-    .SYNOPSIS
-       Creates a custom link in NetBox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> New-NetBoxCustomLink -Name "ServiceCatalogID" -Type Integer -ContentTypes Device -Label "Service Catalog ID"
-       Creates custom link "ServiceCatalogID" from Type Integer for Contenttype device with the label "Service Catalog ID" in NetBox
-    .PARAMETER Name
-       Name of the custom link
-    .PARAMETER LinkText
-       Linktext of the custom link
-    .PARAMETER LinkURL
-         URL of the custom link
-    .PARAMETER ContentType
-       Content type of the custom link, e.g. "Device"
-    .PARAMETER Weight
-         Weight of the custom link
-    .PARAMETER GroupName
-       Name of teh group of the custom link, links with the same groupname are displayed as dropdown
-    .PARAMETER ButtonClass
-       Color of the link button
-    .PARAMETER NewWindow
-       Open link in new window, default true
-    .PARAMETER Confirm
-      Confirm the creation of the location
-    .PARAMETER Force
-      Forces creation of the custom link
-    .INPUTS
-       Inputs (if any)
-    .OUTPUTS
-       NetBox.CustomLink
-    .NOTES
-       General notes
-    #>
+   .SYNOPSIS
+      Creates a new custom link in NetBox.
+   .DESCRIPTION
+      This function creates a new custom link in NetBox using the provided parameters.
+   .EXAMPLE
+      PS C:\> New-CustomLink -Name "ServiceCatalogID" -LinkText "View Service Catalog" -LinkURL "http://example.com" -ContentType "Device"
+      Creates a new custom link named "ServiceCatalogID" for the "Device" content type.
+   .PARAMETER Name
+      The name of the custom link to create.
+   .PARAMETER LinkText
+      The text displayed for the custom link.
+   .PARAMETER LinkURL
+      The URL that the custom link points to.
+   .PARAMETER ContentType
+      The content type that the custom link is associated with (e.g., "Device").
+   .PARAMETER Weight
+      The display order of the custom link (lower numbers appear first).
+   .PARAMETER GroupName
+      The group name of the custom link; links with the same group name are displayed as a dropdown.
+   .PARAMETER ButtonClass
+      The color class of the link button.
+   .PARAMETER NewWindow
+      If true, the link opens in a new window (default is true).
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before creating the custom link.
+   .PARAMETER Force
+      Forces the creation of the custom link even if one already exists with the same name.
+   .INPUTS
+      None. This function does not accept piped input.
+   .OUTPUTS
+      NetBox.CustomLink. Returns the created custom link.
+   .NOTES
+      Ensure that the content type specified exists in NetBox before creating the custom link.
+   #>
 
    param (
       [Parameter(Mandatory = $true)]
@@ -5460,15 +4965,15 @@ function New-CustomLink {
          name         = (Get-Culture).Textinfo.ToTitleCase($Name)
          link_text    = $LinkText
          link_url     = $LinkURL
-         wight        = $Weight
+         weight       = $Weight
          group_name   = $GroupName
          button_class = $ButtonClass
          new_window   = $NewWindow
          content_type = $NetBoxContentType
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-   ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -5488,28 +4993,28 @@ function New-CustomLink {
 
 function Remove-CustomLink {
    <#
-    .SYNOPSIS
-       Deletes a custom link from NetBox
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       PS C:\> Remove-NetBoxCustomLink -id 3
-       Deletes custom link with ID 3 from NetBox
-    .PARAMETER Name
-       Name of the custom link
-    .PARAMETER ID
-       ID of the custom link
-    .PARAMETER InputObject
-       CustomLink object to delete
-    .INPUTS
-       NetBox.CustomLink
-    .OUTPUTS
-       Output (if any)
-    .NOTES
-       General notes
-    #>
+   .SYNOPSIS
+      Removes a custom link from NetBox.
+   .DESCRIPTION
+      This function removes a custom link from NetBox by name or ID.
+   .EXAMPLE
+      PS C:\> Remove-CustomLink -ID 3
+      Removes the custom link with ID 3 from NetBox.
+   .PARAMETER Name
+      The name of the custom link to remove.
+   .PARAMETER ID
+      The ID of the custom link to remove.
+   .PARAMETER InputObject
+      The custom link object to remove.
+   .INPUTS
+      NetBox.CustomLink. You can pipe a custom link object to this function.
+   .OUTPUTS
+      None. This function does not return a value.
+   .NOTES
+      Ensure that the custom link exists before attempting to remove it.
+   #>
 
-   [CmdletBinding(DefaultParameterSetName = "Byname")]
+   [CmdletBinding(DefaultParameterSetName = "ByName")]
    param (
       [Parameter(Mandatory = $true, ParameterSetName = "ByName")]
       [String]
@@ -5534,7 +5039,7 @@ function Remove-CustomLink {
 
    process {
       if (-not ($InputObject.psobject.TypeNames -contains "NetBox.CustomLink")) {
-         Write-Error "InputObject is not type NetBox.CustomLink"
+         Write-Error "InputObject is not of type NetBox.CustomLink"
          break
       }
 
@@ -5569,7 +5074,7 @@ function Remove-CustomLink {
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
-            Write-Error "Delete those objects first or run again using -recurse switch"
+            Write-Error "Delete those objects first or run again using the -recurse switch"
          }
          else {
             Write-Error "$($($($RestError.ErrorRecord) |ConvertFrom-Json).detail)"
@@ -5581,21 +5086,26 @@ function Remove-CustomLink {
 function Get-IPAddress {
    <#
    .SYNOPSIS
-      Gets an IP address from NetBox
+      Retrieves an IP address from NetBox.
    .DESCRIPTION
-      Long description
+      This function retrieves an IP address from NetBox by address, DNS name, or ID.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Get-IPAddress -Address "192.168.1.10"
+      Retrieves the IP address "192.168.1.10" from NetBox.
+   .PARAMETER Address
+      The IP address to retrieve.
+   .PARAMETER DNSName
+      The DNS name associated with the IP address.
+   .PARAMETER ID
+      The ID of the IP address to retrieve.
    .INPUTS
-      Inputs (if any)
+      None. This function does not accept piped input.
    .OUTPUTS
-      Output (if any)
+      NetBox.IP. Returns a list of IP addresses matching the criteria.
    .NOTES
-      General notes
+      Ensure that the IP address or DNS name exists in NetBox before retrieving it.
    #>
+
    param (
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -5645,27 +5155,33 @@ function Get-IPAddress {
 
       return $IPs
    }
-
 }
 
 function New-IPAddress {
    <#
    .SYNOPSIS
-      Short description
+      Creates a new IP address in NetBox.
    .DESCRIPTION
-      Long description
+      This function creates a new IP address in NetBox using the provided address and subnet.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> New-IPAddress -Address "192.168.1.10" -Subnet "24"
+      Creates a new IP address "192.168.1.10" with a subnet mask of "24".
+   .PARAMETER Address
+      The IP address to create.
+   .PARAMETER Subnet
+      The subnet mask for the IP address.
+   .PARAMETER DNSName
+      The DNS name associated with the IP address.
+   .PARAMETER Status
+      The status of the IP address (e.g., "active", "planned").
    .INPUTS
-      Inputs (if any)
+      None. This function does not accept piped input.
    .OUTPUTS
-      Output (if any)
+      NetBox.IP. Returns the created IP address.
    .NOTES
-      General notes
+      Ensure that the subnet and DNS name (if provided) are valid before creating the IP address.
    #>
+
    param (
       [Parameter(Mandatory = $True)]
       [String]
@@ -5712,8 +5228,8 @@ function New-IPAddress {
          }
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
-        ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
+      # Remove empty keys
+      ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
          $OutPutObject = [pscustomobject]$Body
@@ -5722,7 +5238,7 @@ function New-IPAddress {
 
       if (-Not $Exists) {
          $IPAddress = Invoke-RestMethod -Uri $($NetboxURL + $URL) @RestParams -Method Post -Body $($Body | ConvertTo-Json)
-         $IPAddress.PSObject.TypeNames.Insert(0, "NetBox.Device")
+         $IPAddress.PSObject.TypeNames.Insert(0, "NetBox.IP")
          return $IPAddress
       }
       else {
@@ -5734,21 +5250,28 @@ function New-IPAddress {
 function Update-IPAddress {
    <#
    .SYNOPSIS
-      Short description
+      Updates an existing IP address in NetBox.
    .DESCRIPTION
-      Long description
+      This function updates an existing IP address in NetBox with new details provided by the user.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Update-IPAddress -Address "192.168.1.10" -DNSName "server1.example.com"
+      Updates the IP address "192.168.1.10" to associate it with "server1.example.com".
+   .PARAMETER Address
+      The IP address to update.
+   .PARAMETER Subnet
+      The subnet mask for the IP address.
+   .PARAMETER DNSName
+      The DNS name associated with the IP address.
+   .PARAMETER Status
+      The status of the IP address (e.g., "active", "planned").
    .INPUTS
-      Inputs (if any)
+      None. This function does not accept piped input.
    .OUTPUTS
-      Output (if any)
+      NetBox.IP. Returns the updated IP address.
    .NOTES
-      General notes
+      Ensure that the IP address and DNS name (if provided) are valid before updating the IP address.
    #>
+
    param (
       [Parameter(Mandatory = $True)]
       [String]
@@ -5789,7 +5312,7 @@ function Update-IPAddress {
          dns_name = $DNSName
       }
 
-      # Remove empty keys https://stackoverflow.com/questions/35845813/remove-empty-keys-powershell/54138232
+      # Remove empty keys
       ($Body.GetEnumerator() | Where-Object { -not $_.Value }) | ForEach-Object { $Body.Remove($_.Name) }
 
       if ($Confirm) {
@@ -5799,27 +5322,33 @@ function Update-IPAddress {
 
       Invoke-RestMethod -Uri $($NetboxURL + $URL + $($IPAddress.ID) + "/") @RestParams -Method Patch -Body $($Body | ConvertTo-Json)
    }
-
 }
 
 function Remove-IPAddress {
    <#
    .SYNOPSIS
-      Short description
+      Removes an IP address from NetBox.
    .DESCRIPTION
-      Long description
+      This function removes an IP address from NetBox by address, DNS name, or ID.
    .EXAMPLE
-      PS C:\> <example usage>
-      Explanation of what the example does
-   .PARAMETER Name
-      The description of a parameter. Add a ".PARAMETER" keyword for each parameter in the function or script syntax.
+      PS C:\> Remove-IPAddress -Address "192.168.1.10"
+      Removes the IP address "192.168.1.10" from NetBox.
+   .PARAMETER Address
+      The IP address to remove.
+   .PARAMETER DNSName
+      The DNS name associated with the IP address.
+   .PARAMETER ID
+      The ID of the IP address to remove.
+   .PARAMETER Confirm
+      If specified, prompts the user for confirmation before removing the IP address.
    .INPUTS
-      Inputs (if any)
+      NetBox.IP. You can pipe an IP address object to this function.
    .OUTPUTS
-      Output (if any)
+      None. This function does not return a value.
    .NOTES
-      General notes
+      Ensure that the IP address exists in NetBox before attempting to remove it.
    #>
+
    param (
       [Parameter(Mandatory = $false, ParameterSetName = "Filtered")]
       [String]
@@ -5866,13 +5395,12 @@ function Remove-IPAddress {
       catch {
          if ((($RestError.ErrorRecord) | ConvertFrom-Json).Detail -like "Unable to delete object*") {
             Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
-            Write-Error "Delete those objects first or run again using -recurse switch"
+            Write-Error "Delete those objects first or run again using the -recurse switch"
          }
          else {
             Write-Error "$($($($RestError.ErrorRecord) | ConvertFrom-Json).detail)"
          }
       }
-
    }
 }
 
