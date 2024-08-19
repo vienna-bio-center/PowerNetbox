@@ -1,20 +1,18 @@
-[]: # Language: powershell
-[]: # Path: PowerNetBox\PowerNetBox.sln
 
-    PowerNetbox
+# PowerNetbox
 
 A powershell module for managing NetBox via the API.
 
-    Installation / Setup
+## Installation / Setup
 
 install via Powershell gallery
-```
-Install-Moduel -Name PowerNetBox
+```powershell
+Install-Module -Name PowerNetBox
 ```
 
 install from gitreop
 
-```
-git clone https://github.com...
+```powershell
+git clone git@github.com:vienna-bio-center/PowerNetbox.git
 Import-Module -Path .\PowerNetbox
 ```
